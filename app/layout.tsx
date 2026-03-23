@@ -1,5 +1,3 @@
-use client;
-
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -63,63 +61,120 @@ export default function RootLayout({ children }) {
         <meta property="fb:admins" content="YOUR_ADMIN_ID" />
         <meta name="pinterest" content="nopin" />
         <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
-        <meta name="twitter:label1" content="Productivity" />
-        <meta name="twitter:label2" content="Note Taking" />
-        <meta name="twitter:label3" content="AI" />
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:locale:alternate" content="fr_FR" />
-        <meta property="fb:pages" content="YOUR_PAGE_ID" />
       </Head>
       <body>
-        <header className="flex justify-between items-center py-4">
-          <Link href="/">
-            <a>
-              <img src="/logo.png" alt="AutoNote" className="h-8" />
-            </a>
-          </Link>
-          <nav className={`flex flex-col ${navOpen ? 'block' : 'hidden'} md:flex md:flex-row md:items-center`}>
+        <nav className="nav">
+          <div className="nav-brand">
+            <Link href="/">
+              <a>AutoNote</a>
+            </Link>
+          </div>
+          <div className="nav-links">
             <Link href="/notes">
-              <a className="block md:inline-block py-2 md:py-0 md:mx-4">Notes</a>
+              <a>Notes</a>
             </Link>
             <Link href="/meetings">
-              <a className="block md:inline-block py-2 md:py-0 md:mx-4">Meetings</a>
+              <a>Meetings</a>
             </Link>
             <Link href="/settings">
-              <a className="block md:inline-block py-2 md:py-0 md:mx-4">Settings</a>
+              <a>Settings</a>
             </Link>
-          </nav>
-          <div className="flex items-center">
-            <button onClick={toggleDarkMode} className="md:mx-4">
-              {darkMode ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m6 9h2.1M18 7.8H6l-1.6 2m0 5.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3m0 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM12 15v3m6-9v-3" />
-                </svg>
-              )}
+          </div>
+          <div className="nav-actions">
+            <button className="nav-toggle" onClick={toggleNav}>
+              {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
             </button>
-            <button onClick={toggleNav} className="md:hidden">
-              {navOpen ? (
-                <AiOutlineClose size={24} />
-              ) : (
-                <AiOutlineMenu size={24} />
-              )}
+            <button className="nav-dark-mode" onClick={toggleDarkMode}>
+              {darkMode ? 'Light Mode' : 'Dark Mode'}
             </button>
           </div>
-        </header>
-        <main className="container mx-auto p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
-        <div className="fixed bottom-0 right-0 p-4">
+        </nav>
+        <div className="nav-overlay" onClick={toggleNav} style={{ display: navOpen ? 'block' : 'none' }} />
+        <div className="notifications">
           {notifications.map((notification, index) => (
-            <div key={index} className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div key={index} className="notification">
               {notification}
             </div>
           ))}
         </div>
+        <main className="main">
+          {children}
+        </main>
       </body>
+      <style jsx>
+        {`
+          .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+          }
+
+          .nav-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+          }
+
+          .nav-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .nav-links a {
+            margin-right: 1rem;
+          }
+
+          .nav-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .nav-toggle {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+          }
+
+          .nav-dark-mode {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+          }
+
+          .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+          }
+
+          .notifications {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1;
+          }
+
+          .notification {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
+
+          .main {
+            padding: 1rem;
+          }
+        `}
+      </style>
     </html>
   );
 }

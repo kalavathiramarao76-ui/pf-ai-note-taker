@@ -149,22 +149,22 @@ img[alt=""] {
 
 meta {
   name: "description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
 }
 
 meta {
   name: "keywords";
-  content: "AutoNote, AI-Powered, Note Taker, Note Taking, AI, Machine Learning";
+  content: "AutoNote, AI-Powered, Note Taker, Note Taking, AI, Machine Learning, Productivity, Organization, Task Management, Study Notes, Meeting Notes, Journaling";
 }
 
 meta {
   property: "og:title";
-  content: "AutoNote: AI-Powered Note Taker";
+  content: "AutoNote: AI-Powered Note Taker - Revolutionize Your Note Taking Experience";
 }
 
 meta {
   property: "og:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
 }
 
 meta {
@@ -194,31 +194,15 @@ meta {
 
 meta {
   name: "twitter:title";
-  content: "AutoNote: AI-Powered Note Taker";
+  content: "AutoNote: AI-Powered Note Taker - Revolutionize Your Note Taking Experience";
 }
 
 meta {
   name: "twitter:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
 }
 
 meta {
   name: "twitter:image";
   content: "/logo.png";
 }
-
-meta {
-  name: "twitter:site";
-  content: "@autonote";
-}
-
-script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "AutoNote: AI-Powered Note Taker",
-  "description": "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.",
-  "image": "/logo.png",
-  "url": "https://autonote.com"
-}
-</script>

@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const [sortedNotes, setSortedNotes] = useState([]);
   const [sortedMeetings, setSortedMeetings] = useState([]);
   const [sortedTemplates, setSortedTemplates] = useState([]);
+  const [filterType, setFilterType] = useState('all');
+  const [sortBy, setSortBy] = useState('title');
+  const [sortOrder, setSortOrder] = useState('asc');
   const router = useRouter();
 
   useEffect(() => {
@@ -52,10 +55,56 @@ export default function DashboardPage() {
       template.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    setSortedNotes(filteredNotes);
-    setSortedMeetings(filteredMeetings);
-    setSortedTemplates(filteredTemplates);
-  }, [searchQuery, notes, meetings, templates]);
+    let sortedNotesList = filteredNotes;
+    let sortedMeetingsList = filteredMeetings;
+    let sortedTemplatesList = filteredTemplates;
+
+    if (filterType === 'notes') {
+      sortedNotesList = filteredNotes;
+    } else if (filterType === 'meetings') {
+      sortedMeetingsList = filteredMeetings;
+    } else if (filterType === 'templates') {
+      sortedTemplatesList = filteredTemplates;
+    }
+
+    if (sortBy === 'title') {
+      sortedNotesList = sortedNotesList.sort((a, b) =>
+        sortOrder === 'asc'
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title)
+      );
+      sortedMeetingsList = sortedMeetingsList.sort((a, b) =>
+        sortOrder === 'asc'
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title)
+      );
+      sortedTemplatesList = sortedTemplatesList.sort((a, b) =>
+        sortOrder === 'asc'
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title)
+      );
+    } else if (sortBy === 'date') {
+      sortedNotesList = sortedNotesList.sort((a, b) =>
+        sortOrder === 'asc'
+          ? new Date(a.createdAt) - new Date(b.createdAt)
+          : new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      sortedMeetingsList = sortedMeetingsList.sort((a, b) =>
+        sortOrder === 'asc'
+          ? new Date(a.createdAt) - new Date(b.createdAt)
+          : new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      sortedTemplatesList = sortedTemplatesList.sort((a, b) =>
+        sortOrder === 'asc'
+          ? new Date(a.createdAt) - new Date(b.createdAt)
+          : new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    }
+
+    setSortedNotes(sortedNotesList);
+    setSortedMeetings(sortedMeetingsList);
+    setSortedTemplates(sortedTemplatesList);
+  }, [searchQuery, notes, meetings, templates, filterType, sortBy, sortOrder]);
 
   const handleCreateNote = () => {
     router.push('/notes/create');
@@ -91,107 +140,60 @@ export default function DashboardPage() {
     localStorage.setItem('folders', JSON.stringify([...folders, newFolder]));
   };
 
-  const handleSelectFolder = (folder) => {
-    setSelectedFolder(folder);
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterType(event.target.value);
   };
 
-  const handleAddNoteToFolder = (note, folder) => {
-    const updatedFolders = folders.map((f) => {
-      if (f.id === folder.id) {
-        return { ...f, notes: [...f.notes, note] };
-      }
-      return f;
-    });
-    setFolders(updatedFolders);
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(event.target.value);
   };
 
-  const handleEditNote = (note) => {
-    setEditingNote(note);
-    router.push(`/notes/${note.id}/edit`);
-  };
-
-  const handleSaveEditedNote = async (note) => {
-    try {
-      const response = await client.put(`/api/notes/${note.id}`, note);
-      const updatedNotes = notes.map((n) => (n.id === note.id ? response.data : n));
-      setNotes(updatedNotes);
-      localStorage.setItem('notes', JSON.stringify(updatedNotes));
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleSortNotes = (sortBy) => {
-    if (sortBy === 'title') {
-      setSortedNotes(sortedNotes.sort((a, b) => a.title.localeCompare(b.title)));
-    } else if (sortBy === 'date') {
-      setSortedNotes(sortedNotes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
-    }
-  };
-
-  const handleSortMeetings = (sortBy) => {
-    if (sortBy === 'title') {
-      setSortedMeetings(sortedMeetings.sort((a, b) => a.title.localeCompare(b.title)));
-    } else if (sortBy === 'date') {
-      setSortedMeetings(sortedMeetings.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
-    }
-  };
-
-  const handleSortTemplates = (sortBy) => {
-    if (sortBy === 'title') {
-      setSortedTemplates(sortedTemplates.sort((a, b) => a.title.localeCompare(b.title)));
-    } else if (sortBy === 'date') {
-      setSortedTemplates(sortedTemplates.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
-    }
+  const handleSortOrderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(event.target.value);
   };
 
   return (
     <div>
-      <input
-        type="search"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search notes, meetings, and templates"
-      />
-      <button onClick={handleCreateNote}>
-        <AiOutlinePlus /> Create Note
-      </button>
-      <button onClick={handleCreateMeeting}>
-        <AiOutlinePlus /> Create Meeting
-      </button>
-      <button onClick={handleCreateTemplate}>
-        <AiOutlinePlus /> Create Template
-      </button>
-      <button onClick={handleCreateFolder}>
-        <AiOutlinePlus /> Create Folder
-      </button>
       <div>
-        <h2>Notes</h2>
-        <select onChange={(e) => handleSortNotes(e.target.value)}>
-          <option value="title">Sort by Title</option>
-          <option value="date">Sort by Date</option>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search"
+        />
+        <select value={filterType} onChange={handleFilterChange}>
+          <option value="all">All</option>
+          <option value="notes">Notes</option>
+          <option value="meetings">Meetings</option>
+          <option value="templates">Templates</option>
         </select>
+        <select value={sortBy} onChange={handleSortChange}>
+          <option value="title">Title</option>
+          <option value="date">Date</option>
+        </select>
+        <select value={sortOrder} onChange={handleSortOrderChange}>
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+      <div>
+        <button onClick={handleCreateNote}>
+          <AiOutlinePlus /> Create Note
+        </button>
+        <button onClick={handleCreateMeeting}>
+          <AiOutlinePlus /> Create Meeting
+        </button>
+        <button onClick={handleCreateTemplate}>
+          <AiOutlinePlus /> Create Template
+        </button>
+      </div>
+      <div>
         {sortedNotes.map((note) => (
           <NoteCard key={note.id} note={note} />
         ))}
-      </div>
-      <div>
-        <h2>Meetings</h2>
-        <select onChange={(e) => handleSortMeetings(e.target.value)}>
-          <option value="title">Sort by Title</option>
-          <option value="date">Sort by Date</option>
-        </select>
         {sortedMeetings.map((meeting) => (
           <MeetingCard key={meeting.id} meeting={meeting} />
         ))}
-      </div>
-      <div>
-        <h2>Templates</h2>
-        <select onChange={(e) => handleSortTemplates(e.target.value)}>
-          <option value="title">Sort by Title</option>
-          <option value="date">Sort by Date</option>
-        </select>
         {sortedTemplates.map((template) => (
           <TemplateCard key={template.id} template={template} />
         ))}
