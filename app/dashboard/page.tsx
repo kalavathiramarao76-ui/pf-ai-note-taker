@@ -29,6 +29,9 @@ export default function DashboardPage() {
   const [priority, setPriority] = useState('all');
   const [deadline, setDeadline] = useState('');
   const router = useRouter();
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState('');
+  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
 
   useEffect(() => {
     const storedNotes = localStorage.getItem('notes');
@@ -68,117 +71,69 @@ export default function DashboardPage() {
       filterByTags.every((tag) => template.tags.includes(tag)) &&
       (filterByDate === '' || template.date.includes(filterByDate))
     );
+    setSortedNotes(filteredNotes);
+    setSortedMeetings(filteredMeetings);
+    setSortedTemplates(filteredTemplates);
+  }, [notes, meetings, templates, searchQuery, filterByTags, filterByDate, priority, deadline]);
 
-    const sortedFilteredNotes = filteredNotes.sort((a, b) => {
-      if (sortBy === 'title') {
-        if (sortOrder === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      } else if (sortBy === 'date') {
-        if (sortOrder === 'asc') {
-          return new Date(a.date) - new Date(b.date);
-        } else {
-          return new Date(b.date) - new Date(a.date);
-        }
-      } else if (sortBy === 'priority') {
-        if (sortOrder === 'asc') {
-          return a.priority.localeCompare(b.priority);
-        } else {
-          return b.priority.localeCompare(a.priority);
-        }
-      }
-      return 0;
+  const generateNote = async () => {
+    setIsGeneratingNote(true);
+    const response = await client.post('/generate-note', {
+      title: noteTitle,
+      content: noteContent,
     });
+    setGeneratedNotes([response.data]);
+    setIsGeneratingNote(false);
+  };
 
-    const sortedFilteredMeetings = filteredMeetings.sort((a, b) => {
-      if (sortBy === 'title') {
-        if (sortOrder === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      } else if (sortBy === 'date') {
-        if (sortOrder === 'asc') {
-          return new Date(a.date) - new Date(b.date);
-        } else {
-          return new Date(b.date) - new Date(a.date);
-        }
-      }
-      return 0;
+  const getAiSuggestions = async () => {
+    const response = await client.post('/get-ai-suggestions', {
+      title: noteTitle,
+      content: noteContent,
     });
+    setAiSuggestions(response.data);
+  };
 
-    const sortedFilteredTemplates = filteredTemplates.sort((a, b) => {
-      if (sortBy === 'title') {
-        if (sortOrder === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      } else if (sortBy === 'date') {
-        if (sortOrder === 'asc') {
-          return new Date(a.date) - new Date(b.date);
-        } else {
-          return new Date(b.date) - new Date(a.date);
-        }
-      }
-      return 0;
+  const getAutocompleteSuggestions = async () => {
+    const response = await client.post('/get-autocomplete-suggestions', {
+      title: noteTitle,
+      content: noteContent,
     });
+    setAutocompleteSuggestions(response.data);
+  };
 
-    setSortedNotes(sortedFilteredNotes);
-    setSortedMeetings(sortedFilteredMeetings);
-    setSortedTemplates(sortedFilteredTemplates);
-  }, [notes, meetings, templates, searchQuery, filterByTags, filterByDate, priority, deadline, sortBy, sortOrder]);
+  useEffect(() => {
+    if (noteTitle || noteContent) {
+      getAiSuggestions();
+      getAutocompleteSuggestions();
+    }
+  }, [noteTitle, noteContent]);
 
   return (
     <div>
+      <h1>AutoNote: AI-Powered Note Taker</h1>
       <input
         type="text"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search"
+        value={noteTitle}
+        onChange={(e) => setNoteTitle(e.target.value)}
+        placeholder="Note title"
       />
-      <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-        <option value="all">All</option>
-        <option value="notes">Notes</option>
-        <option value="meetings">Meetings</option>
-        <option value="templates">Templates</option>
-      </select>
-      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-        <option value="title">Title</option>
-        <option value="date">Date</option>
-        <option value="priority">Priority</option>
-      </select>
-      <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-      <input
-        type="text"
-        value={filterByDate}
-        onChange={(e) => setFilterByDate(e.target.value)}
-        placeholder="Filter by date"
+      <textarea
+        value={noteContent}
+        onChange={(e) => setNoteContent(e.target.value)}
+        placeholder="Note content"
       />
-      <input
-        type="text"
-        value={priority}
-        onChange={(e) => setPriority(e.target.value)}
-        placeholder="Filter by priority"
-      />
-      <input
-        type="text"
-        value={deadline}
-        onChange={(e) => setDeadline(e.target.value)}
-        placeholder="Filter by deadline"
-      />
-      <button onClick={() => setFilterByTags([...filterByTags, 'new-tag'])}>Add tag filter</button>
+      <button onClick={generateNote} disabled={isGeneratingNote}>
+        Generate Note
+      </button>
       <ul>
-        {filterByTags.map((tag, index) => (
-          <li key={index}>
-            {tag}
-            <button onClick={() => setFilterByTags(filterByTags.filter((t) => t !== tag))}>Remove</button>
-          </li>
+        {aiSuggestions.map((suggestion) => (
+          <li key={suggestion}>{suggestion}</li>
+        ))}
+      </ul>
+      <ul>
+        {autocompleteSuggestions.map((suggestion) => (
+          <li key={suggestion}>{suggestion}</li>
         ))}
       </ul>
       <h2>Notes</h2>

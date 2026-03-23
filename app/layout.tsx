@@ -67,6 +67,14 @@ const Nav = memo(() => {
           <Link href="/contact" aria-label="Contact page">Contact</Link>
         </li>
       </ul>
+      {navOpen && (
+        <div
+          className="nav-overlay"
+          aria-hidden={true}
+          onClick={toggleNav}
+          role="presentation"
+        />
+      )}
     </nav>
   );
 });
@@ -90,22 +98,30 @@ export default function RootLayout({ children }) {
 
   const addNotification = (message) => {
     setNotifications((prevNotifications) => [...prevNotifications, message]);
-    setTimeout(() => {
-      setNotifications((prevNotifications) => prevNotifications.filter((n) => n !== message));
-    }, 5000);
   };
 
   return (
     <html lang="en" className={darkMode ? 'dark' : ''}>
       <Head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>AutoNote: AI-Powered Note Taker</title>
-        <meta name="description" content="AutoNote is an AI-powered note taker that helps you take notes and stay organized." />
+        <meta name="description" content="AutoNote: AI-Powered Note Taker" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
       <body>
         <Nav />
-        {children}
+        <main className="main">{children}</main>
+        <button
+          className="dark-mode-toggle"
+          onClick={toggleDarkMode}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? 'Light mode' : 'Dark mode'}
+        </button>
+        <ul className="notifications">
+          {notifications.map((notification, index) => (
+            <li key={index}>{notification}</li>
+          ))}
+        </ul>
       </body>
     </html>
   );
