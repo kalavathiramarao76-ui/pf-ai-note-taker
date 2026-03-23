@@ -1,13 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 
+const Nav = memo(() => {
+  const [navOpen, setNavOpen] = useState(false);
+  const router = useRouter();
+
+  const toggleNav = () => {
+    setNavOpen(!navOpen);
+  };
+
+  return (
+    <nav className="nav">
+      <button className="nav-toggle" onClick={toggleNav}>
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
+        <li>
+          <Link href="/">Home</Link>
+        </li>
+        <li>
+          <Link href="/about">About</Link>
+        </li>
+        <li>
+          <Link href="/contact">Contact</Link>
+        </li>
+      </ul>
+    </nav>
+  );
+});
+
 export default function RootLayout({ children }) {
   const [darkMode, setDarkMode] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const router = useRouter();
 
@@ -21,10 +48,6 @@ export default function RootLayout({ children }) {
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     localStorage.setItem('darkMode', String(!darkMode));
-  };
-
-  const toggleNav = () => {
-    setNavOpen(!navOpen);
   };
 
   const addNotification = (message) => {
@@ -63,135 +86,8 @@ export default function RootLayout({ children }) {
         <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
       </Head>
       <body>
-        <nav className="nav">
-          <div className="nav-header">
-            <Link href="/">
-              <a>AutoNote</a>
-            </Link>
-            <button className="nav-toggle" onClick={toggleNav}>
-              {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-            </button>
-          </div>
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={navOpen ? { x: 0 } : { x: '-100%' }}
-            transition={{ duration: 0.5 }}
-            className="nav-menu"
-          >
-            <ul>
-              <li>
-                <Link href="/">
-                  <a>Home</a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/notes">
-                  <a>Notes</a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/settings">
-                  <a>Settings</a>
-                </Link>
-              </li>
-            </ul>
-          </motion.div>
-          <div className="nav-notifications">
-            {notifications.map((notification, index) => (
-              <div key={index} className="notification">
-                {notification}
-              </div>
-            ))}
-          </div>
-        </nav>
-        <main>
-          {children}
-        </main>
-        <button className="dark-mode-toggle" onClick={toggleDarkMode}>
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
-        </button>
-        <style jsx>
-          {`
-            .nav {
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              padding: 1rem;
-              background-color: #f9f9f9;
-              border-bottom: 1px solid #ddd;
-            }
-
-            .nav-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              width: 100%;
-            }
-
-            .nav-toggle {
-              background-color: transparent;
-              border: none;
-              cursor: pointer;
-            }
-
-            .nav-menu {
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              padding: 1rem;
-              background-color: #f9f9f9;
-              width: 100%;
-            }
-
-            .nav-menu ul {
-              list-style: none;
-              padding: 0;
-              margin: 0;
-            }
-
-            .nav-menu li {
-              margin-bottom: 1rem;
-            }
-
-            .nav-menu a {
-              text-decoration: none;
-              color: #333;
-            }
-
-            .nav-notifications {
-              position: fixed;
-              top: 1rem;
-              right: 1rem;
-              display: flex;
-              flex-direction: column;
-              align-items: flex-end;
-            }
-
-            .notification {
-              background-color: #f9f9f9;
-              border: 1px solid #ddd;
-              padding: 1rem;
-              margin-bottom: 1rem;
-              width: 200px;
-              text-align: center;
-            }
-
-            .dark-mode-toggle {
-              position: fixed;
-              bottom: 1rem;
-              right: 1rem;
-              background-color: #333;
-              color: #fff;
-              border: none;
-              padding: 1rem;
-              cursor: pointer;
-            }
-
-            .dark-mode-toggle:hover {
-              background-color: #444;
-            }
-          `}
-        </style>
+        <Nav />
+        {children}
       </body>
     </html>
   );

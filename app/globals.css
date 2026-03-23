@@ -125,9 +125,11 @@ use client;
   .light-mode {
     @apply bg-white text-gray-900;
   }
-}
 
-@layer utilities {
+  .high-contrast-mode {
+    @apply bg-black text-white;
+  }
+
   .sr-only {
     @apply absolute -inset-y-1 -inset-x-1 p-4 w-full h-full overflow-hidden;
     clip: rect(0 0 0 0);
@@ -135,6 +137,14 @@ use client;
   }
 
   .image-description {
+    @apply sr-only;
+  }
+
+  .screen-reader-only {
+    @apply sr-only;
+  }
+
+  .button-text {
     @apply sr-only;
   }
 }
@@ -145,6 +155,21 @@ img {
 
 img[alt=""] {
   alt: "AI-Powered Note Taker Image";
+}
+
+button::after {
+  content: "Click to interact";
+  @apply screen-reader-only;
+}
+
+input::after {
+  content: "Enter your input";
+  @apply screen-reader-only;
+}
+
+select::after {
+  content: "Select an option";
+  @apply screen-reader-only;
 }
 
 meta {
@@ -164,40 +189,5 @@ meta {
 
 meta {
   property: "og:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Learn how our tool can help you increase productivity and simplify your workflow.";
-}
-
-meta {
-  property: "og:image";
-  content: "https://example.com/autonote-image.jpg";
-}
-
-meta {
-  property: "og:image:alt";
-  content: "AI-Powered Note Taker Image";
-}
-
-meta {
-  name: "twitter:card";
-  content: "summary_large_image";
-}
-
-meta {
-  name: "twitter:title";
-  content: "AutoNote: AI-Powered Note Taker - Revolutionize Your Note Taking Experience";
-}
-
-meta {
-  name: "twitter:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
-}
-
-meta {
-  name: "twitter:image";
-  content: "https://example.com/autonote-image.jpg";
-}
-
-meta {
-  name: "twitter:image:alt";
-  content: "AI-Powered Note Taker Image";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Discover how our tool can help you boost productivity and streamline your workflow.";
 }

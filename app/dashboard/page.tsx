@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [sortOrder, setSortOrder] = useState('asc');
   const [filterByTag, setFilterByTag] = useState('');
   const [filterByDate, setFilterByDate] = useState('');
+  const [aiSuggestions, setAiSuggestions] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -71,42 +72,52 @@ export default function DashboardPage() {
       sortedNotesList = filteredNotes;
     } else if (filterType === 'meetings') {
       sortedMeetingsList = filteredMeetings;
-    } else if (filterType === 'templates') {
-      sortedTemplatesList = filteredTemplates;
     }
 
     if (sortBy === 'title') {
-      sortedNotesList = sortedNotesList.sort((a, b) =>
-        sortOrder === 'asc'
-          ? a.title.localeCompare(b.title)
-          : b.title.localeCompare(a.title)
-      );
-      sortedMeetingsList = sortedMeetingsList.sort((a, b) =>
-        sortOrder === 'asc'
-          ? a.title.localeCompare(b.title)
-          : b.title.localeCompare(a.title)
-      );
-      sortedTemplatesList = sortedTemplatesList.sort((a, b) =>
-        sortOrder === 'asc'
-          ? a.title.localeCompare(b.title)
-          : b.title.localeCompare(a.title)
-      );
+      sortedNotesList = sortedNotesList.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
+        }
+      });
+      sortedMeetingsList = sortedMeetingsList.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
+        }
+      });
+      sortedTemplatesList = sortedTemplatesList.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
+        }
+      });
     } else if (sortBy === 'date') {
-      sortedNotesList = sortedNotesList.sort((a, b) =>
-        sortOrder === 'asc'
-          ? new Date(a.date) - new Date(b.date)
-          : new Date(b.date) - new Date(a.date)
-      );
-      sortedMeetingsList = sortedMeetingsList.sort((a, b) =>
-        sortOrder === 'asc'
-          ? new Date(a.date) - new Date(b.date)
-          : new Date(b.date) - new Date(a.date)
-      );
-      sortedTemplatesList = sortedTemplatesList.sort((a, b) =>
-        sortOrder === 'asc'
-          ? new Date(a.date) - new Date(b.date)
-          : new Date(b.date) - new Date(a.date)
-      );
+      sortedNotesList = sortedNotesList.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      });
+      sortedMeetingsList = sortedMeetingsList.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      });
+      sortedTemplatesList = sortedTemplatesList.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      });
     }
 
     setSortedNotes(sortedNotesList);
@@ -114,69 +125,82 @@ export default function DashboardPage() {
     setSortedTemplates(sortedTemplatesList);
   }, [searchQuery, filterType, sortBy, sortOrder, filterByTag, filterByDate, notes, meetings, templates]);
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+  const handleEditNote = (note) => {
+    setEditingNote(note);
+    const aiSuggestionsResponse = client.getAiSuggestions(note.content);
+    aiSuggestionsResponse.then((response) => {
+      setAiSuggestions(response.data);
+    });
   };
 
-  const handleFilterByTag = (e) => {
-    setFilterByTag(e.target.value);
-  };
-
-  const handleFilterByDate = (e) => {
-    setFilterByDate(e.target.value);
-  };
-
-  const handleSortBy = (e) => {
-    setSortBy(e.target.value);
-  };
-
-  const handleSortOrder = (e) => {
-    setSortOrder(e.target.value);
+  const handleSaveNote = (note) => {
+    const updatedNotes = notes.map((n) => {
+      if (n.id === note.id) {
+        return note;
+      }
+      return n;
+    });
+    setNotes(updatedNotes);
+    localStorage.setItem('notes', JSON.stringify(updatedNotes));
+    setEditingNote(null);
   };
 
   return (
     <div>
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Search"
-      />
-      <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-        <option value="all">All</option>
-        <option value="notes">Notes</option>
-        <option value="meetings">Meetings</option>
-        <option value="templates">Templates</option>
-      </select>
-      <select value={sortBy} onChange={handleSortBy}>
-        <option value="title">Title</option>
-        <option value="date">Date</option>
-      </select>
-      <select value={sortOrder} onChange={handleSortOrder}>
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-      <input
-        type="text"
-        value={filterByTag}
-        onChange={handleFilterByTag}
-        placeholder="Filter by tag"
-      />
-      <input
-        type="date"
-        value={filterByDate}
-        onChange={handleFilterByDate}
-        placeholder="Filter by date"
-      />
-      {sortedNotes.map((note) => (
-        <NoteCard key={note.id} note={note} />
-      ))}
-      {sortedMeetings.map((meeting) => (
-        <MeetingCard key={meeting.id} meeting={meeting} />
-      ))}
-      {sortedTemplates.map((template) => (
-        <TemplateCard key={template.id} template={template} />
-      ))}
+      {editingNote ? (
+        <div>
+          <h2>Edit Note</h2>
+          <input
+            type="text"
+            value={editingNote.title}
+            onChange={(e) => {
+              const updatedNote = { ...editingNote, title: e.target.value };
+              setEditingNote(updatedNote);
+            }}
+          />
+          <textarea
+            value={editingNote.content}
+            onChange={(e) => {
+              const updatedNote = { ...editingNote, content: e.target.value };
+              setEditingNote(updatedNote);
+            }}
+          />
+          <h3>AI Suggestions:</h3>
+          <ul>
+            {aiSuggestions.map((suggestion) => (
+              <li key={suggestion.id}>{suggestion.text}</li>
+            ))}
+          </ul>
+          <button onClick={() => handleSaveNote(editingNote)}>Save</button>
+        </div>
+      ) : (
+        <div>
+          <h2>Notes</h2>
+          <ul>
+            {sortedNotes.map((note) => (
+              <li key={note.id}>
+                <NoteCard note={note} onEdit={() => handleEditNote(note)} />
+              </li>
+            ))}
+          </ul>
+          <h2>Meetings</h2>
+          <ul>
+            {sortedMeetings.map((meeting) => (
+              <li key={meeting.id}>
+                <MeetingCard meeting={meeting} />
+              </li>
+            ))}
+          </ul>
+          <h2>Templates</h2>
+          <ul>
+            {sortedTemplates.map((template) => (
+              <li key={template.id}>
+                <TemplateCard template={template} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
