@@ -1,5 +1,4 @@
-use client;
-
+import client from '../client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiOutlinePlus } from 'react-icons/ai';
@@ -12,6 +11,7 @@ export default function DashboardPage() {
   const [notes, setNotes] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [templates, setTemplates] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -42,6 +42,21 @@ export default function DashboardPage() {
     router.push('/templates/create');
   };
 
+  const filteredNotes = notes.filter((note) =>
+    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredMeetings = meetings.filter((meeting) =>
+    meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    meeting.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredTemplates = templates.filter((template) =>
+    template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    template.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 lg:p-10">
       <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
@@ -68,21 +83,30 @@ export default function DashboardPage() {
           Create Template
         </button>
       </div>
+      <div className="mb-4">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search notes, meetings, and templates"
+          className="w-full p-2 pl-10 text-sm text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
       <h2 className="text-2xl font-bold mb-4">Notes</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        {notes.map((note) => (
+        {filteredNotes.map((note) => (
           <NoteCard key={note.id} note={note} />
         ))}
       </div>
       <h2 className="text-2xl font-bold mb-4">Meetings</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        {meetings.map((meeting) => (
+        {filteredMeetings.map((meeting) => (
           <MeetingCard key={meeting.id} meeting={meeting} />
         ))}
       </div>
       <h2 className="text-2xl font-bold mb-4">Templates</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        {templates.map((template) => (
+        {filteredTemplates.map((template) => (
           <TemplateCard key={template.id} template={template} />
         ))}
       </div>

@@ -36,14 +36,20 @@ use client;
   body {
     @apply bg-gray-900 text-gray-100;
     font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
   }
 
   a {
     @apply text-blue-500 hover:text-blue-700;
+    text-decoration: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
+    margin: 0;
+    padding: 0;
   }
 
   h1 {
@@ -72,10 +78,16 @@ use client;
 
   button {
     @apply rounded-lg;
+    cursor: pointer;
   }
 
   input, textarea, select {
     @apply rounded-lg border-gray-600;
+    outline: none;
+  }
+
+  img {
+    @apply max-w-full h-auto;
   }
 }
 
@@ -112,5 +124,13 @@ use client;
 
   .light-mode {
     @apply bg-white text-gray-900;
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    @apply absolute -inset-y-1 -inset-x-1 p-4 w-full h-full overflow-hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }

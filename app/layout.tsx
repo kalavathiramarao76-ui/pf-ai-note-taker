@@ -59,54 +59,49 @@ export default function RootLayout({ children }) {
             >
               {navOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
             </button>
-            <ul className={`lg:flex lg:items-center lg:justify-end ${navOpen ? 'block' : 'hidden'} lg:block`}>
-              <li className="lg:ml-6">
-                <Link href="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  Dashboard
-                </Link>
-              </li>
-              <li className="lg:ml-6">
-                <Link href="/notes" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  Notes
-                </Link>
-              </li>
-              <li className="lg:ml-6">
-                <Link href="/meetings" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  Meetings
-                </Link>
-              </li>
-              <li className="lg:ml-6">
-                <Link href="/settings" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  Settings
-                </Link>
-              </li>
-              <li className="lg:ml-6">
-                <Link href="/upgrade" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  Upgrade
-                </Link>
-              </li>
-            </ul>
-            <button
-              className="lg:ml-6 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 py-2 px-4 rounded-full"
-              onClick={toggleDarkMode}
-            >
-              {darkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
+            <div className={`lg:w-1/2 w-full lg:static absolute top-16 left-0 right-0 lg:px-0 px-4 ${navOpen ? 'block' : 'hidden'} lg:block`}>
+              <ul className="lg:flex lg:items-center lg:justify-end flex flex-col lg:space-x-6 space-y-4 lg:space-y-0">
+                <li className="lg:ml-0 ml-4">
+                  <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                    Notes
+                  </Link>
+                </li>
+                <li className="lg:ml-0 ml-4">
+                  <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                    Meetings
+                  </Link>
+                </li>
+                <li className="lg:ml-0 ml-4">
+                  <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                    Settings
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </nav>
         </header>
-        <main className="container mx-auto p-4 pt-24 md:p-6 lg:p-8 xl:p-12">
+        <main className="pt-16 lg:pl-64">
           {children}
         </main>
-        <footer className="bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 p-4 md:p-6 lg:p-8 xl:p-12">
-          <div className="container mx-auto flex flex-col items-center justify-center">
-            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              AutoNote
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              &copy; 2024 AutoNote. All rights reserved.
-            </p>
-          </div>
-        </footer>
+        <aside className={`lg:w-64 lg:fixed lg:top-16 lg:left-0 lg:bottom-0 lg:overflow-y-auto lg:py-4 lg:px-4 lg:bg-gray-100 dark:lg:bg-gray-900 lg:block ${navOpen ? 'block' : 'hidden'} lg:hidden`}>
+          <ul className="flex flex-col space-y-4">
+            <li>
+              <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                Notes
+              </Link>
+            </li>
+            <li>
+              <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                Meetings
+              </Link>
+            </li>
+            <li>
+              <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                Settings
+              </Link>
+            </li>
+          </ul>
+        </aside>
       </body>
     </html>
   );
