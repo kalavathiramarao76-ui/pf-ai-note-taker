@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const [filterByDate, setFilterByDate] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
+  const [priority, setPriority] = useState('all');
+  const [deadline, setDeadline] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -52,7 +54,9 @@ export default function DashboardPage() {
     const filteredNotes = notes.filter((note) =>
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
       filterByTags.every((tag) => note.tags.includes(tag)) &&
-      (filterByDate === '' || note.date.includes(filterByDate))
+      (filterByDate === '' || note.date.includes(filterByDate)) &&
+      (priority === 'all' || note.priority === priority) &&
+      (deadline === '' || note.deadline.includes(deadline))
     );
     const filteredMeetings = meetings.filter((meeting) =>
       meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -70,27 +74,57 @@ export default function DashboardPage() {
     let sortedTemplatesList = filteredTemplates;
 
     if (filterType === 'notes') {
-      sortedNotesList = sortedNotesList.sort((a, b) => {
+      sortedNotesList = filteredNotes.sort((a, b) => {
         if (sortBy === 'title') {
-          return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+          if (sortOrder === 'asc') {
+            return a.title.localeCompare(b.title);
+          } else {
+            return b.title.localeCompare(a.title);
+          }
         } else if (sortBy === 'date') {
-          return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+          if (sortOrder === 'asc') {
+            return new Date(a.date) - new Date(b.date);
+          } else {
+            return new Date(b.date) - new Date(a.date);
+          }
+        } else if (sortBy === 'priority') {
+          if (sortOrder === 'asc') {
+            return a.priority.localeCompare(b.priority);
+          } else {
+            return b.priority.localeCompare(a.priority);
+          }
         }
       });
     } else if (filterType === 'meetings') {
-      sortedMeetingsList = sortedMeetingsList.sort((a, b) => {
+      sortedMeetingsList = filteredMeetings.sort((a, b) => {
         if (sortBy === 'title') {
-          return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+          if (sortOrder === 'asc') {
+            return a.title.localeCompare(b.title);
+          } else {
+            return b.title.localeCompare(a.title);
+          }
         } else if (sortBy === 'date') {
-          return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+          if (sortOrder === 'asc') {
+            return new Date(a.date) - new Date(b.date);
+          } else {
+            return new Date(b.date) - new Date(a.date);
+          }
         }
       });
     } else if (filterType === 'templates') {
-      sortedTemplatesList = sortedTemplatesList.sort((a, b) => {
+      sortedTemplatesList = filteredTemplates.sort((a, b) => {
         if (sortBy === 'title') {
-          return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+          if (sortOrder === 'asc') {
+            return a.title.localeCompare(b.title);
+          } else {
+            return b.title.localeCompare(a.title);
+          }
         } else if (sortBy === 'date') {
-          return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+          if (sortOrder === 'asc') {
+            return new Date(a.date) - new Date(b.date);
+          } else {
+            return new Date(b.date) - new Date(a.date);
+          }
         }
       });
     }
@@ -98,48 +132,31 @@ export default function DashboardPage() {
     setSortedNotes(sortedNotesList);
     setSortedMeetings(sortedMeetingsList);
     setSortedTemplates(sortedTemplatesList);
-  }, [notes, meetings, templates, searchQuery, filterByTags, filterByDate, filterType, sortBy, sortOrder]);
+  }, [searchQuery, filterByTags, filterByDate, filterType, sortBy, sortOrder, priority, deadline]);
 
-  const handleSearchQueryChange = (event) => {
-    const query = event.target.value;
-    setSearchQuery(query);
-    const suggestions = notes
-      .filter((note) => note.title.toLowerCase().includes(query.toLowerCase()))
-      .map((note) => note.title);
-    setAutocompleteSuggestions(suggestions);
+  const handlePriorityChange = (e) => {
+    setPriority(e.target.value);
   };
 
-  const handleFilterByTagsChange = (tags) => {
-    setFilterByTags(tags);
+  const handleDeadlineChange = (e) => {
+    setDeadline(e.target.value);
   };
 
   return (
     <div>
-      <input
-        type="search"
-        value={searchQuery}
-        onChange={handleSearchQueryChange}
-        placeholder="Search notes, meetings, and templates"
-        list="autocomplete-suggestions"
-      />
-      <datalist id="autocomplete-suggestions">
-        {autocompleteSuggestions.map((suggestion) => (
-          <option key={suggestion} value={suggestion} />
-        ))}
-      </datalist>
+      <h1>Dashboard</h1>
       <div>
-        <label>Filter by tags:</label>
-        <select multiple value={filterByTags} onChange={(event) => handleFilterByTagsChange(Array.from(event.target.selectedOptions, (option) => option.value))}>
-          {notes
-            .map((note) => note.tags)
-            .flat()
-            .filter((tag, index, self) => self.indexOf(tag) === index)
-            .map((tag) => (
-              <option key={tag} value={tag}>
-                {tag}
-              </option>
-            ))}
+        <label>Priority:</label>
+        <select value={priority} onChange={handlePriorityChange}>
+          <option value="all">All</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
         </select>
+      </div>
+      <div>
+        <label>Deadline:</label>
+        <input type="date" value={deadline} onChange={handleDeadlineChange} />
       </div>
       {sortedNotes.map((note) => (
         <NoteCard key={note.id} note={note} />

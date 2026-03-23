@@ -127,7 +127,7 @@ use client;
   }
 
   .high-contrast-mode {
-    @apply bg-black text-white;
+    @apply bg-black text-yellow-400;
   }
 
   .sr-only {
@@ -174,65 +174,54 @@ select::after {
 
 meta {
   name: "description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Discover how our tool can help you boost productivity and streamline your workflow.";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Discover how our tool can help you boost productivity";
 }
 
-meta {
-  name: "keywords";
-  content: "AI-powered note taking, note taker, productivity tool, organization, task management, workflow optimization";
+/* Added accessibility improvements */
+button:focus {
+  @apply outline-yellow-400;
 }
 
-meta {
-  name: "robots";
-  content: "index, follow";
+input:focus {
+  @apply outline-yellow-400;
 }
 
-meta {
-  name: "author";
-  content: "AutoNote Team";
+select:focus {
+  @apply outline-yellow-400;
 }
 
-meta {
-  name: "viewport";
-  content: "width=device-width, initial-scale=1.0";
+.high-contrast-mode button {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "og:title";
-  content: "AutoNote: AI-Powered Note Taker";
+.high-contrast-mode input {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "og:description";
-  content: "Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
+.high-contrast-mode select {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "og:image";
-  content: "/images/autonote-logo.png";
+.high-contrast-mode a {
+  @apply text-yellow-400;
 }
 
-meta {
-  property: "og:url";
-  content: "https://autonote.com";
+.high-contrast-mode .button {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "twitter:card";
-  content: "summary";
+.high-contrast-mode .button-secondary {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "twitter:title";
-  content: "AutoNote: AI-Powered Note Taker";
+.high-contrast-mode .card {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "twitter:description";
-  content: "Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
+.high-contrast-mode .card-header {
+  @apply bg-yellow-400 text-black;
 }
 
-meta {
-  property: "twitter:image";
-  content: "/images/autonote-logo.png";
+.high-contrast-mode .card-body {
+  @apply bg-yellow-400 text-black;
 }

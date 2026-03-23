@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
   const toggleNav = () => {
@@ -17,6 +18,14 @@ const Nav = memo(() => {
     if (event.key === 'Escape') {
       setNavOpen(false);
     }
+  };
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    // Add logic to handle search query
+    console.log('Search query:', searchQuery);
+    // For now, just log the search query
+    // You can replace this with your actual search logic
   };
 
   return (
@@ -34,6 +43,18 @@ const Nav = memo(() => {
         aria-hidden={!navOpen}
         role="menu"
       >
+        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
+          <form onSubmit={handleSearch}>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search notes and meetings"
+              aria-label="Search notes and meetings"
+            />
+            <button type="submit">Search</button>
+          </form>
+        </li>
         <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
           <Link href="/">Home</Link>
         </li>
@@ -85,10 +106,6 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#000" />
         <meta property="og:title" content="AutoNote: AI-Powered Note Taker" />
         <meta property="og:description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
-        <meta property="og:image" content="/og-image.png" />
-        <meta property="og:url" content="https://autonote.app" />
-        <meta property="og:site_name" content="AutoNote" />
-        <meta property="og:type" content="website" />
       </Head>
       <body>
         <Nav />
