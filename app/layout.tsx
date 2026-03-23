@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 export default function RootLayout({ children }) {
   const [darkMode, setDarkMode] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,6 +27,13 @@ export default function RootLayout({ children }) {
 
   const toggleNav = () => {
     setNavOpen(!navOpen);
+  };
+
+  const addNotification = (message) => {
+    setNotifications((prevNotifications) => [...prevNotifications, message]);
+    setTimeout(() => {
+      setNotifications((prevNotifications) => prevNotifications.filter((n) => n !== message));
+    }, 5000);
   };
 
   return (
@@ -61,36 +69,56 @@ export default function RootLayout({ children }) {
         <meta property="og:locale" content="en_US" />
         <meta property="og:locale:alternate" content="fr_FR" />
         <meta property="fb:pages" content="YOUR_PAGE_ID" />
-        <meta name="msapplication-TileColor" content="#000" />
-        <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
       </Head>
-      <body className="font-sans text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900">
-        <header className="fixed top-0 left-0 right-0 z-10 bg-gray-100 dark:bg-gray-900 shadow-md">
-          <nav className="container mx-auto flex justify-between items-center py-4">
-            <Link href="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">AutoNote</Link>
-            <button className="lg:hidden" onClick={toggleNav}>
-              {navOpen ? <AiOutlineClose size={24} className="text-gray-900 dark:text-gray-100" /> : <AiOutlineMenu size={24} className="text-gray-900 dark:text-gray-100" />}
-            </button>
-            <ul className={`lg:flex lg:items-center lg:justify-between ${navOpen ? 'block' : 'hidden'} lg:block`}>
-              <li className="lg:mr-6">
-                <Link href="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">Home</Link>
-              </li>
-              <li className="lg:mr-6">
-                <Link href="/features" className="text-lg font-bold text-gray-900 dark:text-gray-100">Features</Link>
-              </li>
-              <li className="lg:mr-6">
-                <Link href="/pricing" className="text-lg font-bold text-gray-900 dark:text-gray-100">Pricing</Link>
-              </li>
-              <li>
-                <button className="bg-gray-900 dark:bg-gray-100 text-gray-100 dark:text-gray-900 py-2 px-4 rounded" onClick={toggleDarkMode}>Toggle Dark Mode</button>
-              </li>
-            </ul>
+      <body>
+        <header className="flex justify-between items-center py-4">
+          <Link href="/">
+            <a>
+              <img src="/logo.png" alt="AutoNote" className="h-8" />
+            </a>
+          </Link>
+          <nav className={`flex flex-col ${navOpen ? 'block' : 'hidden'} md:flex md:flex-row md:items-center`}>
+            <Link href="/notes">
+              <a className="block md:inline-block py-2 md:py-0 md:mx-4">Notes</a>
+            </Link>
+            <Link href="/meetings">
+              <a className="block md:inline-block py-2 md:py-0 md:mx-4">Meetings</a>
+            </Link>
+            <Link href="/settings">
+              <a className="block md:inline-block py-2 md:py-0 md:mx-4">Settings</a>
+            </Link>
           </nav>
+          <div className="flex items-center">
+            <button onClick={toggleDarkMode} className="md:mx-4">
+              {darkMode ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m6 9h2.1M18 7.8H6l-1.6 2m0 5.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3m0 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM12 15v3m6-9v-3" />
+                </svg>
+              )}
+            </button>
+            <button onClick={toggleNav} className="md:hidden">
+              {navOpen ? (
+                <AiOutlineClose size={24} />
+              ) : (
+                <AiOutlineMenu size={24} />
+              )}
+            </button>
+          </div>
         </header>
-        <main className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-24">
+        <main className="container mx-auto p-4 md:p-6 lg:p-8">
           {children}
         </main>
+        <div className="fixed bottom-0 right-0 p-4">
+          {notifications.map((notification, index) => (
+            <div key={index} className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+              {notification}
+            </div>
+          ))}
+        </div>
       </body>
     </html>
   );

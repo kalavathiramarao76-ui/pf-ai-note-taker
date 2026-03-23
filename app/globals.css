@@ -178,6 +178,16 @@ meta {
 }
 
 meta {
+  property: "og:site_name";
+  content: "AutoNote";
+}
+
+meta {
+  property: "og:type";
+  content: "website";
+}
+
+meta {
   name: "twitter:card";
   content: "summary_large_image";
 }
@@ -187,116 +197,28 @@ meta {
   content: "AutoNote: AI-Powered Note Taker";
 }
 
-@media (max-width: 640px) {
-  .container {
-    @apply max-w-full px-2;
-  }
-
-  h1 {
-    @apply text-3xl;
-  }
-
-  h2 {
-    @apply text-2xl;
-  }
-
-  h3 {
-    @apply text-xl;
-  }
-
-  h4 {
-    @apply text-lg;
-  }
-
-  h5 {
-    @apply text-base;
-  }
-
-  h6 {
-    @apply text-sm;
-  }
-
-  button {
-    @apply py-1 px-2;
-  }
-
-  input, textarea, select {
-    @apply py-1 px-2;
-  }
+meta {
+  name: "twitter:description";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
 }
 
-@media (max-width: 480px) {
-  .container {
-    @apply max-w-full px-1;
-  }
-
-  h1 {
-    @apply text-2xl;
-  }
-
-  h2 {
-    @apply text-xl;
-  }
-
-  h3 {
-    @apply text-lg;
-  }
-
-  h4 {
-    @apply text-base;
-  }
-
-  h5 {
-    @apply text-sm;
-  }
-
-  h6 {
-    @apply text-xs;
-  }
-
-  button {
-    @apply py-0.5 px-1;
-  }
-
-  input, textarea, select {
-    @apply py-0.5 px-1;
-  }
+meta {
+  name: "twitter:image";
+  content: "/logo.png";
 }
 
-@media (min-width: 1280px) {
-  .container {
-    @apply max-w-7xl mx-auto px-12;
-  }
-
-  h1 {
-    @apply text-5xl;
-  }
-
-  h2 {
-    @apply text-4xl;
-  }
-
-  h3 {
-    @apply text-3xl;
-  }
-
-  h4 {
-    @apply text-2xl;
-  }
-
-  h5 {
-    @apply text-xl;
-  }
-
-  h6 {
-    @apply text-lg;
-  }
-
-  button {
-    @apply py-3 px-6;
-  }
-
-  input, textarea, select {
-    @apply py-3 px-6;
-  }
+meta {
+  name: "twitter:site";
+  content: "@autonote";
 }
+
+script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "AutoNote: AI-Powered Note Taker",
+  "description": "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.",
+  "image": "/logo.png",
+  "url": "https://autonote.com"
+}
+</script>
