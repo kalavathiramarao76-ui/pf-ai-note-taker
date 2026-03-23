@@ -144,17 +144,17 @@ img {
 }
 
 img[alt=""] {
-  alt: "Image description not available";
+  alt: "AI-Powered Note Taker Image";
 }
 
 meta {
   name: "description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Discover how our tool can help you boost productivity and streamline your workflow.";
 }
 
 meta {
   name: "keywords";
-  content: "AutoNote, AI-Powered, Note Taker, Note Taking, AI, Machine Learning, Productivity, Organization, Task Management, Study Notes, Meeting Notes, Journaling";
+  content: "AutoNote, AI-Powered, Note Taker, Note Taking, AI, Machine Learning, Productivity, Organization, Task Management, Study Notes, Meeting Notes, Journaling, Note Organization, AI Note Taker";
 }
 
 meta {
@@ -164,27 +164,17 @@ meta {
 
 meta {
   property: "og:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Learn how our tool can help you increase productivity and simplify your workflow.";
 }
 
 meta {
   property: "og:image";
-  content: "/logo.png";
+  content: "https://example.com/autonote-image.jpg";
 }
 
 meta {
-  property: "og:url";
-  content: "https://autonote.com";
-}
-
-meta {
-  property: "og:site_name";
-  content: "AutoNote";
-}
-
-meta {
-  property: "og:type";
-  content: "website";
+  property: "og:image:alt";
+  content: "AI-Powered Note Taker Image";
 }
 
 meta {
@@ -204,5 +194,10 @@ meta {
 
 meta {
   name: "twitter:image";
-  content: "/logo.png";
+  content: "https://example.com/autonote-image.jpg";
+}
+
+meta {
+  name: "twitter:image:alt";
+  content: "AI-Powered Note Taker Image";
 }

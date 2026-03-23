@@ -22,6 +22,8 @@ export default function DashboardPage() {
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('title');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [filterByTag, setFilterByTag] = useState('');
+  const [filterByDate, setFilterByDate] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -46,13 +48,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const filteredNotes = notes.filter((note) =>
-      note.title.toLowerCase().includes(searchQuery.toLowerCase())
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (filterByTag === '' || note.tags.includes(filterByTag)) &&
+      (filterByDate === '' || note.date.includes(filterByDate))
     );
     const filteredMeetings = meetings.filter((meeting) =>
-      meeting.title.toLowerCase().includes(searchQuery.toLowerCase())
+      meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (filterByTag === '' || meeting.tags.includes(filterByTag)) &&
+      (filterByDate === '' || meeting.date.includes(filterByDate))
     );
     const filteredTemplates = templates.filter((template) =>
-      template.title.toLowerCase().includes(searchQuery.toLowerCase())
+      template.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (filterByTag === '' || template.tags.includes(filterByTag)) &&
+      (filterByDate === '' || template.date.includes(filterByDate))
     );
 
     let sortedNotesList = filteredNotes;
@@ -86,118 +94,89 @@ export default function DashboardPage() {
     } else if (sortBy === 'date') {
       sortedNotesList = sortedNotesList.sort((a, b) =>
         sortOrder === 'asc'
-          ? new Date(a.createdAt) - new Date(b.createdAt)
-          : new Date(b.createdAt) - new Date(a.createdAt)
+          ? new Date(a.date) - new Date(b.date)
+          : new Date(b.date) - new Date(a.date)
       );
       sortedMeetingsList = sortedMeetingsList.sort((a, b) =>
         sortOrder === 'asc'
-          ? new Date(a.createdAt) - new Date(b.createdAt)
-          : new Date(b.createdAt) - new Date(a.createdAt)
+          ? new Date(a.date) - new Date(b.date)
+          : new Date(b.date) - new Date(a.date)
       );
       sortedTemplatesList = sortedTemplatesList.sort((a, b) =>
         sortOrder === 'asc'
-          ? new Date(a.createdAt) - new Date(b.createdAt)
-          : new Date(b.createdAt) - new Date(a.createdAt)
+          ? new Date(a.date) - new Date(b.date)
+          : new Date(b.date) - new Date(a.date)
       );
     }
 
     setSortedNotes(sortedNotesList);
     setSortedMeetings(sortedMeetingsList);
     setSortedTemplates(sortedTemplatesList);
-  }, [searchQuery, notes, meetings, templates, filterType, sortBy, sortOrder]);
+  }, [searchQuery, filterType, sortBy, sortOrder, filterByTag, filterByDate, notes, meetings, templates]);
 
-  const handleCreateNote = () => {
-    router.push('/notes/create');
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
   };
 
-  const handleCreateMeeting = () => {
-    router.push('/meetings/create');
+  const handleFilterByTag = (e) => {
+    setFilterByTag(e.target.value);
   };
 
-  const handleCreateTemplate = () => {
-    router.push('/templates/create');
+  const handleFilterByDate = (e) => {
+    setFilterByDate(e.target.value);
   };
 
-  const handleGenerateNotes = async (meetingId: string) => {
-    try {
-      const response = await client.post('/api/generate-notes', {
-        meetingId,
-      });
-      const generatedNote = response.data;
-      setGeneratedNotes((prevNotes) => [...prevNotes, generatedNote]);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleSortBy = (e) => {
+    setSortBy(e.target.value);
   };
 
-  const handleCreateFolder = () => {
-    const newFolder = {
-      id: Date.now(),
-      name: 'New Folder',
-      notes: [],
-    };
-    setFolders((prevFolders) => [...prevFolders, newFolder]);
-    localStorage.setItem('folders', JSON.stringify([...folders, newFolder]));
-  };
-
-  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilterType(event.target.value);
-  };
-
-  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(event.target.value);
-  };
-
-  const handleSortOrderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortOrder(event.target.value);
+  const handleSortOrder = (e) => {
+    setSortOrder(e.target.value);
   };
 
   return (
     <div>
-      <div>
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Search"
-        />
-        <select value={filterType} onChange={handleFilterChange}>
-          <option value="all">All</option>
-          <option value="notes">Notes</option>
-          <option value="meetings">Meetings</option>
-          <option value="templates">Templates</option>
-        </select>
-        <select value={sortBy} onChange={handleSortChange}>
-          <option value="title">Title</option>
-          <option value="date">Date</option>
-        </select>
-        <select value={sortOrder} onChange={handleSortOrderChange}>
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-      </div>
-      <div>
-        <button onClick={handleCreateNote}>
-          <AiOutlinePlus /> Create Note
-        </button>
-        <button onClick={handleCreateMeeting}>
-          <AiOutlinePlus /> Create Meeting
-        </button>
-        <button onClick={handleCreateTemplate}>
-          <AiOutlinePlus /> Create Template
-        </button>
-      </div>
-      <div>
-        {sortedNotes.map((note) => (
-          <NoteCard key={note.id} note={note} />
-        ))}
-        {sortedMeetings.map((meeting) => (
-          <MeetingCard key={meeting.id} meeting={meeting} />
-        ))}
-        {sortedTemplates.map((template) => (
-          <TemplateCard key={template.id} template={template} />
-        ))}
-      </div>
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={handleSearch}
+        placeholder="Search"
+      />
+      <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+        <option value="all">All</option>
+        <option value="notes">Notes</option>
+        <option value="meetings">Meetings</option>
+        <option value="templates">Templates</option>
+      </select>
+      <select value={sortBy} onChange={handleSortBy}>
+        <option value="title">Title</option>
+        <option value="date">Date</option>
+      </select>
+      <select value={sortOrder} onChange={handleSortOrder}>
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+      <input
+        type="text"
+        value={filterByTag}
+        onChange={handleFilterByTag}
+        placeholder="Filter by tag"
+      />
+      <input
+        type="date"
+        value={filterByDate}
+        onChange={handleFilterByDate}
+        placeholder="Filter by date"
+      />
+      {sortedNotes.map((note) => (
+        <NoteCard key={note.id} note={note} />
+      ))}
+      {sortedMeetings.map((meeting) => (
+        <MeetingCard key={meeting.id} meeting={meeting} />
+      ))}
+      {sortedTemplates.map((template) => (
+        <TemplateCard key={template.id} template={template} />
+      ))}
     </div>
   );
 }

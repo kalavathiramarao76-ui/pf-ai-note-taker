@@ -64,117 +64,135 @@ export default function RootLayout({ children }) {
       </Head>
       <body>
         <nav className="nav">
-          <div className="nav-brand">
+          <div className="nav-header">
             <Link href="/">
               <a>AutoNote</a>
             </Link>
-          </div>
-          <div className="nav-links">
-            <Link href="/notes">
-              <a>Notes</a>
-            </Link>
-            <Link href="/meetings">
-              <a>Meetings</a>
-            </Link>
-            <Link href="/settings">
-              <a>Settings</a>
-            </Link>
-          </div>
-          <div className="nav-actions">
             <button className="nav-toggle" onClick={toggleNav}>
               {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
             </button>
-            <button className="nav-dark-mode" onClick={toggleDarkMode}>
-              {darkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
+          </div>
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={navOpen ? { x: 0 } : { x: '-100%' }}
+            transition={{ duration: 0.5 }}
+            className="nav-menu"
+          >
+            <ul>
+              <li>
+                <Link href="/">
+                  <a>Home</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/notes">
+                  <a>Notes</a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/settings">
+                  <a>Settings</a>
+                </Link>
+              </li>
+            </ul>
+          </motion.div>
+          <div className="nav-notifications">
+            {notifications.map((notification, index) => (
+              <div key={index} className="notification">
+                {notification}
+              </div>
+            ))}
           </div>
         </nav>
-        <div className="nav-overlay" onClick={toggleNav} style={{ display: navOpen ? 'block' : 'none' }} />
-        <div className="notifications">
-          {notifications.map((notification, index) => (
-            <div key={index} className="notification">
-              {notification}
-            </div>
-          ))}
-        </div>
-        <main className="main">
+        <main>
           {children}
         </main>
+        <button className="dark-mode-toggle" onClick={toggleDarkMode}>
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+        <style jsx>
+          {`
+            .nav {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-start;
+              padding: 1rem;
+              background-color: #f9f9f9;
+              border-bottom: 1px solid #ddd;
+            }
+
+            .nav-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              width: 100%;
+            }
+
+            .nav-toggle {
+              background-color: transparent;
+              border: none;
+              cursor: pointer;
+            }
+
+            .nav-menu {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-start;
+              padding: 1rem;
+              background-color: #f9f9f9;
+              width: 100%;
+            }
+
+            .nav-menu ul {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+
+            .nav-menu li {
+              margin-bottom: 1rem;
+            }
+
+            .nav-menu a {
+              text-decoration: none;
+              color: #333;
+            }
+
+            .nav-notifications {
+              position: fixed;
+              top: 1rem;
+              right: 1rem;
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+            }
+
+            .notification {
+              background-color: #f9f9f9;
+              border: 1px solid #ddd;
+              padding: 1rem;
+              margin-bottom: 1rem;
+              width: 200px;
+              text-align: center;
+            }
+
+            .dark-mode-toggle {
+              position: fixed;
+              bottom: 1rem;
+              right: 1rem;
+              background-color: #333;
+              color: #fff;
+              border: none;
+              padding: 1rem;
+              cursor: pointer;
+            }
+
+            .dark-mode-toggle:hover {
+              background-color: #444;
+            }
+          `}
+        </style>
       </body>
-      <style jsx>
-        {`
-          .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
-          }
-
-          .nav-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-          }
-
-          .nav-links {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-
-          .nav-links a {
-            margin-right: 1rem;
-          }
-
-          .nav-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-
-          .nav-toggle {
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-          }
-
-          .nav-dark-mode {
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-          }
-
-          .nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-          }
-
-          .notifications {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1;
-          }
-
-          .notification {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
-
-          .main {
-            padding: 1rem;
-          }
-        `}
-      </style>
     </html>
   );
 }
