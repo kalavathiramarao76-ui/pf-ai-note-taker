@@ -6,6 +6,8 @@ import Link from 'next/link';
 import NoteCard from '../components/NoteCard';
 import MeetingCard from '../components/MeetingCard';
 import TemplateCard from '../components/TemplateCard';
+import { Editor, EditorState, ContentState } from 'draft-js';
+import 'draft-js/dist/Draft.css';
 
 export default function DashboardPage() {
   const [notes, setNotes] = useState([]);
@@ -32,6 +34,9 @@ export default function DashboardPage() {
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
   const [isGeneratingNote, setIsGeneratingNote] = useState(false);
+  const [editorState, setEditorState] = useState(
+    EditorState.createWithContent(ContentState.createFromText(''))
+  );
 
   useEffect(() => {
     const storedNotes = localStorage.getItem('notes');
@@ -74,92 +79,61 @@ export default function DashboardPage() {
     setSortedNotes(filteredNotes);
     setSortedMeetings(filteredMeetings);
     setSortedTemplates(filteredTemplates);
-  }, [notes, meetings, templates, searchQuery, filterByTags, filterByDate, priority, deadline]);
+  }, [
+    notes,
+    searchQuery,
+    filterByTags,
+    filterByDate,
+    priority,
+    deadline,
+    meetings,
+    templates,
+  ]);
 
-  const generateNote = async () => {
-    setIsGeneratingNote(true);
-    const response = await client.post('/generate-note', {
-      title: noteTitle,
-      content: noteContent,
-    });
-    setGeneratedNotes([response.data]);
-    setIsGeneratingNote(false);
+  const handleEditNote = (note) => {
+    setEditingNote(note);
+    setEditorState(
+      EditorState.createWithContent(ContentState.createFromText(note.content))
+    );
   };
 
-  const getAiSuggestions = async () => {
-    const response = await client.post('/get-ai-suggestions', {
-      title: noteTitle,
-      content: noteContent,
-    });
-    setAiSuggestions(response.data);
+  const handleSaveNote = () => {
+    const newNotes = notes.map((note) =>
+      note.id === editingNote.id
+        ? { ...note, content: editorState.getCurrentContent().getPlainText() }
+        : note
+    );
+    setNotes(newNotes);
+    localStorage.setItem('notes', JSON.stringify(newNotes));
+    setEditingNote(null);
   };
-
-  const getAutocompleteSuggestions = async () => {
-    const response = await client.post('/get-autocomplete-suggestions', {
-      title: noteTitle,
-      content: noteContent,
-    });
-    setAutocompleteSuggestions(response.data);
-  };
-
-  useEffect(() => {
-    if (noteTitle || noteContent) {
-      getAiSuggestions();
-      getAutocompleteSuggestions();
-    }
-  }, [noteTitle, noteContent]);
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
-      <input
-        type="text"
-        value={noteTitle}
-        onChange={(e) => setNoteTitle(e.target.value)}
-        placeholder="Note title"
-      />
-      <textarea
-        value={noteContent}
-        onChange={(e) => setNoteContent(e.target.value)}
-        placeholder="Note content"
-      />
-      <button onClick={generateNote} disabled={isGeneratingNote}>
-        Generate Note
-      </button>
-      <ul>
-        {aiSuggestions.map((suggestion) => (
-          <li key={suggestion}>{suggestion}</li>
-        ))}
-      </ul>
-      <ul>
-        {autocompleteSuggestions.map((suggestion) => (
-          <li key={suggestion}>{suggestion}</li>
-        ))}
-      </ul>
-      <h2>Notes</h2>
-      <ul>
-        {sortedNotes.map((note) => (
-          <li key={note.id}>
-            <NoteCard note={note} />
-          </li>
-        ))}
-      </ul>
-      <h2>Meetings</h2>
-      <ul>
-        {sortedMeetings.map((meeting) => (
-          <li key={meeting.id}>
-            <MeetingCard meeting={meeting} />
-          </li>
-        ))}
-      </ul>
-      <h2>Templates</h2>
-      <ul>
-        {sortedTemplates.map((template) => (
-          <li key={template.id}>
-            <TemplateCard template={template} />
-          </li>
-        ))}
-      </ul>
+      {editingNote && (
+        <div>
+          <input
+            type="text"
+            value={editingNote.title}
+            onChange={(e) => setNoteTitle(e.target.value)}
+          />
+          <Editor editorState={editorState} onChange={setEditorState} />
+          <button onClick={handleSaveNote}>Save Note</button>
+        </div>
+      )}
+      {sortedNotes.map((note) => (
+        <NoteCard
+          key={note.id}
+          note={note}
+          onEdit={() => handleEditNote(note)}
+        />
+      ))}
+      {sortedMeetings.map((meeting) => (
+        <MeetingCard key={meeting.id} meeting={meeting} />
+      ))}
+      {sortedTemplates.map((template) => (
+        <TemplateCard key={template.id} template={template} />
+      ))}
     </div>
   );
 }

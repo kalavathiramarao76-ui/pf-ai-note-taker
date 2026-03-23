@@ -8,6 +8,11 @@ import { motion } from 'framer-motion';
 const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredLinks, setFilteredLinks] = useState([
+    { href: '/', text: 'Home' },
+    { href: '/about', text: 'About' },
+    { href: '/contact', text: 'Contact' },
+  ]);
   const router = useRouter();
 
   const toggleNav = () => {
@@ -22,10 +27,15 @@ const Nav = memo(() => {
 
   const handleSearch = (event) => {
     event.preventDefault();
-    // Add logic to handle search query
+    const filtered = [
+      { href: '/', text: 'Home' },
+      { href: '/about', text: 'About' },
+      { href: '/contact', text: 'Contact' },
+    ].filter((link) =>
+      link.text.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredLinks(filtered);
     console.log('Search query:', searchQuery);
-    // For now, just log the search query
-    // You can replace this with your actual search logic
   };
 
   return (
@@ -44,7 +54,7 @@ const Nav = memo(() => {
         role="menu"
       >
         <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <form onSubmit={handleSearch} aria-label="Search form">
+          <form onSubmit={handleSearch} aria-label="Search form" className="search-form">
             <input
               type="search"
               value={searchQuery}
@@ -52,20 +62,17 @@ const Nav = memo(() => {
               placeholder="Search notes and meetings"
               aria-label="Search notes and meetings"
               aria-describedby="search-description"
+              className="search-input"
             />
-            <button type="submit" aria-label="Submit search query">Search</button>
+            <button type="submit" aria-label="Submit search query" className="search-button">Search</button>
             <p id="search-description" className="sr-only">Search notes and meetings by keyword or phrase.</p>
           </form>
         </li>
-        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <Link href="/" aria-label="Home page">Home</Link>
-        </li>
-        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <Link href="/about" aria-label="About page">About</Link>
-        </li>
-        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <Link href="/contact" aria-label="Contact page">Contact</Link>
-        </li>
+        {filteredLinks.map((link) => (
+          <li key={link.href} role="menuitem" tabIndex={navOpen ? 0 : -1}>
+            <Link href={link.href} aria-label={link.text}>{link.text}</Link>
+          </li>
+        ))}
       </ul>
       {navOpen && (
         <div
@@ -93,35 +100,15 @@ export default function RootLayout({ children }) {
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
-    localStorage.setItem('darkMode', String(!darkMode));
-  };
-
-  const addNotification = (message) => {
-    setNotifications((prevNotifications) => [...prevNotifications, message]);
+    localStorage.setItem('darkMode', darkMode ? 'false' : 'true');
   };
 
   return (
-    <html lang="en" className={darkMode ? 'dark' : ''}>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-        <meta name="description" content="AutoNote: AI-Powered Note Taker" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <html>
+      <Head />
       <body>
         <Nav />
-        <main className="main">{children}</main>
-        <button
-          className="dark-mode-toggle"
-          onClick={toggleDarkMode}
-          aria-label="Toggle dark mode"
-        >
-          {darkMode ? 'Light mode' : 'Dark mode'}
-        </button>
-        <ul className="notifications">
-          {notifications.map((notification, index) => (
-            <li key={index}>{notification}</li>
-          ))}
-        </ul>
+        {children}
       </body>
     </html>
   );

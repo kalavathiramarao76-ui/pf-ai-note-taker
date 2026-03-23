@@ -130,6 +130,14 @@ use client;
     @apply bg-black text-yellow-400;
   }
 
+  .high-contrast-mode button {
+    @apply bg-yellow-400 text-black;
+  }
+
+  .high-contrast-mode a {
+    @apply text-yellow-400;
+  }
+
   .sr-only {
     @apply absolute -inset-y-1 -inset-x-1 p-4 w-full h-full overflow-hidden;
     clip: rect(0 0 0 0);
@@ -172,6 +180,16 @@ select::after {
   @apply screen-reader-only;
 }
 
+a::after {
+  content: "Link to external resource";
+  @apply screen-reader-only;
+}
+
+label::after {
+  content: "Label for form field";
+  @apply screen-reader-only;
+}
+
 meta {
   name: "title";
   content: "AutoNote: AI-Powered Note Taker - Boost Productivity with AI";
@@ -179,65 +197,5 @@ meta {
 
 meta {
   name: "description";
-  content: "Unlock the power of AI-powered note taking with AutoNote. Organize your thoughts, ideas, and tasks with our intuitive and user-friendly interface. Discover how AutoNote can help you streamline your workflow and increase productivity.";
-}
-
-meta {
-  name: "keywords";
-  content: "AI-powered note taking, productivity, organization, task management, note taking app, AutoNote";
-}
-
-meta {
-  name: "robots";
-  content: "index, follow";
-}
-
-meta {
-  name: "author";
-  content: "AutoNote Team";
-}
-
-meta {
-  name: "viewport";
-  content: "width=device-width, initial-scale=1.0";
-}
-
-meta {
-  property: "og:title";
-  content: "AutoNote: AI-Powered Note Taker - Boost Productivity with AI";
-}
-
-meta {
-  property: "og:description";
-  content: "Unlock the power of AI-powered note taking with AutoNote. Organize your thoughts, ideas, and tasks with our intuitive and user-friendly interface. Discover how AutoNote can help you streamline your workflow and increase productivity.";
-}
-
-meta {
-  property: "og:image";
-  content: "https://example.com/autonote-image.jpg";
-}
-
-meta {
-  property: "og:url";
-  content: "https://example.com/autonote";
-}
-
-meta {
-  property: "twitter:card";
-  content: "summary";
-}
-
-meta {
-  property: "twitter:title";
-  content: "AutoNote: AI-Powered Note Taker - Boost Productivity with AI";
-}
-
-meta {
-  property: "twitter:description";
-  content: "Unlock the power of AI-powered note taking with AutoNote. Organize your thoughts, ideas, and tasks with our intuitive and user-friendly interface. Discover how AutoNote can help you streamline your workflow and increase productivity.";
-}
-
-meta {
-  property: "twitter:image";
-  content: "https://example.com/autonote-image.jpg";
+  content: "Unlock the power of AI-powered note taking with AutoNote. Organize your thoughts, ideas, and tasks with our intuitive interface and advanced AI capabilities.";
 }
