@@ -1,0 +1,32 @@
+{
+  "name": "autonote",
+  "version": "1.0.0",
+  "description": "AutoNote: AI-Powered Note Taker",
+  "main": "next.config.mjs",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "keywords": [
+    "note taking app",
+    "ai note taker",
+    "meeting notes",
+    "productivity tools",
+    "study notes"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "next": "14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "typescript": "^4.9.4"
+  }
+}
