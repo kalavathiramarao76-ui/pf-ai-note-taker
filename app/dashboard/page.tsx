@@ -69,104 +69,142 @@ export default function DashboardPage() {
       (filterByDate === '' || template.date.includes(filterByDate))
     );
 
-    let sortedNotesList = filteredNotes;
-    let sortedMeetingsList = filteredMeetings;
-    let sortedTemplatesList = filteredTemplates;
-
-    if (filterType === 'notes') {
-      sortedNotesList = filteredNotes.sort((a, b) => {
-        if (sortBy === 'title') {
-          if (sortOrder === 'asc') {
-            return a.title.localeCompare(b.title);
-          } else {
-            return b.title.localeCompare(a.title);
-          }
-        } else if (sortBy === 'date') {
-          if (sortOrder === 'asc') {
-            return new Date(a.date) - new Date(b.date);
-          } else {
-            return new Date(b.date) - new Date(a.date);
-          }
-        } else if (sortBy === 'priority') {
-          if (sortOrder === 'asc') {
-            return a.priority.localeCompare(b.priority);
-          } else {
-            return b.priority.localeCompare(a.priority);
-          }
+    const sortedFilteredNotes = filteredNotes.sort((a, b) => {
+      if (sortBy === 'title') {
+        if (sortOrder === 'asc') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
         }
-      });
-    } else if (filterType === 'meetings') {
-      sortedMeetingsList = filteredMeetings.sort((a, b) => {
-        if (sortBy === 'title') {
-          if (sortOrder === 'asc') {
-            return a.title.localeCompare(b.title);
-          } else {
-            return b.title.localeCompare(a.title);
-          }
-        } else if (sortBy === 'date') {
-          if (sortOrder === 'asc') {
-            return new Date(a.date) - new Date(b.date);
-          } else {
-            return new Date(b.date) - new Date(a.date);
-          }
+      } else if (sortBy === 'date') {
+        if (sortOrder === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
         }
-      });
-    } else if (filterType === 'templates') {
-      sortedTemplatesList = filteredTemplates.sort((a, b) => {
-        if (sortBy === 'title') {
-          if (sortOrder === 'asc') {
-            return a.title.localeCompare(b.title);
-          } else {
-            return b.title.localeCompare(a.title);
-          }
-        } else if (sortBy === 'date') {
-          if (sortOrder === 'asc') {
-            return new Date(a.date) - new Date(b.date);
-          } else {
-            return new Date(b.date) - new Date(a.date);
-          }
+      } else if (sortBy === 'priority') {
+        if (sortOrder === 'asc') {
+          return a.priority.localeCompare(b.priority);
+        } else {
+          return b.priority.localeCompare(a.priority);
         }
-      });
-    }
+      }
+      return 0;
+    });
 
-    setSortedNotes(sortedNotesList);
-    setSortedMeetings(sortedMeetingsList);
-    setSortedTemplates(sortedTemplatesList);
-  }, [searchQuery, filterByTags, filterByDate, filterType, sortBy, sortOrder, priority, deadline]);
+    const sortedFilteredMeetings = filteredMeetings.sort((a, b) => {
+      if (sortBy === 'title') {
+        if (sortOrder === 'asc') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
+        }
+      } else if (sortBy === 'date') {
+        if (sortOrder === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      }
+      return 0;
+    });
 
-  const handlePriorityChange = (e) => {
-    setPriority(e.target.value);
-  };
+    const sortedFilteredTemplates = filteredTemplates.sort((a, b) => {
+      if (sortBy === 'title') {
+        if (sortOrder === 'asc') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
+        }
+      } else if (sortBy === 'date') {
+        if (sortOrder === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      }
+      return 0;
+    });
 
-  const handleDeadlineChange = (e) => {
-    setDeadline(e.target.value);
-  };
+    setSortedNotes(sortedFilteredNotes);
+    setSortedMeetings(sortedFilteredMeetings);
+    setSortedTemplates(sortedFilteredTemplates);
+  }, [notes, meetings, templates, searchQuery, filterByTags, filterByDate, priority, deadline, sortBy, sortOrder]);
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      <div>
-        <label>Priority:</label>
-        <select value={priority} onChange={handlePriorityChange}>
-          <option value="all">All</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-      </div>
-      <div>
-        <label>Deadline:</label>
-        <input type="date" value={deadline} onChange={handleDeadlineChange} />
-      </div>
-      {sortedNotes.map((note) => (
-        <NoteCard key={note.id} note={note} />
-      ))}
-      {sortedMeetings.map((meeting) => (
-        <MeetingCard key={meeting.id} meeting={meeting} />
-      ))}
-      {sortedTemplates.map((template) => (
-        <TemplateCard key={template.id} template={template} />
-      ))}
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Search"
+      />
+      <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+        <option value="all">All</option>
+        <option value="notes">Notes</option>
+        <option value="meetings">Meetings</option>
+        <option value="templates">Templates</option>
+      </select>
+      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+        <option value="title">Title</option>
+        <option value="date">Date</option>
+        <option value="priority">Priority</option>
+      </select>
+      <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+      <input
+        type="text"
+        value={filterByDate}
+        onChange={(e) => setFilterByDate(e.target.value)}
+        placeholder="Filter by date"
+      />
+      <input
+        type="text"
+        value={priority}
+        onChange={(e) => setPriority(e.target.value)}
+        placeholder="Filter by priority"
+      />
+      <input
+        type="text"
+        value={deadline}
+        onChange={(e) => setDeadline(e.target.value)}
+        placeholder="Filter by deadline"
+      />
+      <button onClick={() => setFilterByTags([...filterByTags, 'new-tag'])}>Add tag filter</button>
+      <ul>
+        {filterByTags.map((tag, index) => (
+          <li key={index}>
+            {tag}
+            <button onClick={() => setFilterByTags(filterByTags.filter((t) => t !== tag))}>Remove</button>
+          </li>
+        ))}
+      </ul>
+      <h2>Notes</h2>
+      <ul>
+        {sortedNotes.map((note) => (
+          <li key={note.id}>
+            <NoteCard note={note} />
+          </li>
+        ))}
+      </ul>
+      <h2>Meetings</h2>
+      <ul>
+        {sortedMeetings.map((meeting) => (
+          <li key={meeting.id}>
+            <MeetingCard meeting={meeting} />
+          </li>
+        ))}
+      </ul>
+      <h2>Templates</h2>
+      <ul>
+        {sortedTemplates.map((template) => (
+          <li key={template.id}>
+            <TemplateCard template={template} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

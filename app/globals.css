@@ -173,55 +173,31 @@ select::after {
 }
 
 meta {
+  name: "title";
+  content: "AutoNote: AI-Powered Note Taker - Boost Productivity with AI";
+}
+
+meta {
   name: "description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Discover how our tool can help you boost productivity";
+  content: "Unlock the power of AI-powered note taking with AutoNote. Organize your thoughts, ideas, and tasks with our intuitive interface and discover how our tool can help you boost productivity and achieve your goals.";
 }
 
-/* Added accessibility improvements */
-button:focus {
-  @apply outline-yellow-400;
+meta {
+  name: "keywords";
+  content: "AI-powered note taking, note taker, productivity tool, organization, task management, AutoNote";
 }
 
-input:focus {
-  @apply outline-yellow-400;
+meta {
+  name: "robots";
+  content: "index, follow";
 }
 
-select:focus {
-  @apply outline-yellow-400;
+meta {
+  name: "author";
+  content: "AutoNote Team";
 }
 
-.high-contrast-mode button {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode input {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode select {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode a {
-  @apply text-yellow-400;
-}
-
-.high-contrast-mode .button {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode .button-secondary {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode .card {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode .card-header {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode .card-body {
-  @apply bg-yellow-400 text-black;
+meta {
+  name: "viewport";
+  content: "width=device-width, initial-scale=1.0";
 }

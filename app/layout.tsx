@@ -29,7 +29,7 @@ const Nav = memo(() => {
   };
 
   return (
-    <nav className="nav" aria-label="Main navigation" onKeyDown={handleKeyDown}>
+    <nav className="nav" aria-label="Main navigation" onKeyDown={handleKeyDown} role="navigation">
       <button
         className="nav-toggle"
         onClick={toggleNav}
@@ -44,25 +44,27 @@ const Nav = memo(() => {
         role="menu"
       >
         <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <form onSubmit={handleSearch}>
+          <form onSubmit={handleSearch} aria-label="Search form">
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search notes and meetings"
               aria-label="Search notes and meetings"
+              aria-describedby="search-description"
             />
-            <button type="submit">Search</button>
+            <button type="submit" aria-label="Submit search query">Search</button>
+            <p id="search-description" className="sr-only">Search notes and meetings by keyword or phrase.</p>
           </form>
         </li>
         <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <Link href="/">Home</Link>
+          <Link href="/" aria-label="Home page">Home</Link>
         </li>
         <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <Link href="/about">About</Link>
+          <Link href="/about" aria-label="About page">About</Link>
         </li>
         <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <Link href="/contact">Contact</Link>
+          <Link href="/contact" aria-label="Contact page">Contact</Link>
         </li>
       </ul>
     </nav>
@@ -99,13 +101,7 @@ export default function RootLayout({ children }) {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>AutoNote: AI-Powered Note Taker</title>
-        <meta name="description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
-        <meta name="keywords" content="note taking app, ai note taker, meeting notes, productivity tools, study notes" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <meta name="theme-color" content="#000" />
-        <meta property="og:title" content="AutoNote: AI-Powered Note Taker" />
-        <meta property="og:description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
+        <meta name="description" content="AutoNote is an AI-powered note taker that helps you take notes and stay organized." />
       </Head>
       <body>
         <Nav />
