@@ -187,42 +187,116 @@ meta {
   content: "AutoNote: AI-Powered Note Taker";
 }
 
-@layer base {
-  @media (max-width: 768px) {
-    h1 {
-      @apply text-3xl;
-    }
+@media (max-width: 640px) {
+  .container {
+    @apply max-w-full px-2;
+  }
 
-    h2 {
-      @apply text-2xl;
-    }
+  h1 {
+    @apply text-3xl;
+  }
 
-    h3 {
-      @apply text-xl;
-    }
+  h2 {
+    @apply text-2xl;
+  }
 
-    h4 {
-      @apply text-lg;
-    }
+  h3 {
+    @apply text-xl;
+  }
 
-    h5 {
-      @apply text-base;
-    }
+  h4 {
+    @apply text-lg;
+  }
 
-    h6 {
-      @apply text-sm;
-    }
+  h5 {
+    @apply text-base;
+  }
 
-    .container {
-      @apply max-w-full mx-auto px-2;
-    }
+  h6 {
+    @apply text-sm;
+  }
 
-    .button {
-      @apply py-1.5 px-3;
-    }
+  button {
+    @apply py-1 px-2;
+  }
 
-    .button-secondary {
-      @apply py-1.5 px-3;
-    }
+  input, textarea, select {
+    @apply py-1 px-2;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    @apply max-w-full px-1;
+  }
+
+  h1 {
+    @apply text-2xl;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply text-lg;
+  }
+
+  h4 {
+    @apply text-base;
+  }
+
+  h5 {
+    @apply text-sm;
+  }
+
+  h6 {
+    @apply text-xs;
+  }
+
+  button {
+    @apply py-0.5 px-1;
+  }
+
+  input, textarea, select {
+    @apply py-0.5 px-1;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    @apply max-w-7xl mx-auto px-12;
+  }
+
+  h1 {
+    @apply text-5xl;
+  }
+
+  h2 {
+    @apply text-4xl;
+  }
+
+  h3 {
+    @apply text-3xl;
+  }
+
+  h4 {
+    @apply text-2xl;
+  }
+
+  h5 {
+    @apply text-xl;
+  }
+
+  h6 {
+    @apply text-lg;
+  }
+
+  button {
+    @apply py-3 px-6;
+  }
+
+  input, textarea, select {
+    @apply py-3 px-6;
   }
 }

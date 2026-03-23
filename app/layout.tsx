@@ -55,29 +55,35 @@ export default function RootLayout({ children }) {
         <meta property="fb:admins" content="YOUR_ADMIN_ID" />
         <meta name="pinterest" content="nopin" />
         <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
+        <meta name="twitter:label1" content="Productivity" />
+        <meta name="twitter:label2" content="Note Taking" />
+        <meta name="twitter:label3" content="AI" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:locale:alternate" content="fr_FR" />
+        <meta property="fb:pages" content="YOUR_PAGE_ID" />
+        <meta name="msapplication-TileColor" content="#000" />
+        <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
       </Head>
       <body className="font-sans text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900">
         <header className="fixed top-0 left-0 right-0 z-10 bg-gray-100 dark:bg-gray-900 shadow-md">
           <nav className="container mx-auto flex justify-between items-center py-4">
-            <Link href="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              AutoNote
-            </Link>
-            <button
-              className="lg:hidden flex justify-center items-center w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full"
-              onClick={toggleNav}
-            >
-              {navOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
+            <Link href="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">AutoNote</Link>
+            <button className="lg:hidden" onClick={toggleNav}>
+              {navOpen ? <AiOutlineClose size={24} className="text-gray-900 dark:text-gray-100" /> : <AiOutlineMenu size={24} className="text-gray-900 dark:text-gray-100" />}
             </button>
-            <ul className={`lg:flex hidden justify-end items-center ${navOpen ? 'block' : 'hidden'} lg:block`}>
-              <li className="lg:ml-6 ml-0 lg:my-0 my-4">
-                <Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  About
-                </Link>
+            <ul className={`lg:flex lg:items-center lg:justify-between ${navOpen ? 'block' : 'hidden'} lg:block`}>
+              <li className="lg:mr-6">
+                <Link href="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">Home</Link>
               </li>
-              <li className="lg:ml-6 ml-0 lg:my-0 my-4">
-                <Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                  Contact
-                </Link>
+              <li className="lg:mr-6">
+                <Link href="/features" className="text-lg font-bold text-gray-900 dark:text-gray-100">Features</Link>
+              </li>
+              <li className="lg:mr-6">
+                <Link href="/pricing" className="text-lg font-bold text-gray-900 dark:text-gray-100">Pricing</Link>
+              </li>
+              <li>
+                <button className="bg-gray-900 dark:bg-gray-100 text-gray-100 dark:text-gray-900 py-2 px-4 rounded" onClick={toggleDarkMode}>Toggle Dark Mode</button>
               </li>
             </ul>
           </nav>
