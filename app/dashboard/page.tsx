@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [meetings, setMeetings] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [generatedNotes, setGeneratedNotes] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,6 +41,18 @@ export default function DashboardPage() {
 
   const handleCreateTemplate = () => {
     router.push('/templates/create');
+  };
+
+  const handleGenerateNotes = async (meetingId: string) => {
+    try {
+      const response = await client.post('/api/generate-notes', {
+        meetingId,
+      });
+      const generatedNote = response.data;
+      setGeneratedNotes((prevNotes) => [...prevNotes, generatedNote]);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const filteredNotes = notes.filter((note) =>
@@ -89,19 +102,32 @@ export default function DashboardPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search notes, meetings, and templates"
-          className="w-full p-2 pl-10 text-sm text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="w-full p-2 pl-10 text-sm text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
+      </div>
+      <h2 className="text-2xl font-bold mb-4">Meetings</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        {filteredMeetings.map((meeting) => (
+          <MeetingCard key={meeting.id} meeting={meeting}>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => handleGenerateNotes(meeting.id)}
+            >
+              Generate Notes
+            </button>
+          </MeetingCard>
+        ))}
+      </div>
+      <h2 className="text-2xl font-bold mb-4">Generated Notes</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        {generatedNotes.map((note) => (
+          <NoteCard key={note.id} note={note} />
+        ))}
       </div>
       <h2 className="text-2xl font-bold mb-4">Notes</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         {filteredNotes.map((note) => (
           <NoteCard key={note.id} note={note} />
-        ))}
-      </div>
-      <h2 className="text-2xl font-bold mb-4">Meetings</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        {filteredMeetings.map((meeting) => (
-          <MeetingCard key={meeting.id} meeting={meeting} />
         ))}
       </div>
       <h2 className="text-2xl font-bold mb-4">Templates</h2>

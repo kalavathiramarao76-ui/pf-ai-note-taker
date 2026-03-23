@@ -59,19 +59,36 @@ export default function RootLayout({ children }) {
             >
               {navOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
             </button>
-            <div className={`lg:w-1/2 w-full lg:static absolute top-16 left-0 right-0 lg:px-0 px-4 ${navOpen ? 'block' : 'hidden'} lg:block`}>
-              <ul className="lg:flex lg:items-center lg:justify-end flex flex-col lg:space-x-6 space-y-4 lg:space-y-0">
-                <li className="lg:ml-0 ml-4">
+            <ul className={`lg:flex hidden justify-end items-center ${navOpen ? 'block' : 'hidden'} lg:block`}>
+              <li className="lg:ml-6 ml-0 lg:my-0 my-4">
+                <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                  Notes
+                </Link>
+              </li>
+              <li className="lg:ml-6 ml-0 lg:my-0 my-4">
+                <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                  Meetings
+                </Link>
+              </li>
+              <li className="lg:ml-6 ml-0 lg:my-0 my-4">
+                <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
+                  Settings
+                </Link>
+              </li>
+            </ul>
+            <div className={`lg:hidden absolute top-16 left-0 right-0 ${navOpen ? 'block' : 'hidden'}`}>
+              <ul>
+                <li className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
                   <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
                     Notes
                   </Link>
                 </li>
-                <li className="lg:ml-0 ml-4">
+                <li className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
                   <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
                     Meetings
                   </Link>
                 </li>
-                <li className="lg:ml-0 ml-4">
+                <li className="px-4 py-2">
                   <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
                     Settings
                   </Link>
@@ -80,28 +97,7 @@ export default function RootLayout({ children }) {
             </div>
           </nav>
         </header>
-        <main className="pt-16 lg:pl-64">
-          {children}
-        </main>
-        <aside className={`lg:w-64 lg:fixed lg:top-16 lg:left-0 lg:bottom-0 lg:overflow-y-auto lg:py-4 lg:px-4 lg:bg-gray-100 dark:lg:bg-gray-900 lg:block ${navOpen ? 'block' : 'hidden'} lg:hidden`}>
-          <ul className="flex flex-col space-y-4">
-            <li>
-              <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                Notes
-              </Link>
-            </li>
-            <li>
-              <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                Meetings
-              </Link>
-            </li>
-            <li>
-              <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                Settings
-              </Link>
-            </li>
-          </ul>
-        </aside>
+        {children}
       </body>
     </html>
   );

@@ -133,4 +133,66 @@ use client;
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
+
+  .image-description {
+    @apply sr-only;
+  }
+}
+
+img {
+  @apply max-w-full h-auto;
+}
+
+img[alt=""] {
+  alt: "Image description not available";
+}
+
+meta {
+  name: "description";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
+}
+
+meta {
+  name: "keywords";
+  content: "AutoNote, AI-Powered, Note Taker, Note Taking, AI, Machine Learning";
+}
+
+meta {
+  property: "og:title";
+  content: "AutoNote: AI-Powered Note Taker";
+}
+
+meta {
+  property: "og:description";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
+}
+
+meta {
+  property: "og:image";
+  content: "/logo.png";
+}
+
+meta {
+  property: "og:url";
+  content: "https://autonote.com";
+}
+
+meta {
+  name: "twitter:card";
+  content: "summary_large_image";
+}
+
+meta {
+  name: "twitter:title";
+  content: "AutoNote: AI-Powered Note Taker";
+}
+
+meta {
+  name: "twitter:description";
+  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
+}
+
+meta {
+  name: "twitter:image";
+  content: "/logo.png";
 }
