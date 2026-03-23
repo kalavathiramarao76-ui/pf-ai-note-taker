@@ -179,7 +179,7 @@ meta {
 
 meta {
   name: "keywords";
-  content: "AutoNote, AI-Powered Note Taker, Note Taking, Productivity, Organization, Task Management, AI Technology";
+  content: "AI-powered note taking, note taker, productivity tool, organization, task management, workflow optimization";
 }
 
 meta {
@@ -195,4 +195,44 @@ meta {
 meta {
   name: "viewport";
   content: "width=device-width, initial-scale=1.0";
+}
+
+meta {
+  property: "og:title";
+  content: "AutoNote: AI-Powered Note Taker";
+}
+
+meta {
+  property: "og:description";
+  content: "Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
+}
+
+meta {
+  property: "og:image";
+  content: "/images/autonote-logo.png";
+}
+
+meta {
+  property: "og:url";
+  content: "https://autonote.com";
+}
+
+meta {
+  property: "twitter:card";
+  content: "summary";
+}
+
+meta {
+  property: "twitter:title";
+  content: "AutoNote: AI-Powered Note Taker";
+}
+
+meta {
+  property: "twitter:description";
+  content: "Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface.";
+}
+
+meta {
+  property: "twitter:image";
+  content: "/images/autonote-logo.png";
 }

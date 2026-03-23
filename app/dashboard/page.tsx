@@ -22,7 +22,7 @@ export default function DashboardPage() {
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('title');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [filterByTag, setFilterByTag] = useState('');
+  const [filterByTags, setFilterByTags] = useState([]);
   const [filterByDate, setFilterByDate] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
@@ -51,17 +51,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const filteredNotes = notes.filter((note) =>
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (filterByTag === '' || note.tags.includes(filterByTag)) &&
+      filterByTags.every((tag) => note.tags.includes(tag)) &&
       (filterByDate === '' || note.date.includes(filterByDate))
     );
     const filteredMeetings = meetings.filter((meeting) =>
       meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (filterByTag === '' || meeting.tags.includes(filterByTag)) &&
+      filterByTags.every((tag) => meeting.tags.includes(tag)) &&
       (filterByDate === '' || meeting.date.includes(filterByDate))
     );
     const filteredTemplates = templates.filter((template) =>
       template.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (filterByTag === '' || template.tags.includes(filterByTag)) &&
+      filterByTags.every((tag) => template.tags.includes(tag)) &&
       (filterByDate === '' || template.date.includes(filterByDate))
     );
 
@@ -70,55 +70,27 @@ export default function DashboardPage() {
     let sortedTemplatesList = filteredTemplates;
 
     if (filterType === 'notes') {
-      sortedNotesList = filteredNotes;
+      sortedNotesList = sortedNotesList.sort((a, b) => {
+        if (sortBy === 'title') {
+          return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+        } else if (sortBy === 'date') {
+          return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+        }
+      });
     } else if (filterType === 'meetings') {
-      sortedMeetingsList = filteredMeetings;
+      sortedMeetingsList = sortedMeetingsList.sort((a, b) => {
+        if (sortBy === 'title') {
+          return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+        } else if (sortBy === 'date') {
+          return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+        }
+      });
     } else if (filterType === 'templates') {
-      sortedTemplatesList = filteredTemplates;
-    }
-
-    if (sortBy === 'title') {
-      sortedNotesList = sortedNotesList.sort((a, b) => {
-        if (sortOrder === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      });
-      sortedMeetingsList = sortedMeetingsList.sort((a, b) => {
-        if (sortOrder === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      });
       sortedTemplatesList = sortedTemplatesList.sort((a, b) => {
-        if (sortOrder === 'asc') {
-          return a.title.localeCompare(b.title);
-        } else {
-          return b.title.localeCompare(a.title);
-        }
-      });
-    } else if (sortBy === 'date') {
-      sortedNotesList = sortedNotesList.sort((a, b) => {
-        if (sortOrder === 'asc') {
-          return new Date(a.date) - new Date(b.date);
-        } else {
-          return new Date(b.date) - new Date(a.date);
-        }
-      });
-      sortedMeetingsList = sortedMeetingsList.sort((a, b) => {
-        if (sortOrder === 'asc') {
-          return new Date(a.date) - new Date(b.date);
-        } else {
-          return new Date(b.date) - new Date(a.date);
-        }
-      });
-      sortedTemplatesList = sortedTemplatesList.sort((a, b) => {
-        if (sortOrder === 'asc') {
-          return new Date(a.date) - new Date(b.date);
-        } else {
-          return new Date(b.date) - new Date(a.date);
+        if (sortBy === 'title') {
+          return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+        } else if (sortBy === 'date') {
+          return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
         }
       });
     }
@@ -126,10 +98,10 @@ export default function DashboardPage() {
     setSortedNotes(sortedNotesList);
     setSortedMeetings(sortedMeetingsList);
     setSortedTemplates(sortedTemplatesList);
-  }, [searchQuery, filterType, sortBy, sortOrder, filterByTag, filterByDate, notes, meetings, templates]);
+  }, [notes, meetings, templates, searchQuery, filterByTags, filterByDate, filterType, sortBy, sortOrder]);
 
-  const handleSearchQueryChange = (e) => {
-    const query = e.target.value;
+  const handleSearchQueryChange = (event) => {
+    const query = event.target.value;
     setSearchQuery(query);
     const suggestions = notes
       .filter((note) => note.title.toLowerCase().includes(query.toLowerCase()))
@@ -137,74 +109,47 @@ export default function DashboardPage() {
     setAutocompleteSuggestions(suggestions);
   };
 
+  const handleFilterByTagsChange = (tags) => {
+    setFilterByTags(tags);
+  };
+
   return (
     <div>
-      <div className="search-bar">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={handleSearchQueryChange}
-          placeholder="Search notes, meetings, and templates"
-        />
-        {autocompleteSuggestions.length > 0 && (
-          <ul className="autocomplete-suggestions">
-            {autocompleteSuggestions.map((suggestion) => (
-              <li key={suggestion} onClick={() => setSearchQuery(suggestion)}>
-                {suggestion}
-              </li>
+      <input
+        type="search"
+        value={searchQuery}
+        onChange={handleSearchQueryChange}
+        placeholder="Search notes, meetings, and templates"
+        list="autocomplete-suggestions"
+      />
+      <datalist id="autocomplete-suggestions">
+        {autocompleteSuggestions.map((suggestion) => (
+          <option key={suggestion} value={suggestion} />
+        ))}
+      </datalist>
+      <div>
+        <label>Filter by tags:</label>
+        <select multiple value={filterByTags} onChange={(event) => handleFilterByTagsChange(Array.from(event.target.selectedOptions, (option) => option.value))}>
+          {notes
+            .map((note) => note.tags)
+            .flat()
+            .filter((tag, index, self) => self.indexOf(tag) === index)
+            .map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
             ))}
-          </ul>
-        )}
-      </div>
-      <div className="filter-options">
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-          <option value="all">All</option>
-          <option value="notes">Notes</option>
-          <option value="meetings">Meetings</option>
-          <option value="templates">Templates</option>
         </select>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="title">Title</option>
-          <option value="date">Date</option>
-        </select>
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-        <input
-          type="text"
-          value={filterByTag}
-          onChange={(e) => setFilterByTag(e.target.value)}
-          placeholder="Filter by tag"
-        />
-        <input
-          type="text"
-          value={filterByDate}
-          onChange={(e) => setFilterByDate(e.target.value)}
-          placeholder="Filter by date"
-        />
       </div>
-      <div className="note-cards">
-        {sortedNotes.map((note) => (
-          <NoteCard key={note.id} note={note} />
-        ))}
-      </div>
-      <div className="meeting-cards">
-        {sortedMeetings.map((meeting) => (
-          <MeetingCard key={meeting.id} meeting={meeting} />
-        ))}
-      </div>
-      <div className="template-cards">
-        {sortedTemplates.map((template) => (
-          <TemplateCard key={template.id} template={template} />
-        ))}
-      </div>
-      <Link href="/new-note">
-        <button>
-          <AiOutlinePlus />
-          New Note
-        </button>
-      </Link>
+      {sortedNotes.map((note) => (
+        <NoteCard key={note.id} note={note} />
+      ))}
+      {sortedMeetings.map((meeting) => (
+        <MeetingCard key={meeting.id} meeting={meeting} />
+      ))}
+      {sortedTemplates.map((template) => (
+        <TemplateCard key={template.id} template={template} />
+      ))}
     </div>
   );
 }

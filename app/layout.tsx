@@ -13,8 +13,14 @@ const Nav = memo(() => {
     setNavOpen(!navOpen);
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      setNavOpen(false);
+    }
+  };
+
   return (
-    <nav className="nav" aria-label="Main navigation">
+    <nav className="nav" aria-label="Main navigation" onKeyDown={handleKeyDown}>
       <button
         className="nav-toggle"
         onClick={toggleNav}
@@ -28,13 +34,13 @@ const Nav = memo(() => {
         aria-hidden={!navOpen}
         role="menu"
       >
-        <li role="menuitem">
+        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
           <Link href="/">Home</Link>
         </li>
-        <li role="menuitem">
+        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
           <Link href="/about">About</Link>
         </li>
-        <li role="menuitem">
+        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
           <Link href="/contact">Contact</Link>
         </li>
       </ul>
@@ -83,84 +89,11 @@ export default function RootLayout({ children }) {
         <meta property="og:url" content="https://autonote.app" />
         <meta property="og:site_name" content="AutoNote" />
         <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AutoNote: AI-Powered Note Taker" />
-        <meta name="twitter:description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
       </Head>
-      <body className="flex flex-col min-h-screen">
+      <body>
         <Nav />
-        <main className="flex-1">{children}</main>
+        {children}
       </body>
-      <style jsx global>
-        {`
-          .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background-color: #333;
-            color: #fff;
-          }
-
-          .nav-toggle {
-            background-color: transparent;
-            border: none;
-            padding: 0.5rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-          }
-
-          .nav-menu {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 1rem;
-            background-color: #333;
-            color: #fff;
-            position: absolute;
-            top: 4rem;
-            left: 0;
-            width: 100%;
-            transform: translateY(-100%);
-            transition: transform 0.3s ease;
-          }
-
-          .nav-menu.open {
-            transform: translateY(0);
-          }
-
-          .nav-menu li {
-            margin-bottom: 1rem;
-          }
-
-          .nav-menu a {
-            color: #fff;
-            text-decoration: none;
-          }
-
-          @media (min-width: 768px) {
-            .nav-menu {
-              flex-direction: row;
-              justify-content: space-between;
-              position: static;
-              transform: none;
-              background-color: transparent;
-              padding: 0;
-            }
-
-            .nav-menu li {
-              margin-right: 2rem;
-            }
-
-            .nav-menu.open {
-              transform: none;
-            }
-          }
-        `}
-      </style>
     </html>
   );
 }
