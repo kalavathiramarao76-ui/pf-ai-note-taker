@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [filterByTag, setFilterByTag] = useState('');
   const [filterByDate, setFilterByDate] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -72,6 +73,8 @@ export default function DashboardPage() {
       sortedNotesList = filteredNotes;
     } else if (filterType === 'meetings') {
       sortedMeetingsList = filteredMeetings;
+    } else if (filterType === 'templates') {
+      sortedTemplatesList = filteredTemplates;
     }
 
     if (sortBy === 'title') {
@@ -125,82 +128,83 @@ export default function DashboardPage() {
     setSortedTemplates(sortedTemplatesList);
   }, [searchQuery, filterType, sortBy, sortOrder, filterByTag, filterByDate, notes, meetings, templates]);
 
-  const handleEditNote = (note) => {
-    setEditingNote(note);
-    const aiSuggestionsResponse = client.getAiSuggestions(note.content);
-    aiSuggestionsResponse.then((response) => {
-      setAiSuggestions(response.data);
-    });
-  };
-
-  const handleSaveNote = (note) => {
-    const updatedNotes = notes.map((n) => {
-      if (n.id === note.id) {
-        return note;
-      }
-      return n;
-    });
-    setNotes(updatedNotes);
-    localStorage.setItem('notes', JSON.stringify(updatedNotes));
-    setEditingNote(null);
+  const handleSearchQueryChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    const suggestions = notes
+      .filter((note) => note.title.toLowerCase().includes(query.toLowerCase()))
+      .map((note) => note.title);
+    setAutocompleteSuggestions(suggestions);
   };
 
   return (
     <div>
-      {editingNote ? (
-        <div>
-          <h2>Edit Note</h2>
-          <input
-            type="text"
-            value={editingNote.title}
-            onChange={(e) => {
-              const updatedNote = { ...editingNote, title: e.target.value };
-              setEditingNote(updatedNote);
-            }}
-          />
-          <textarea
-            value={editingNote.content}
-            onChange={(e) => {
-              const updatedNote = { ...editingNote, content: e.target.value };
-              setEditingNote(updatedNote);
-            }}
-          />
-          <h3>AI Suggestions:</h3>
-          <ul>
-            {aiSuggestions.map((suggestion) => (
-              <li key={suggestion.id}>{suggestion.text}</li>
-            ))}
-          </ul>
-          <button onClick={() => handleSaveNote(editingNote)}>Save</button>
-        </div>
-      ) : (
-        <div>
-          <h2>Notes</h2>
-          <ul>
-            {sortedNotes.map((note) => (
-              <li key={note.id}>
-                <NoteCard note={note} onEdit={() => handleEditNote(note)} />
+      <div className="search-bar">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearchQueryChange}
+          placeholder="Search notes, meetings, and templates"
+        />
+        {autocompleteSuggestions.length > 0 && (
+          <ul className="autocomplete-suggestions">
+            {autocompleteSuggestions.map((suggestion) => (
+              <li key={suggestion} onClick={() => setSearchQuery(suggestion)}>
+                {suggestion}
               </li>
             ))}
           </ul>
-          <h2>Meetings</h2>
-          <ul>
-            {sortedMeetings.map((meeting) => (
-              <li key={meeting.id}>
-                <MeetingCard meeting={meeting} />
-              </li>
-            ))}
-          </ul>
-          <h2>Templates</h2>
-          <ul>
-            {sortedTemplates.map((template) => (
-              <li key={template.id}>
-                <TemplateCard template={template} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        )}
+      </div>
+      <div className="filter-options">
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <option value="all">All</option>
+          <option value="notes">Notes</option>
+          <option value="meetings">Meetings</option>
+          <option value="templates">Templates</option>
+        </select>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="title">Title</option>
+          <option value="date">Date</option>
+        </select>
+        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+        <input
+          type="text"
+          value={filterByTag}
+          onChange={(e) => setFilterByTag(e.target.value)}
+          placeholder="Filter by tag"
+        />
+        <input
+          type="text"
+          value={filterByDate}
+          onChange={(e) => setFilterByDate(e.target.value)}
+          placeholder="Filter by date"
+        />
+      </div>
+      <div className="note-cards">
+        {sortedNotes.map((note) => (
+          <NoteCard key={note.id} note={note} />
+        ))}
+      </div>
+      <div className="meeting-cards">
+        {sortedMeetings.map((meeting) => (
+          <MeetingCard key={meeting.id} meeting={meeting} />
+        ))}
+      </div>
+      <div className="template-cards">
+        {sortedTemplates.map((template) => (
+          <TemplateCard key={template.id} template={template} />
+        ))}
+      </div>
+      <Link href="/new-note">
+        <button>
+          <AiOutlinePlus />
+          New Note
+        </button>
+      </Link>
     </div>
   );
 }

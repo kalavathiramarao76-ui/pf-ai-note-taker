@@ -14,18 +14,27 @@ const Nav = memo(() => {
   };
 
   return (
-    <nav className="nav">
-      <button className="nav-toggle" onClick={toggleNav}>
+    <nav className="nav" aria-label="Main navigation">
+      <button
+        className="nav-toggle"
+        onClick={toggleNav}
+        aria-expanded={navOpen}
+        aria-label="Toggle navigation menu"
+      >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
-        <li>
+      <ul
+        className={`nav-menu ${navOpen ? 'open' : ''}`}
+        aria-hidden={!navOpen}
+        role="menu"
+      >
+        <li role="menuitem">
           <Link href="/">Home</Link>
         </li>
-        <li>
+        <li role="menuitem">
           <Link href="/about">About</Link>
         </li>
-        <li>
+        <li role="menuitem">
           <Link href="/contact">Contact</Link>
         </li>
       </ul>
@@ -77,18 +86,81 @@ export default function RootLayout({ children }) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="AutoNote: AI-Powered Note Taker" />
         <meta name="twitter:description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
-        <meta name="twitter:image" content="/twitter-image.png" />
-        <meta name="twitter:site" content="@autonoteapp" />
-        <meta name="twitter:creator" content="@autonoteapp" />
-        <meta property="fb:app_id" content="YOUR_APP_ID" />
-        <meta property="fb:admins" content="YOUR_ADMIN_ID" />
-        <meta name="pinterest" content="nopin" />
-        <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
       </Head>
-      <body>
+      <body className="flex flex-col min-h-screen">
         <Nav />
-        {children}
+        <main className="flex-1">{children}</main>
       </body>
+      <style jsx global>
+        {`
+          .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #333;
+            color: #fff;
+          }
+
+          .nav-toggle {
+            background-color: transparent;
+            border: none;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+          }
+
+          .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1rem;
+            background-color: #333;
+            color: #fff;
+            position: absolute;
+            top: 4rem;
+            left: 0;
+            width: 100%;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+          }
+
+          .nav-menu.open {
+            transform: translateY(0);
+          }
+
+          .nav-menu li {
+            margin-bottom: 1rem;
+          }
+
+          .nav-menu a {
+            color: #fff;
+            text-decoration: none;
+          }
+
+          @media (min-width: 768px) {
+            .nav-menu {
+              flex-direction: row;
+              justify-content: space-between;
+              position: static;
+              transform: none;
+              background-color: transparent;
+              padding: 0;
+            }
+
+            .nav-menu li {
+              margin-right: 2rem;
+            }
+
+            .nav-menu.open {
+              transform: none;
+            }
+          }
+        `}
+      </style>
     </html>
   );
 }

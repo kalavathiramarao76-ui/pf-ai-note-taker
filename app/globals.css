@@ -154,21 +154,21 @@ img {
 }
 
 img[alt=""] {
-  alt: "AI-Powered Note Taker Image";
+  alt: "AI-Powered Note Taker Image, a screenshot of the AutoNote application";
 }
 
 button::after {
-  content: "Click to interact";
+  content: "Click to interact with the button";
   @apply screen-reader-only;
 }
 
 input::after {
-  content: "Enter your input";
+  content: "Enter your input in the text field";
   @apply screen-reader-only;
 }
 
 select::after {
-  content: "Select an option";
+  content: "Select an option from the dropdown menu";
   @apply screen-reader-only;
 }
 
@@ -179,15 +179,20 @@ meta {
 
 meta {
   name: "keywords";
-  content: "AutoNote, AI-Powered, Note Taker, Note Taking, AI, Machine Learning, Productivity, Organization, Task Management, Study Notes, Meeting Notes, Journaling, Note Organization, AI Note Taker";
+  content: "AutoNote, AI-Powered Note Taker, Note Taking, Productivity, Organization, Task Management, AI Technology";
 }
 
 meta {
-  property: "og:title";
-  content: "AutoNote: AI-Powered Note Taker - Revolutionize Your Note Taking Experience";
+  name: "robots";
+  content: "index, follow";
 }
 
 meta {
-  property: "og:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool. Organize your thoughts, ideas, and tasks with our intuitive interface. Discover how our tool can help you boost productivity and streamline your workflow.";
+  name: "author";
+  content: "AutoNote Team";
+}
+
+meta {
+  name: "viewport";
+  content: "width=device-width, initial-scale=1.0";
 }
