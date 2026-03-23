@@ -42,10 +42,19 @@ export default function RootLayout({ children }) {
         <meta property="og:title" content="AutoNote: AI-Powered Note Taker" />
         <meta property="og:description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
         <meta property="og:image" content="/og-image.png" />
+        <meta property="og:url" content="https://autonote.app" />
+        <meta property="og:site_name" content="AutoNote" />
+        <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="AutoNote: AI-Powered Note Taker" />
         <meta name="twitter:description" content="AutoNote uses AI to automatically generate notes from meetings, calls, and lectures." />
         <meta name="twitter:image" content="/twitter-image.png" />
+        <meta name="twitter:site" content="@autonoteapp" />
+        <meta name="twitter:creator" content="@autonoteapp" />
+        <meta property="fb:app_id" content="YOUR_APP_ID" />
+        <meta property="fb:admins" content="YOUR_ADMIN_ID" />
+        <meta name="pinterest" content="nopin" />
+        <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
       </Head>
       <body className="font-sans text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900">
         <header className="fixed top-0 left-0 right-0 z-10 bg-gray-100 dark:bg-gray-900 shadow-md">
@@ -61,43 +70,21 @@ export default function RootLayout({ children }) {
             </button>
             <ul className={`lg:flex hidden justify-end items-center ${navOpen ? 'block' : 'hidden'} lg:block`}>
               <li className="lg:ml-6 ml-0 lg:my-0 my-4">
-                <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                  Notes
+                <Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+                  About
                 </Link>
               </li>
               <li className="lg:ml-6 ml-0 lg:my-0 my-4">
-                <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                  Meetings
-                </Link>
-              </li>
-              <li className="lg:ml-6 ml-0 lg:my-0 my-4">
-                <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                  Settings
+                <Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+                  Contact
                 </Link>
               </li>
             </ul>
-            <div className={`lg:hidden absolute top-16 left-0 right-0 ${navOpen ? 'block' : 'hidden'}`}>
-              <ul>
-                <li className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                  <Link href="/notes" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                    Notes
-                  </Link>
-                </li>
-                <li className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                  <Link href="/meetings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                    Meetings
-                  </Link>
-                </li>
-                <li className="px-4 py-2">
-                  <Link href="/settings" className="text-gray-900 dark:text-gray-100 hover:text-gray-700 dark:hover:text-gray-300">
-                    Settings
-                  </Link>
-                </li>
-              </ul>
-            </div>
           </nav>
         </header>
-        {children}
+        <main className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-24">
+          {children}
+        </main>
       </body>
     </html>
   );

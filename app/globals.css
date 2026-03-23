@@ -93,7 +93,7 @@ use client;
 
 @layer components {
   .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-8 xl:px-12;
   }
 
   .button {
@@ -187,12 +187,42 @@ meta {
   content: "AutoNote: AI-Powered Note Taker";
 }
 
-meta {
-  name: "twitter:description";
-  content: "AutoNote: AI-Powered Note Taker - Take notes with ease using our AI-powered note taking tool.";
-}
+@layer base {
+  @media (max-width: 768px) {
+    h1 {
+      @apply text-3xl;
+    }
 
-meta {
-  name: "twitter:image";
-  content: "/logo.png";
+    h2 {
+      @apply text-2xl;
+    }
+
+    h3 {
+      @apply text-xl;
+    }
+
+    h4 {
+      @apply text-lg;
+    }
+
+    h5 {
+      @apply text-base;
+    }
+
+    h6 {
+      @apply text-sm;
+    }
+
+    .container {
+      @apply max-w-full mx-auto px-2;
+    }
+
+    .button {
+      @apply py-1.5 px-3;
+    }
+
+    .button-secondary {
+      @apply py-1.5 px-3;
+    }
+  }
 }
