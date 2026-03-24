@@ -94,6 +94,7 @@ const Nav = memo(() => {
         className="nav-toggle"
         aria-label="Toggle navigation"
         aria-expanded={navOpen}
+        aria-controls="nav-menu"
         onClick={toggleNav}
         onKeyDown={handleKeyDown}
       >
@@ -101,48 +102,41 @@ const Nav = memo(() => {
       </button>
       <ul
         className={`nav-menu ${navOpen ? 'open' : ''}`}
+        id="nav-menu"
         role="menu"
-        aria-label="Main menu"
+        aria-label="Navigation menu"
       >
         {filteredLinksMemo.map((link, index) => (
           <li key={index} role="menuitem">
-            <Link href={link.href} role="link">
+            <Link href={link.href} aria-label={link.text}>
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
       <form
-        className="nav-search"
+        className="search-form"
         onSubmit={handleSearch}
-        role="search"
-        aria-label="Search"
+        aria-label="Search form"
       >
         <input
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search"
-          aria-label="Search query"
+          aria-label="Search input"
         />
-        <button type="submit" aria-label="Search">
+        <button type="submit" aria-label="Search submit">
           Search
         </button>
       </form>
       <button
-        className="nav-contrast"
+        className="high-contrast-mode-toggle"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
-        High Contrast Mode
+        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
       </button>
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="nav-overlay"
-        onClick={toggleNav}
-      />
     </nav>
   );
 });

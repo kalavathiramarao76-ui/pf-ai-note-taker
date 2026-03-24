@@ -185,86 +185,35 @@ img[alt=""] {
   @apply sr-only;
 }
 
-h1 {
-  @apply text-4xl;
-}
-
 img {
   @apply max-w-full h-auto;
+  alt: "Image description";
 }
 
-img[alt] {
-  @apply max-w-full h-auto;
+h1 {
+  @apply font-bold text-4xl;
 }
 
-body {
-  @apply bg-gray-900 text-gray-100;
+figure {
+  @apply mb-4;
 }
 
-a {
-  @apply text-blue-500 hover:text-blue-700;
+figcaption {
+  @apply sr-only;
 }
 
-button {
-  @apply rounded-lg;
-  cursor: pointer;
+label {
+  @apply block text-gray-100 mb-2;
 }
 
-input, textarea, select {
-  @apply rounded-lg border-gray-600;
-  outline: none;
+input[type="image"] {
+  @apply cursor-pointer;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  @apply font-bold;
-  margin: 0;
-  padding: 0;
+input[type="image"]:focus {
+  @apply outline-none;
 }
 
-h2 {
-  @apply text-3xl;
-}
-
-h3 {
-  @apply text-2xl;
-}
-
-h4 {
-  @apply text-xl;
-}
-
-h5 {
-  @apply text-lg;
-}
-
-h6 {
-  @apply text-base;
-}
-
-.container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-8 xl:px-12;
-}
-
-.button {
-  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
-}
-
-.button-secondary {
-  @apply bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded;
-}
-
-.card {
-  @apply bg-gray-800 rounded-lg shadow-md;
-}
-
-.card-header {
-  @apply bg-gray-700 rounded-t-lg;
-}
-
-.card-body {
-  @apply p-4;
-}
-
-.dark-mode-toggle {
-  @apply bg-gray-600 hover:bg-gray-700 text-gray-100 font-bold py-2 px-4 rounded;
+input[type="image"]:hover {
+  @apply opacity-75;
 }

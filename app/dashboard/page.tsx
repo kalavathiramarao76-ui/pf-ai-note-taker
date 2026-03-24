@@ -51,6 +51,7 @@ const initialState = {
   collaborativeEditorState: {}, // store collaborative editor state for each note
   noteVersions: {}, // store versions of each note
   conflictResolution: {}, // store conflict resolution data for each note
+  realTimeCollaboration: {}, // store real-time collaboration data for each note
 };
 
 // Define the reducer
@@ -128,6 +129,8 @@ const appReducer = (state = initialState, action) => {
       return { ...state, noteVersions: action.noteVersions };
     case 'SET_CONFLICT_RESOLUTION':
       return { ...state, conflictResolution: action.conflictResolution };
+    case 'SET_REAL_TIME_COLLABORATION':
+      return { ...state, realTimeCollaboration: action.realTimeCollaboration };
     default:
       return state;
   }
@@ -142,134 +145,48 @@ const store = configureStore({
 });
 
 // Define the socket connection
-const socket = io('http://localhost:3001');
+const socket = io.connect('http://localhost:3001');
 
-// Define the collaborative editor
-const CollaborativeEditor = () => {
-  const [editorState, setEditorState] = useState(EditorState.createWithContent(ContentState.createFromText('')));
-  const [collaborators, setCollaborators] = useState([]);
-  const [noteVersions, setNoteVersions] = useState({});
-
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to the server');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from the server');
-    });
-
-    socket.on('collaborator-joined', (collaborator) => {
-      setCollaborators((prevCollaborators) => [...prevCollaborators, collaborator]);
-    });
-
-    socket.on('collaborator-left', (collaborator) => {
-      setCollaborators((prevCollaborators) => prevCollaborators.filter((c) => c !== collaborator));
-    });
-
-    socket.on('note-version', (noteVersion) => {
-      setNoteVersions((prevNoteVersions) => ({ ...prevNoteVersions, [noteVersion.id]: noteVersion }));
-    });
-  }, []);
-
-  const handleEditorChange = (newEditorState) => {
-    setEditorState(newEditorState);
-    socket.emit('editor-change', newEditorState);
-  };
-
-  return (
-    <Editor
-      editorState={editorState}
-      onChange={handleEditorChange}
-      placeholder="Type here..."
-    />
-  );
+// Define the real-time collaboration functionality
+const handleRealTimeCollaboration = (noteId, userId, editorState) => {
+  socket.emit('real-time-collaboration', { noteId, userId, editorState });
 };
 
-// Define the conflict resolution component
-const ConflictResolution = () => {
-  const [conflictResolution, setConflictResolution] = useState({});
-
-  useEffect(() => {
-    socket.on('conflict-resolution', (conflict) => {
-      setConflictResolution(conflict);
-    });
-  }, []);
-
-  const handleConflictResolution = (resolution) => {
-    setConflictResolution(resolution);
-    socket.emit('conflict-resolution', resolution);
-  };
-
-  return (
-    <div>
-      <h2>Conflict Resolution</h2>
-      <p>{conflictResolution.message}</p>
-      <button onClick={() => handleConflictResolution('accept')}>Accept</button>
-      <button onClick={() => handleConflictResolution('reject')}>Reject</button>
-    </div>
-  );
+// Define the conflict resolution functionality
+const handleConflictResolution = (noteId, userId, editorState) => {
+  socket.emit('conflict-resolution', { noteId, userId, editorState });
 };
 
-// Define the real-time collaboration component
-const RealTimeCollaboration = () => {
-  const [collaborators, setCollaborators] = useState([]);
-  const [noteVersions, setNoteVersions] = useState({});
-
-  useEffect(() => {
-    socket.on('collaborator-joined', (collaborator) => {
-      setCollaborators((prevCollaborators) => [...prevCollaborators, collaborator]);
-    });
-
-    socket.on('collaborator-left', (collaborator) => {
-      setCollaborators((prevCollaborators) => prevCollaborators.filter((c) => c !== collaborator));
-    });
-
-    socket.on('note-version', (noteVersion) => {
-      setNoteVersions((prevNoteVersions) => ({ ...prevNoteVersions, [noteVersion.id]: noteVersion }));
-    });
-  }, []);
-
-  return (
-    <div>
-      <h2>Real-Time Collaboration</h2>
-      <ul>
-        {collaborators.map((collaborator) => (
-          <li key={collaborator}>{collaborator}</li>
-        ))}
-      </ul>
-      <ul>
-        {Object.keys(noteVersions).map((noteVersionId) => (
-          <li key={noteVersionId}>{noteVersions[noteVersionId].content}</li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-// Define the note editing system
+// Define the note editing system with real-time collaboration and conflict resolution
 const NoteEditingSystem = () => {
-  const [note, setNote] = useState({});
+  const dispatch = useDispatch();
+  const { editingNote, collaborativeEditorState, realTimeCollaboration } = useSelector((state) => state.app);
+  const [editorState, setEditorState] = useState(EditorState.createWithContent(ContentState.createFromText('')));
 
   useEffect(() => {
-    socket.on('note-edited', (editedNote) => {
-      setNote(editedNote);
-    });
-  }, []);
+    if (editingNote) {
+      setEditorState(collaborativeEditorState[editingNote.id]);
+    }
+  }, [editingNote, collaborativeEditorState]);
 
-  const handleNoteEdit = (editedNote) => {
-    setNote(editedNote);
-    socket.emit('note-edited', editedNote);
+  const handleEditorStateChange = (newEditorState) => {
+    setEditorState(newEditorState);
+    handleRealTimeCollaboration(editingNote.id, 'user1', newEditorState);
+  };
+
+  const handleConflictResolutionChange = (newEditorState) => {
+    setEditorState(newEditorState);
+    handleConflictResolution(editingNote.id, 'user1', newEditorState);
   };
 
   return (
     <div>
-      <h2>Note Editing System</h2>
       <Editor
-        editorState={EditorState.createWithContent(ContentState.createFromText(note.content))}
-        onChange={(newEditorState) => handleNoteEdit({ ...note, content: newEditorState.getCurrentContent().getPlainText() })}
+        editorState={editorState}
+        onChange={handleEditorStateChange}
         placeholder="Type here..."
       />
+      <button onClick={handleConflictResolutionChange}>Resolve Conflict</button>
     </div>
   );
 };
@@ -277,266 +194,42 @@ const NoteEditingSystem = () => {
 // Define the dashboard page
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, meetings, templates, searchQuery, generatedNotes, folders, selectedFolder, editingNote, sortedNotes, sortedMeetings, sortedTemplates, filterType, sortBy, sortOrder, filterByTags, filterByDate, aiSuggestions, autocompleteSuggestions, priority, deadline, noteTitle, noteContent, isGeneratingNote, editorState, quickNote, isQuickNoteOpen, tags, selectedTags, noteTags, tagInput, tagSuggestions, socket, collaborators, collaborativeEditorState, noteVersions, conflictResolution } = useSelector((state) => state.app);
-
-  useEffect(() => {
-    client.get('/notes')
-      .then((response) => {
-        dispatch({ type: 'SET_NOTES', notes: response.data });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    client.get('/meetings')
-      .then((response) => {
-        dispatch({ type: 'SET_MEETINGS', meetings: response.data });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    client.get('/templates')
-      .then((response) => {
-        dispatch({ type: 'SET_TEMPLATES', templates: response.data });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []);
-
-  const handleSearchQueryChange = (newSearchQuery) => {
-    dispatch({ type: 'SET_SEARCH_QUERY', searchQuery: newSearchQuery });
-  };
-
-  const handleFilterTypeChange = (newFilterType) => {
-    dispatch({ type: 'SET_FILTER_TYPE', filterType: newFilterType });
-  };
-
-  const handleSortByChange = (newSortBy) => {
-    dispatch({ type: 'SET_SORT_BY', sortBy: newSortBy });
-  };
-
-  const handleSortOrderChange = (newSortOrder) => {
-    dispatch({ type: 'SET_SORT_ORDER', sortOrder: newSortOrder });
-  };
-
-  const handleFilterByTagsChange = (newFilterByTags) => {
-    dispatch({ type: 'SET_FILTER_BY_TAGS', filterByTags: newFilterByTags });
-  };
-
-  const handleFilterByDateChange = (newFilterByDate) => {
-    dispatch({ type: 'SET_FILTER_BY_DATE', filterByDate: newFilterByDate });
-  };
-
-  const handleAiSuggestionsChange = (newAiSuggestions) => {
-    dispatch({ type: 'SET_AI_SUGGESTIONS', aiSuggestions: newAiSuggestions });
-  };
-
-  const handleAutocompleteSuggestionsChange = (newAutocompleteSuggestions) => {
-    dispatch({ type: 'SET_AUTOCOMPLETE_SUGGESTIONS', autocompleteSuggestions: newAutocompleteSuggestions });
-  };
-
-  const handlePriorityChange = (newPriority) => {
-    dispatch({ type: 'SET_PRIORITY', priority: newPriority });
-  };
-
-  const handleDeadlineChange = (newDeadline) => {
-    dispatch({ type: 'SET_DEADLINE', deadline: newDeadline });
-  };
-
-  const handleNoteTitleChange = (newNoteTitle) => {
-    dispatch({ type: 'SET_NOTE_TITLE', noteTitle: newNoteTitle });
-  };
-
-  const handleNoteContentChange = (newNoteContent) => {
-    dispatch({ type: 'SET_NOTE_CONTENT', noteContent: newNoteContent });
-  };
-
-  const handleIsGeneratingNoteChange = (newIsGeneratingNote) => {
-    dispatch({ type: 'SET_IS_GENERATING_NOTE', isGeneratingNote: newIsGeneratingNote });
-  };
-
-  const handleEditorStateChange = (newEditorState) => {
-    dispatch({ type: 'SET_EDITOR_STATE', editorState: newEditorState });
-  };
-
-  const handleQuickNoteChange = (newQuickNote) => {
-    dispatch({ type: 'SET_QUICK_NOTE', quickNote: newQuickNote });
-  };
-
-  const handleIsQuickNoteOpenChange = (newIsQuickNoteOpen) => {
-    dispatch({ type: 'SET_IS_QUICK_NOTE_OPEN', isQuickNoteOpen: newIsQuickNoteOpen });
-  };
-
-  const handleTagsChange = (newTags) => {
-    dispatch({ type: 'SET_TAGS', tags: newTags });
-  };
-
-  const handleSelectedTagsChange = (newSelectedTags) => {
-    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: newSelectedTags });
-  };
-
-  const handleNoteTagsChange = (newNoteTags) => {
-    dispatch({ type: 'SET_NOTE_TAGS', noteTags: newNoteTags });
-  };
-
-  const handleTagInputChange = (newTagInput) => {
-    dispatch({ type: 'SET_TAG_INPUT', tagInput: newTagInput });
-  };
-
-  const handleTagSuggestionsChange = (newTagSuggestions) => {
-    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: newTagSuggestions });
-  };
-
-  const handleSocketChange = (newSocket) => {
-    dispatch({ type: 'SET_SOCKET', socket: newSocket });
-  };
-
-  const handleCollaboratorsChange = (newCollaborators) => {
-    dispatch({ type: 'SET_COLLABORATORS', collaborators: newCollaborators });
-  };
-
-  const handleCollaborativeEditorStateChange = (newCollaborativeEditorState) => {
-    dispatch({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState: newCollaborativeEditorState });
-  };
-
-  const handleNoteVersionsChange = (newNoteVersions) => {
-    dispatch({ type: 'SET_NOTE_VERSIONS', noteVersions: newNoteVersions });
-  };
-
-  const handleConflictResolutionChange = (newConflictResolution) => {
-    dispatch({ type: 'SET_CONFLICT_RESOLUTION', conflictResolution: newConflictResolution });
-  };
+  const { notes, meetings, templates, searchQuery, folders, selectedFolder, editingNote } = useSelector((state) => state.app);
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <h1>Dashboard</h1>
+      <NoteCard notes={notes} />
+      <MeetingCard meetings={meetings} />
+      <TemplateCard templates={templates} />
       <input
         type="search"
         value={searchQuery}
-        onChange={(e) => handleSearchQueryChange(e.target.value)}
-        placeholder="Search notes..."
+        onChange={(e) => dispatch({ type: 'SET_SEARCH_QUERY', searchQuery: e.target.value })}
+        placeholder="Search..."
       />
       <select
-        value={filterType}
-        onChange={(e) => handleFilterTypeChange(e.target.value)}
+        value={selectedFolder}
+        onChange={(e) => dispatch({ type: 'SET_SELECTED_FOLDER', selectedFolder: e.target.value })}
       >
-        <option value="all">All</option>
-        <option value="notes">Notes</option>
-        <option value="meetings">Meetings</option>
-        <option value="templates">Templates</option>
+        {folders.map((folder) => (
+          <option key={folder.id} value={folder.id}>
+            {folder.name}
+          </option>
+        ))}
       </select>
-      <select
-        value={sortBy}
-        onChange={(e) => handleSortByChange(e.target.value)}
-      >
-        <option value="title">Title</option>
-        <option value="date">Date</option>
-      </select>
-      <select
-        value={sortOrder}
-        onChange={(e) => handleSortOrderChange(e.target.value)}
-      >
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-      <input
-        type="checkbox"
-        checked={filterByTags.includes('tag1')}
-        onChange={(e) => handleFilterByTagsChange(e.target.checked ? [...filterByTags, 'tag1'] : filterByTags.filter((tag) => tag !== 'tag1'))}
-      />
-      <input
-        type="checkbox"
-        checked={filterByTags.includes('tag2')}
-        onChange={(e) => handleFilterByTagsChange(e.target.checked ? [...filterByTags, 'tag2'] : filterByTags.filter((tag) => tag !== 'tag2'))}
-      />
-      <input
-        type="date"
-        value={filterByDate}
-        onChange={(e) => handleFilterByDateChange(e.target.value)}
-      />
-      <ul>
-        {notes.map((note) => (
-          <li key={note.id}>
-            <NoteCard note={note} />
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {meetings.map((meeting) => (
-          <li key={meeting.id}>
-            <MeetingCard meeting={meeting} />
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {templates.map((template) => (
-          <li key={template.id}>
-            <TemplateCard template={template} />
-          </li>
-        ))}
-      </ul>
-      <button onClick={() => handleIsGeneratingNoteChange(true)}>Generate Note</button>
-      {isGeneratingNote && (
-        <div>
-          <h2>Generating Note...</h2>
-          <p>Please wait...</p>
-        </div>
-      )}
-      <Editor
-        editorState={editorState}
-        onChange={handleEditorStateChange}
-        placeholder="Type here..."
-      />
-      <input
-        type="text"
-        value={quickNote}
-        onChange={(e) => handleQuickNoteChange(e.target.value)}
-        placeholder="Quick Note..."
-      />
-      <button onClick={() => handleIsQuickNoteOpenChange(true)}>Open Quick Note</button>
-      {isQuickNoteOpen && (
-        <div>
-          <h2>Quick Note</h2>
-          <p>{quickNote}</p>
-        </div>
-      )}
-      <ul>
-        {tags.map((tag) => (
-          <li key={tag}>
-            <input
-              type="checkbox"
-              checked={selectedTags.includes(tag)}
-              onChange={(e) => handleSelectedTagsChange(e.target.checked ? [...selectedTags, tag] : selectedTags.filter((t) => t !== tag))}
-            />
-            {tag}
-          </li>
-        ))}
-      </ul>
-      <input
-        type="text"
-        value={tagInput}
-        onChange={(e) => handleTagInputChange(e.target.value)}
-        placeholder="Add Tag..."
-      />
-      <ul>
-        {tagSuggestions.map((suggestion) => (
-          <li key={suggestion}>
-            {suggestion}
-          </li>
-        ))}
-      </ul>
-      <CollaborativeEditor />
-      <RealTimeCollaboration />
-      <ConflictResolution />
-      <NoteEditingSystem />
+      {editingNote && <NoteEditingSystem />}
     </div>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+// Render the dashboard page
+const App = () => {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+};
+
+export default App;
