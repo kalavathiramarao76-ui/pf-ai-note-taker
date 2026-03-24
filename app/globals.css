@@ -187,33 +187,16 @@ img[alt=""] {
 
 img {
   @apply max-w-full h-auto;
-  alt: "Image description";
 }
 
 body {
-  @apply bg-gray-900 text-gray-100;
-  color-scheme: light dark;
+  @apply bg-gray-900;
 }
 
-button {
-  @apply rounded-lg;
-  cursor: pointer;
-  color: #fff;
-  background-color: #3498db;
+img:not([alt]) {
+  @apply sr-only;
 }
 
-button:hover {
-  @apply bg-blue-700;
-  color: #fff;
-}
-
-a {
-  @apply text-blue-500 hover:text-blue-700;
-  text-decoration: none;
-  color: #3498db;
-}
-
-a:hover {
-  @apply text-blue-700;
-  color: #2c6f9e;
+img[alt] {
+  @apply max-w-full h-auto;
 }

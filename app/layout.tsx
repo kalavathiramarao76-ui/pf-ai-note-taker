@@ -71,7 +71,12 @@ const Nav = memo(() => {
   };
 
   return (
-    <nav className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`} aria-label="Main navigation" onKeyDown={handleKeyDown} role="navigation">
+    <nav
+      className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
+      aria-label="Main navigation"
+      onKeyDown={handleKeyDown}
+      role="navigation"
+    >
       <button
         className="nav-toggle"
         onClick={toggleNav}
@@ -85,34 +90,57 @@ const Nav = memo(() => {
         aria-hidden={!navOpen}
         role="menu"
       >
-        <li role="menuitem" tabIndex={navOpen ? 0 : -1}>
-          <form onSubmit={handleSearch} aria-label="Search form" className="search-form">
+        {filteredLinksMemo.map((link, index) => (
+          <li
+            key={index}
+            role="menuitem"
+            tabIndex={navOpen ? 0 : -1}
+          >
+            <Link
+              href={link.href}
+              aria-label={link.text}
+              onClick={() => setNavOpen(false)}
+            >
+              {link.text}
+            </Link>
+          </li>
+        ))}
+        <li
+          role="menuitem"
+          tabIndex={navOpen ? 0 : -1}
+        >
+          <form
+            onSubmit={handleSearch}
+            aria-label="Search form"
+          >
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search notes and meetings"
-              aria-label="Search notes and meetings"
-              aria-describedby="search-description"
-              className="search-input"
+              aria-label="Search input"
+              placeholder="Search"
             />
-            <button type="submit" aria-label="Submit search query" className="search-button">Search</button>
-            <p id="search-description" className="sr-only">Search notes and meetings by keyword or phrase.</p>
+            <button
+              type="submit"
+              aria-label="Search button"
+            >
+              Search
+            </button>
           </form>
         </li>
-        {filteredLinksMemo.map((link) => (
-          <li key={link.href} role="menuitem" tabIndex={navOpen ? 0 : -1}>
-            <Link href={link.href} onClick={() => setNavOpen(false)}>{link.text}</Link>
-          </li>
-        ))}
+        <li
+          role="menuitem"
+          tabIndex={navOpen ? 0 : -1}
+        >
+          <button
+            type="button"
+            onClick={handleHighContrastMode}
+            aria-label="Toggle high contrast mode"
+          >
+            {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+          </button>
+        </li>
       </ul>
-      <button
-        className="high-contrast-mode-toggle"
-        onClick={handleHighContrastMode}
-        aria-label="Toggle high contrast mode"
-      >
-        High Contrast Mode
-      </button>
     </nav>
   );
 });
