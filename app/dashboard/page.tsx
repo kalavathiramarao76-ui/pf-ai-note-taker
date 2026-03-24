@@ -86,20 +86,30 @@ const appReducer = (state = initialState, action) => {
       return { ...state, filterByTags: action.filterByTags };
     case 'SET_FILTER_BY_DATE':
       return { ...state, filterByDate: action.filterByDate };
-    case 'SET_AI_SUGGESTIONS':
-      return { ...state, aiSuggestions: action.aiSuggestions };
-    case 'SET_SOCKET':
-      return { ...state, socket: action.socket };
-    case 'SET_COLLABORATORS':
-      return { ...state, collaborators: action.collaborators };
-    case 'SET_COLLABORATIVE_EDITOR_STATE':
-      return { ...state, collaborativeEditorState: action.collaborativeEditorState };
+    case 'SET_TAG_INPUT':
+      return { ...state, tagInput: action.tagInput };
+    case 'SET_TAG_SUGGESTIONS':
+      return { ...state, tagSuggestions: action.tagSuggestions };
+    case 'ADD_TAG':
+      return {
+        ...state,
+        tags: [...state.tags, action.tag],
+        noteTags: { ...state.noteTags, [action.noteId]: [...(state.noteTags[action.noteId] || []), action.tag] },
+      };
+    case 'REMOVE_TAG':
+      return {
+        ...state,
+        tags: state.tags.filter((tag) => tag !== action.tag),
+        noteTags: {
+          ...state.noteTags,
+          [action.noteId]: (state.noteTags[action.noteId] || []).filter((tag) => tag !== action.tag),
+        },
+      };
     default:
       return state;
   }
 };
 
-// Create the store
 const store = configureStore({
   reducer: {
     app: appReducer,
@@ -107,65 +117,74 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Create a socket connection
-const socket = new Socket('http://localhost:3001');
-
-// Set up socket event listeners
-socket.on('connect', () => {
-  console.log('Connected to the server');
-});
-
-socket.on('collaborative-editing', (data) => {
-  const { noteId, editorState } = data;
-  store.dispatch({
-    type: 'SET_COLLABORATIVE_EDITOR_STATE',
-    collaborativeEditorState: { ...store.getState().collaborativeEditorState, [noteId]: editorState },
-  });
-});
-
-socket.on('collaborators', (data) => {
-  const { noteId, collaborators } = data;
-  store.dispatch({
-    type: 'SET_COLLABORATORS',
-    collaborators: { ...store.getState().collaborators, [noteId]: collaborators },
-  });
-});
-
-// Set up the store and socket in the component
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { editingNote, collaborativeEditorState, collaborators } = useSelector((state) => state.app);
-  const [editorState, setEditorState] = useState(EditorState.createWithContent(ContentState.createFromText('')));
+  const { notes, tagInput, tagSuggestions, noteTags } = useSelector((state) => state.app);
+  const [selectedNote, setSelectedNote] = useState(null);
 
   useEffect(() => {
-    dispatch({
-      type: 'SET_SOCKET',
-      socket: socket,
-    });
-  }, [dispatch, socket]);
+    const handleTagInput = (e) => {
+      const input = e.target.value;
+      dispatch({ type: 'SET_TAG_INPUT', tagInput: input });
+      const suggestions = notes
+        .map((note) => noteTags[note.id])
+        .flat()
+        .filter((tag) => tag.includes(input));
+      dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: suggestions });
+    };
 
-  useEffect(() => {
-    if (editingNote) {
-      socket.emit('join-collaborative-editing', editingNote.id);
-    }
-  }, [editingNote, socket]);
+    const handleTagSelect = (tag) => {
+      dispatch({ type: 'ADD_TAG', tag, noteId: selectedNote.id });
+    };
 
-  const handleEditorChange = (newEditorState) => {
-    setEditorState(newEditorState);
-    if (editingNote) {
-      socket.emit('collaborative-editing', { noteId: editingNote.id, editorState: newEditorState });
-    }
-  };
+    const handleTagRemove = (tag) => {
+      dispatch({ type: 'REMOVE_TAG', tag, noteId: selectedNote.id });
+    };
+
+    return () => {
+      // cleanup
+    };
+  }, [notes, selectedNote, dispatch]);
 
   return (
     <div>
-      {editingNote && (
-        <Editor
-          editorState={collaborativeEditorState[editingNote.id] || editorState}
-          onChange={handleEditorChange}
-        />
+      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <input
+        type="text"
+        value={tagInput}
+        onChange={(e) => handleTagInput(e)}
+        placeholder="Enter a tag"
+      />
+      <ul>
+        {tagSuggestions.map((suggestion) => (
+          <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
+            {suggestion}
+          </li>
+        ))}
+      </ul>
+      {selectedNote && (
+        <div>
+          <h2>Tags for {selectedNote.title}</h2>
+          <ul>
+            {(noteTags[selectedNote.id] || []).map((tag) => (
+              <li key={tag}>
+                {tag}
+                <button onClick={() => handleTagRemove(tag)}>Remove</button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
-      {/* Rest of the component remains the same */}
+      <div>
+        <h2>Notes</h2>
+        <ul>
+          {notes.map((note) => (
+            <li key={note.id}>
+              <NoteCard note={note} onClick={() => setSelectedNote(note)} />
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

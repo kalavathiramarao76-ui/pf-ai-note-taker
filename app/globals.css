@@ -194,56 +194,24 @@ h3 {
 }
 
 h4 {
-  @apply font-bold text-xl;
+  @apply text-xl;
 }
 
-/* Optimizations for better page load times and search engine crawling */
+/* Optimizations for better page loading performance and search engine ranking */
 body {
   @apply overflow-x-hidden;
 }
 
-a {
-  @apply transition duration-300 ease-in-out;
-}
-
-button {
-  @apply transition duration-300 ease-in-out;
-}
-
-input, textarea, select {
-  @apply transition duration-300 ease-in-out;
-}
-
 img {
-  @apply lazy-load;
+  @apply lazy;
 }
 
-/* Critical CSS for above-the-fold content */
-body > .container {
-  @apply mt-0;
+a {
+  @apply no-underline;
 }
 
-/* Preload fonts to improve page load times */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+h1, h2, h3, h4, h5, h6 {
+  @apply break-words;
 }
 
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/Inter-Bold.woff2') format('woff2');
-}
+/* End of optimizations */
