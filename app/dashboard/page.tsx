@@ -44,6 +44,7 @@ const initialState = {
   selectedTags: [],
   noteTags: {}, // store tags for each note
   tagInput: '', // input for tag autocomplete
+  tagSuggestions: [], // suggestions for tag autocomplete
 };
 
 // Define the reducer
@@ -85,108 +86,87 @@ const appReducer = (state = initialState, action) => {
       return { ...state, aiSuggestions: action.aiSuggestions };
     case 'SET_AUTOCOMPLETE_SUGGESTIONS':
       return { ...state, autocompleteSuggestions: action.autocompleteSuggestions };
-    case 'SET_TAGS':
-      return { ...state, tags: action.tags };
-    case 'SET_SELECTED_TAGS':
-      return { ...state, selectedTags: action.selectedTags };
-    case 'SET_NOTE_TAGS':
-      return { ...state, noteTags: action.noteTags };
     case 'SET_TAG_INPUT':
       return { ...state, tagInput: action.tagInput };
+    case 'SET_TAG_SUGGESTIONS':
+      return { ...state, tagSuggestions: action.tagSuggestions };
+    case 'ADD_TAG':
+      return { ...state, tags: [...state.tags, action.tag], tagInput: '' };
+    case 'REMOVE_TAG':
+      return { ...state, tags: state.tags.filter(tag => tag !== action.tag) };
+    case 'SET_NOTE_TAGS':
+      return { ...state, noteTags: { ...state.noteTags, [action.noteId]: action.tags } };
     default:
       return state;
   }
 };
 
-// Create the store
 const store = configureStore({
-  reducer: {
-    app: appReducer,
-  },
+  reducer: appReducer,
   middleware: [thunk],
 });
 
-// Define the page component
-const Page = () => {
+const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, tags, selectedTags, noteTags, tagInput } = useSelector((state) => state.app);
-  const [tagSuggestions, setTagSuggestions] = useState([]);
+  const { notes, tagInput, tagSuggestions, tags, noteTags } = useSelector(state => state);
+  const [selectedNote, setSelectedNote] = useState(null);
 
   useEffect(() => {
-    const suggestions = tags.filter((tag) => tag.includes(tagInput));
-    setTagSuggestions(suggestions);
-  }, [tagInput, tags]);
+    const fetchNotes = async () => {
+      const response = await client.get('/notes');
+      dispatch({ type: 'SET_NOTES', notes: response.data });
+    };
+    fetchNotes();
+  }, []);
 
   const handleTagInput = (e) => {
-    dispatch({ type: 'SET_TAG_INPUT', tagInput: e.target.value });
+    const input = e.target.value;
+    dispatch({ type: 'SET_TAG_INPUT', tagInput: input });
+    const suggestions = tags.filter(tag => tag.includes(input));
+    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: suggestions });
   };
 
-  const handleTagSelect = (tag) => {
-    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: [...selectedTags, tag] });
-    dispatch({ type: 'SET_TAG_INPUT', tagInput: '' });
+  const handleAddTag = (tag) => {
+    dispatch({ type: 'ADD_TAG', tag });
   };
 
-  const handleNoteTagAdd = (noteId, tag) => {
-    const newNoteTags = { ...noteTags };
-    if (!newNoteTags[noteId]) {
-      newNoteTags[noteId] = [];
-    }
-    newNoteTags[noteId].push(tag);
-    dispatch({ type: 'SET_NOTE_TAGS', noteTags: newNoteTags });
+  const handleRemoveTag = (tag) => {
+    dispatch({ type: 'REMOVE_TAG', tag });
   };
 
-  return (
-    <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
-      <input
-        type="text"
-        value={tagInput}
-        onChange={handleTagInput}
-        placeholder="Add tag"
-      />
-      <ul>
-        {tagSuggestions.map((suggestion) => (
-          <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
-            {suggestion}
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {notes.map((note) => (
-          <li key={note.id}>
-            <NoteCard note={note} />
-            <input
-              type="text"
-              value={tagInput}
-              onChange={handleTagInput}
-              placeholder="Add tag to note"
-            />
-            <ul>
-              {tagSuggestions.map((suggestion) => (
-                <li key={suggestion} onClick={() => handleNoteTagAdd(note.id, suggestion)}>
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
-            <ul>
-              {noteTags[note.id] && noteTags[note.id].map((tag) => (
-                <li key={tag}>{tag}</li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+  const handleNoteTagChange = (noteId, tags) => {
+    dispatch({ type: 'SET_NOTE_TAGS', noteId, tags });
+  };
 
-// Render the page component with the store
-const App = () => {
   return (
     <Provider store={store}>
-      <Page />
+      <div>
+        <h1>AutoNote: AI-Powered Note Taker</h1>
+        <input type="text" value={tagInput} onChange={handleTagInput} placeholder="Enter a tag" />
+        <ul>
+          {tagSuggestions.map((suggestion, index) => (
+            <li key={index}>
+              <span>{suggestion}</span>
+              <button onClick={() => handleAddTag(suggestion)}>Add</button>
+            </li>
+          ))}
+        </ul>
+        <ul>
+          {tags.map((tag, index) => (
+            <li key={index}>
+              <span>{tag}</span>
+              <button onClick={() => handleRemoveTag(tag)}>Remove</button>
+            </li>
+          ))}
+        </ul>
+        <div>
+          {notes.map((note, index) => (
+            <NoteCard key={index} note={note} tags={noteTags[note.id]} onChange={(tags) => handleNoteTagChange(note.id, tags)} />
+          ))}
+        </div>
+      </div>
     </Provider>
   );
 };
 
-export default App;
+export default DashboardPage;

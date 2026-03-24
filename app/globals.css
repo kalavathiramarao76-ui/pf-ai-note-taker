@@ -194,20 +194,12 @@ h3 {
 }
 
 h4 {
-  @apply font-bold text-xl;
-}
-
-h5 {
-  @apply font-bold text-lg;
-}
-
-h6 {
-  @apply font-bold text-base;
+  @apply text-xl;
 }
 
 /* Optimizations for better page loading speed and search engine ranking */
 body {
-  @apply antialiased;
+  @apply overflow-x-hidden;
 }
 
 img {
@@ -218,8 +210,8 @@ a {
   @apply no-underline;
 }
 
-button, input, textarea, select {
-  @apply focus:outline-none;
+h1, h2, h3, h4, h5, h6 {
+  @apply break-words;
 }
 
 /* End of optimizations */

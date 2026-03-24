@@ -93,17 +93,19 @@ const Nav = memo(() => {
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
-        id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
         aria-hidden={!navOpen}
         role="menu"
       >
         {filteredLinksMemo.map((link, index) => (
-          <li key={index}>
+          <li
+            key={index}
+            role="menuitem"
+            tabIndex={navOpen ? 0 : -1}
+          >
             <Link
               href={link.href}
               aria-label={link.text}
-              tabIndex={navOpen ? 0 : -1}
               onClick={() => setNavOpen(false)}
             >
               {link.text}
@@ -112,8 +114,8 @@ const Nav = memo(() => {
         ))}
       </ul>
       <form
-        onSubmit={handleSearch}
         className="search-form"
+        onSubmit={handleSearch}
         aria-label="Search form"
       >
         <input
@@ -122,18 +124,16 @@ const Nav = memo(() => {
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search"
           aria-label="Search input"
-          tabIndex={navOpen ? 0 : -1}
         />
         <button
           type="submit"
           aria-label="Search button"
-          tabIndex={navOpen ? 0 : -1}
         >
           Search
         </button>
       </form>
       <button
-        className="high-contrast-mode-button"
+        className="high-contrast-mode-toggle"
         onClick={handleHighContrastMode}
         aria-label="Toggle high contrast mode"
       >
