@@ -97,11 +97,37 @@ const Nav = memo(() => {
             key={index}
             role="menuitem"
             tabIndex={navOpen ? 0 : -1}
+            aria-label={link.text}
           >
-            <Link href={link.href}>{link.text}</Link>
+            <Link href={link.href} onClick={() => setNavOpen(false)}>
+              {link.text}
+            </Link>
           </li>
         ))}
       </ul>
+      <button
+        className="high-contrast-mode-toggle"
+        onClick={handleHighContrastMode}
+        aria-label="Toggle high contrast mode"
+      >
+        High Contrast Mode
+      </button>
+      <form
+        onSubmit={handleSearch}
+        className="search-form"
+        aria-label="Search form"
+      >
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search"
+          aria-label="Search input"
+        />
+        <button type="submit" aria-label="Search button">
+          Search
+        </button>
+      </form>
     </nav>
   );
 });

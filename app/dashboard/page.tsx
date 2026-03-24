@@ -84,6 +84,29 @@ const appReducer = (state = initialState, action) => {
       return { ...state, aiSuggestions: action.aiSuggestions };
     case 'SET_AUTOCOMPLETE_SUGGESTIONS':
       return { ...state, autocompleteSuggestions: action.autocompleteSuggestions };
+    case 'SET_TAGS':
+      return { ...state, tags: action.tags };
+    case 'SET_SELECTED_TAGS':
+      return { ...state, selectedTags: action.selectedTags };
+    case 'SET_NOTE_TAGS':
+      return { ...state, noteTags: action.noteTags };
+    case 'ADD_TAG_TO_NOTE':
+      const noteId = action.noteId;
+      const tag = action.tag;
+      const updatedNoteTags = { ...state.noteTags };
+      if (!updatedNoteTags[noteId]) {
+        updatedNoteTags[noteId] = [];
+      }
+      updatedNoteTags[noteId].push(tag);
+      return { ...state, noteTags: updatedNoteTags };
+    case 'REMOVE_TAG_FROM_NOTE':
+      const noteIdToRemove = action.noteId;
+      const tagToRemove = action.tag;
+      const updatedNoteTagsRemove = { ...state.noteTags };
+      if (updatedNoteTagsRemove[noteIdToRemove]) {
+        updatedNoteTagsRemove[noteIdToRemove] = updatedNoteTagsRemove[noteIdToRemove].filter((t) => t !== tagToRemove);
+      }
+      return { ...state, noteTags: updatedNoteTagsRemove };
     default:
       return state;
   }
@@ -94,73 +117,53 @@ const store = configureStore({
   reducer: {
     app: appReducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-    serializableCheck: false,
-  }),
+  middleware: [thunk],
 });
 
-// Define the actions
-export const setNotes = (notes) => ({ type: 'SET_NOTES', notes });
-export const setMeetings = (meetings) => ({ type: 'SET_MEETINGS', meetings });
-export const setTemplates = (templates) => ({ type: 'SET_TEMPLATES', templates });
-export const setSearchQuery = (searchQuery) => ({ type: 'SET_SEARCH_QUERY', searchQuery });
-export const setGeneratedNotes = (generatedNotes) => ({ type: 'SET_GENERATED_NOTES', generatedNotes });
-export const setFolders = (folders) => ({ type: 'SET_FOLDERS', folders });
-export const setSelectedFolder = (selectedFolder) => ({ type: 'SET_SELECTED_FOLDER', selectedFolder });
-export const setEditingNote = (editingNote) => ({ type: 'SET_EDITING_NOTE', editingNote });
-export const setSortedNotes = (sortedNotes) => ({ type: 'SET_SORTED_NOTES', sortedNotes });
-export const setSortedMeetings = (sortedMeetings) => ({ type: 'SET_SORTED_MEETINGS', sortedMeetings });
-export const setSortedTemplates = (sortedTemplates) => ({ type: 'SET_SORTED_TEMPLATES', sortedTemplates });
-export const setFilterType = (filterType) => ({ type: 'SET_FILTER_TYPE', filterType });
-export const setSortBy = (sortBy) => ({ type: 'SET_SORT_BY', sortBy });
-export const setSortOrder = (sortOrder) => ({ type: 'SET_SORT_ORDER', sortOrder });
-export const setFilterByTags = (filterByTags) => ({ type: 'SET_FILTER_BY_TAGS', filterByTags });
-export const setFilterByDate = (filterByDate) => ({ type: 'SET_FILTER_BY_DATE', filterByDate });
-export const setAiSuggestions = (aiSuggestions) => ({ type: 'SET_AI_SUGGESTIONS', aiSuggestions });
-export const setAutocompleteSuggestions = (autocompleteSuggestions) => ({ type: 'SET_AUTOCOMPLETE_SUGGESTIONS', autocompleteSuggestions });
-
 // Define the page component
-const Page = () => {
+const DashboardPage = () => {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state.app);
+  const { notes, tags, selectedTags, noteTags } = useSelector((state) => state.app);
 
   useEffect(() => {
-    // Initialize the state
-    dispatch(setNotes([]));
-    dispatch(setMeetings([]));
-    dispatch(setTemplates([]));
-    dispatch(setSearchQuery(''));
-    dispatch(setGeneratedNotes([]));
-    dispatch(setFolders([]));
-    dispatch(setSelectedFolder(null));
-    dispatch(setEditingNote(null));
-    dispatch(setSortedNotes([]));
-    dispatch(setSortedMeetings([]));
-    dispatch(setSortedTemplates([]));
-    dispatch(setFilterType('all'));
-    dispatch(setSortBy('title'));
-    dispatch(setSortOrder('asc'));
-    dispatch(setFilterByTags([]));
-    dispatch(setFilterByDate(''));
-    dispatch(setAiSuggestions([]));
-    dispatch(setAutocompleteSuggestions([]));
-  }, [dispatch]);
+    // Load initial data
+    client.getNotes().then((notes) => dispatch({ type: 'SET_NOTES', notes }));
+    client.getTags().then((tags) => dispatch({ type: 'SET_TAGS', tags }));
+  }, []);
+
+  const handleAddTagToNote = (noteId, tag) => {
+    dispatch({ type: 'ADD_TAG_TO_NOTE', noteId, tag });
+  };
+
+  const handleRemoveTagFromNote = (noteId, tag) => {
+    dispatch({ type: 'REMOVE_TAG_FROM_NOTE', noteId, tag });
+  };
 
   return (
     <div>
-      <Link href="/notes">
-        <a>Notes</a>
-      </Link>
-      <Link href="/meetings">
-        <a>Meetings</a>
-      </Link>
-      <Link href="/templates">
-        <a>Templates</a>
-      </Link>
-      <NoteCard />
-      <MeetingCard />
-      <TemplateCard />
-      <Editor editorState={state.editorState} />
+      <h1>Dashboard</h1>
+      <ul>
+        {notes.map((note) => (
+          <li key={note.id}>
+            <NoteCard note={note} />
+            <ul>
+              {noteTags[note.id] && noteTags[note.id].map((tag) => (
+                <li key={tag}>{tag}</li>
+              ))}
+            </ul>
+            <input
+              type="text"
+              placeholder="Add tag"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddTagToNote(note.id, e.target.value);
+                  e.target.value = '';
+                }
+              }}
+            />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
@@ -169,7 +172,7 @@ const Page = () => {
 const App = () => {
   return (
     <Provider store={store}>
-      <Page />
+      <DashboardPage />
     </Provider>
   );
 };
