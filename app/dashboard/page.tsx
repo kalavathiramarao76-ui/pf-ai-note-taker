@@ -131,12 +131,15 @@ const appReducer = (state = initialState, action) => {
       return { ...state, conflictResolution: action.conflictResolution };
     case 'SET_REAL_TIME_COLLABORATION':
       return { ...state, realTimeCollaboration: action.realTimeCollaboration };
+    case 'ADD_TAG_SUGGESTION':
+      return { ...state, tagSuggestions: [...state.tagSuggestions, action.tag] };
+    case 'REMOVE_TAG_SUGGESTION':
+      return { ...state, tagSuggestions: state.tagSuggestions.filter(tag => tag !== action.tag) };
     default:
       return state;
   }
 };
 
-// Create the store
 const store = configureStore({
   reducer: {
     app: appReducer,
@@ -144,92 +147,72 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the socket connection
-const socket = io.connect('http://localhost:3001');
-
-// Define the real-time collaboration functionality
-const handleRealTimeCollaboration = (noteId, userId, editorState) => {
-  socket.emit('real-time-collaboration', { noteId, userId, editorState });
-};
-
-// Define the conflict resolution functionality
-const handleConflictResolution = (noteId, userId, editorState) => {
-  socket.emit('conflict-resolution', { noteId, userId, editorState });
-};
-
-// Define the note editing system with real-time collaboration and conflict resolution
-const NoteEditingSystem = () => {
-  const dispatch = useDispatch();
-  const { editingNote, collaborativeEditorState, realTimeCollaboration } = useSelector((state) => state.app);
-  const [editorState, setEditorState] = useState(EditorState.createWithContent(ContentState.createFromText('')));
-
-  useEffect(() => {
-    if (editingNote) {
-      setEditorState(collaborativeEditorState[editingNote.id]);
-    }
-  }, [editingNote, collaborativeEditorState]);
-
-  const handleEditorStateChange = (newEditorState) => {
-    setEditorState(newEditorState);
-    handleRealTimeCollaboration(editingNote.id, 'user1', newEditorState);
-  };
-
-  const handleConflictResolutionChange = (newEditorState) => {
-    setEditorState(newEditorState);
-    handleConflictResolution(editingNote.id, 'user1', newEditorState);
-  };
-
-  return (
-    <div>
-      <Editor
-        editorState={editorState}
-        onChange={handleEditorStateChange}
-        placeholder="Type here..."
-      />
-      <button onClick={handleConflictResolutionChange}>Resolve Conflict</button>
-    </div>
-  );
-};
-
-// Define the dashboard page
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, meetings, templates, searchQuery, folders, selectedFolder, editingNote } = useSelector((state) => state.app);
+  const { notes, noteTags, tagInput, tagSuggestions } = useSelector((state) => state.app);
+  const [tagInputValue, setTagInputValue] = useState('');
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const response = await client.get('/tags');
+      dispatch({ type: 'SET_TAGS', tags: response.data });
+    };
+    fetchTags();
+  }, []);
+
+  const handleTagInput = (e) => {
+    setTagInputValue(e.target.value);
+    const suggestions = notes.map((note) => noteTags[note.id]).flat().filter((tag) => tag.includes(e.target.value));
+    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: suggestions });
+  };
+
+  const handleTagSelect = (tag) => {
+    dispatch({ type: 'ADD_TAG_SUGGESTION', tag });
+    setTagInputValue('');
+  };
+
+  const handleTagRemove = (tag) => {
+    dispatch({ type: 'REMOVE_TAG_SUGGESTION', tag });
+  };
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      <NoteCard notes={notes} />
-      <MeetingCard meetings={meetings} />
-      <TemplateCard templates={templates} />
+      <h1>AutoNote: AI-Powered Note Taker</h1>
       <input
-        type="search"
-        value={searchQuery}
-        onChange={(e) => dispatch({ type: 'SET_SEARCH_QUERY', searchQuery: e.target.value })}
-        placeholder="Search..."
+        type="text"
+        value={tagInputValue}
+        onChange={handleTagInput}
+        placeholder="Enter a tag"
       />
-      <select
-        value={selectedFolder}
-        onChange={(e) => dispatch({ type: 'SET_SELECTED_FOLDER', selectedFolder: e.target.value })}
-      >
-        {folders.map((folder) => (
-          <option key={folder.id} value={folder.id}>
-            {folder.name}
-          </option>
+      <ul>
+        {tagSuggestions.map((tag) => (
+          <li key={tag}>
+            <span>{tag}</span>
+            <button onClick={() => handleTagSelect(tag)}>Add</button>
+          </li>
         ))}
-      </select>
-      {editingNote && <NoteEditingSystem />}
+      </ul>
+      <ul>
+        {notes.map((note) => (
+          <li key={note.id}>
+            <NoteCard note={note} />
+            <ul>
+              {noteTags[note.id].map((tag) => (
+                <li key={tag}>
+                  <span>{tag}</span>
+                  <button onClick={() => handleTagRemove(tag)}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-// Render the dashboard page
-const App = () => {
-  return (
-    <Provider store={store}>
-      <DashboardPage />
-    </Provider>
-  );
-};
-
-export default App;
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);

@@ -88,21 +88,18 @@ const Nav = memo(() => {
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
       aria-label="Main navigation"
-      role="navigation"
     >
       <button
+        type="button"
         className="nav-toggle"
         aria-label="Toggle navigation"
         aria-expanded={navOpen}
-        aria-controls="nav-menu"
         onClick={toggleNav}
-        onKeyDown={handleKeyDown}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
         className={`nav-menu ${navOpen ? 'open' : ''}`}
-        id="nav-menu"
         role="menu"
         aria-label="Navigation menu"
       >
@@ -126,17 +123,21 @@ const Nav = memo(() => {
           placeholder="Search"
           aria-label="Search input"
         />
-        <button type="submit" aria-label="Search submit">
+        <button type="submit" aria-label="Search button">
           Search
         </button>
       </form>
       <button
+        type="button"
         className="high-contrast-mode-toggle"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
         {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
       </button>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
     </nav>
   );
 });

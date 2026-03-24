@@ -187,33 +187,40 @@ img[alt=""] {
 
 img {
   @apply max-w-full h-auto;
-  alt: "Image description";
 }
 
-h1 {
-  @apply font-bold text-4xl;
+/* Optimizations for better page load times and search engine crawling */
+body {
+  @apply overflow-x-hidden;
 }
 
-figure {
-  @apply mb-4;
+a {
+  @apply transition duration-300 ease-in-out;
 }
 
-figcaption {
-  @apply sr-only;
+button {
+  @apply transition duration-300 ease-in-out;
 }
 
-label {
-  @apply block text-gray-100 mb-2;
+input, textarea, select {
+  @apply transition duration-300 ease-in-out;
 }
 
-input[type="image"] {
-  @apply cursor-pointer;
+/* Critical CSS for above-the-fold content */
+#header, #nav, #main {
+  @apply will-change contents;
 }
 
-input[type="image"]:focus {
-  @apply outline-none;
+/* Lazy loading for images */
+img {
+  @apply lazy;
 }
 
-input[type="image"]:hover {
-  @apply opacity-75;
+/* Accessibility improvements */
+button, input, textarea, select {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+a {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
