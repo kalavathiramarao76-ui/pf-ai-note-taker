@@ -113,6 +113,10 @@
   .card-body {
     @apply p-4;
   }
+
+  .dark-mode-toggle {
+    @apply bg-gray-600 hover:bg-gray-700 text-gray-100 font-bold py-2 px-4 rounded;
+  }
 }
 
 @layer utilities {
@@ -194,24 +198,37 @@ h3 {
 }
 
 h4 {
-  @apply text-xl;
+  @apply font-bold text-xl;
 }
 
-/* Optimizations for better page loading performance and search engine ranking */
-body {
-  @apply overflow-x-hidden;
+body.light-mode {
+  @apply bg-white text-gray-900;
 }
 
-img {
-  @apply lazy;
+body.dark-mode {
+  @apply bg-gray-900 text-gray-100;
 }
 
-a {
-  @apply no-underline;
+body.light-mode a {
+  @apply text-blue-500 hover:text-blue-700;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  @apply break-words;
+body.dark-mode a {
+  @apply text-blue-500 hover:text-blue-700;
 }
 
-/* End of optimizations */
+body.light-mode button {
+  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
+body.dark-mode button {
+  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
+body.light-mode input, body.light-mode textarea, body.light-mode select {
+  @apply rounded-lg border-gray-300;
+}
+
+body.dark-mode input, body.dark-mode textarea, body.dark-mode select {
+  @apply rounded-lg border-gray-600;
+}

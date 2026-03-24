@@ -84,32 +84,24 @@ const appReducer = (state = initialState, action) => {
       return { ...state, sortOrder: action.sortOrder };
     case 'SET_FILTER_BY_TAGS':
       return { ...state, filterByTags: action.filterByTags };
-    case 'SET_FILTER_BY_DATE':
-      return { ...state, filterByDate: action.filterByDate };
     case 'SET_TAG_INPUT':
       return { ...state, tagInput: action.tagInput };
     case 'SET_TAG_SUGGESTIONS':
       return { ...state, tagSuggestions: action.tagSuggestions };
     case 'ADD_TAG':
-      return {
-        ...state,
-        tags: [...state.tags, action.tag],
-        noteTags: { ...state.noteTags, [action.noteId]: [...(state.noteTags[action.noteId] || []), action.tag] },
-      };
+      return { ...state, tags: [...state.tags, action.tag] };
     case 'REMOVE_TAG':
-      return {
-        ...state,
-        tags: state.tags.filter((tag) => tag !== action.tag),
-        noteTags: {
-          ...state.noteTags,
-          [action.noteId]: (state.noteTags[action.noteId] || []).filter((tag) => tag !== action.tag),
-        },
-      };
+      return { ...state, tags: state.tags.filter(tag => tag !== action.tag) };
+    case 'SET_SELECTED_TAGS':
+      return { ...state, selectedTags: action.selectedTags };
+    case 'SET_NOTE_TAGS':
+      return { ...state, noteTags: { ...state.noteTags, [action.noteId]: action.tags } };
     default:
       return state;
   }
 };
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appReducer,
@@ -117,80 +109,88 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-const DashboardPage = () => {
+// Define the Dashboard page
+const Dashboard = () => {
   const dispatch = useDispatch();
-  const { notes, tagInput, tagSuggestions, noteTags } = useSelector((state) => state.app);
-  const [selectedNote, setSelectedNote] = useState(null);
+  const { notes, filterByTags, tagInput, tagSuggestions, selectedTags, noteTags } = useSelector(state => state.app);
+  const [tagInputValue, setTagInputValue] = useState('');
 
-  useEffect(() => {
-    const handleTagInput = (e) => {
-      const input = e.target.value;
-      dispatch({ type: 'SET_TAG_INPUT', tagInput: input });
-      const suggestions = notes
-        .map((note) => noteTags[note.id])
-        .flat()
-        .filter((tag) => tag.includes(input));
-      dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: suggestions });
-    };
+  // Handle tag input change
+  const handleTagInputChange = (e) => {
+    setTagInputValue(e.target.value);
+    dispatch({ type: 'SET_TAG_INPUT', tagInput: e.target.value });
+    const suggestions = notes.reduce((acc, note) => {
+      if (noteTags[note.id]) {
+        return [...acc, ...noteTags[note.id].filter(tag => tag.includes(e.target.value))];
+      }
+      return acc;
+    }, []);
+    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: [...new Set(suggestions)] });
+  };
 
-    const handleTagSelect = (tag) => {
-      dispatch({ type: 'ADD_TAG', tag, noteId: selectedNote.id });
-    };
+  // Handle tag selection
+  const handleTagSelect = (tag) => {
+    dispatch({ type: 'ADD_TAG', tag });
+    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: [...selectedTags, tag] });
+    dispatch({ type: 'SET_FILTER_BY_TAGS', filterByTags: [...filterByTags, tag] });
+  };
 
-    const handleTagRemove = (tag) => {
-      dispatch({ type: 'REMOVE_TAG', tag, noteId: selectedNote.id });
-    };
+  // Handle tag removal
+  const handleTagRemove = (tag) => {
+    dispatch({ type: 'REMOVE_TAG', tag });
+    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: selectedTags.filter(t => t !== tag) });
+    dispatch({ type: 'SET_FILTER_BY_TAGS', filterByTags: filterByTags.filter(t => t !== tag) });
+  };
 
-    return () => {
-      // cleanup
-    };
-  }, [notes, selectedNote, dispatch]);
+  // Filter notes by tags
+  const filteredNotes = notes.filter(note => {
+    if (filterByTags.length === 0) return true;
+    if (!noteTags[note.id]) return false;
+    return filterByTags.every(tag => noteTags[note.id].includes(tag));
+  });
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <h1>Dashboard</h1>
       <input
         type="text"
-        value={tagInput}
-        onChange={(e) => handleTagInput(e)}
-        placeholder="Enter a tag"
+        value={tagInputValue}
+        onChange={handleTagInputChange}
+        placeholder="Search tags"
       />
       <ul>
-        {tagSuggestions.map((suggestion) => (
-          <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
-            {suggestion}
+        {tagSuggestions.map((suggestion, index) => (
+          <li key={index}>
+            <button onClick={() => handleTagSelect(suggestion)}>{suggestion}</button>
           </li>
         ))}
       </ul>
-      {selectedNote && (
-        <div>
-          <h2>Tags for {selectedNote.title}</h2>
-          <ul>
-            {(noteTags[selectedNote.id] || []).map((tag) => (
-              <li key={tag}>
-                {tag}
-                <button onClick={() => handleTagRemove(tag)}>Remove</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <div>
-        <h2>Notes</h2>
-        <ul>
-          {notes.map((note) => (
-            <li key={note.id}>
-              <NoteCard note={note} onClick={() => setSelectedNote(note)} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul>
+        {selectedTags.map((tag, index) => (
+          <li key={index}>
+            <button onClick={() => handleTagRemove(tag)}>{tag}</button>
+          </li>
+        ))}
+      </ul>
+      <h2>Notes</h2>
+      <ul>
+        {filteredNotes.map((note, index) => (
+          <li key={index}>
+            <NoteCard note={note} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+// Render the Dashboard page
+const App = () => {
+  return (
+    <Provider store={store}>
+      <Dashboard />
+    </Provider>
+  );
+};
+
+export default App;
