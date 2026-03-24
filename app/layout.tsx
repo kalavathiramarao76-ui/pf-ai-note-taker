@@ -88,24 +88,21 @@ const Nav = memo(() => {
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
       aria-label="Main navigation"
-      onKeyDown={handleKeyDown}
       role="navigation"
     >
       <button
         className="nav-toggle"
-        onClick={toggleNav}
+        aria-label="Toggle navigation"
         aria-expanded={navOpen}
-        aria-label="Toggle navigation menu"
-        aria-controls="nav-menu"
+        onClick={toggleNav}
+        onKeyDown={handleKeyDown}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-
       </button>
       <ul
         className={`nav-menu ${navOpen ? 'open' : ''}`}
-        aria-hidden={!navOpen}
-        aria-label="Navigation menu"
         role="menu"
+        aria-label="Main menu"
       >
         {filteredLinksMemo.map((link, index) => (
           <li key={index} role="menuitem">
@@ -116,30 +113,36 @@ const Nav = memo(() => {
         ))}
       </ul>
       <form
-        className="search-form"
+        className="nav-search"
         onSubmit={handleSearch}
-        aria-label="Search form"
         role="search"
+        aria-label="Search"
       >
         <input
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search"
-          aria-label="Search input"
-          role="searchbox"
+          aria-label="Search query"
         />
-        <button type="submit" aria-label="Search button">
+        <button type="submit" aria-label="Search">
           Search
         </button>
       </form>
       <button
-        className="high-contrast-mode-toggle"
-        onClick={handleHighContrastMode}
+        className="nav-contrast"
         aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
       >
-        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+        High Contrast Mode
       </button>
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="nav-overlay"
+        onClick={toggleNav}
+      />
     </nav>
   );
 });
