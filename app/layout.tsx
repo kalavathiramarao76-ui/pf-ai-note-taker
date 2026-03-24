@@ -8,11 +8,12 @@ import { motion } from 'framer-motion';
 const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredLinks, setFilteredLinks] = useState([
+  const links = [
     { href: '/', text: 'Home' },
     { href: '/about', text: 'About' },
     { href: '/contact', text: 'Contact' },
-  ]);
+  ];
+  const [filteredLinks, setFilteredLinks] = useState(links);
   const router = useRouter();
 
   const toggleNav = () => {
@@ -27,16 +28,18 @@ const Nav = memo(() => {
 
   const handleSearch = (event) => {
     event.preventDefault();
-    const filtered = [
-      { href: '/', text: 'Home' },
-      { href: '/about', text: 'About' },
-      { href: '/contact', text: 'Contact' },
-    ].filter((link) =>
+    const filtered = links.filter((link) =>
       link.text.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredLinks(filtered);
     console.log('Search query:', searchQuery);
   };
+
+  useEffect(() => {
+    if (searchQuery === '') {
+      setFilteredLinks(links);
+    }
+  }, [searchQuery, links]);
 
   return (
     <nav className="nav" aria-label="Main navigation" onKeyDown={handleKeyDown} role="navigation">
@@ -89,19 +92,7 @@ const Nav = memo(() => {
 export default function RootLayout({ children }) {
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    const storedDarkMode = localStorage.getItem('darkMode');
-    if (storedDarkMode !== null) {
-      setDarkMode(storedDarkMode === 'true');
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    localStorage.setItem('darkMode', darkMode ? 'false' : 'true');
-  };
+  const router = useRouter()
 
   return (
     <html>

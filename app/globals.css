@@ -186,16 +186,21 @@ a::after {
 }
 
 label::after {
-  content: "Label for form field";
+  content: "Label for form input";
   @apply screen-reader-only;
 }
 
-meta {
-  name: "title";
-  content: "AutoNote: AI-Powered Note Taker - Boost Productivity with AI";
+textarea::after {
+  content: "Enter your text in the textarea";
+  @apply screen-reader-only;
 }
 
-meta {
-  name: "description";
-  content: "Unlock the power of AI-powered note taking with AutoNote. Organize your thoughts, ideas, and tasks with our intuitive interface and advanced AI capabilities.";
+input[type="checkbox"]::after {
+  content: "Checkbox, check to select";
+  @apply screen-reader-only;
+}
+
+input[type="radio"]::after {
+  content: "Radio button, select one option";
+  @apply screen-reader-only;
 }
