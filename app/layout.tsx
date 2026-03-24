@@ -39,6 +39,12 @@ const Nav = memo(() => {
       const nextIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
       menuItems[nextIndex].focus();
     }
+    if (event.key === 'Enter' && navOpen) {
+      const currentActive = document.activeElement;
+      if (currentActive.tagName === 'A') {
+        currentActive.click();
+      }
+    }
   };
 
   const handleSearch = (event) => {
@@ -93,25 +99,18 @@ const Nav = memo(() => {
         role="menu"
       >
         {filteredLinksMemo.map((link, index) => (
-          <li
-            key={index}
-            role="menuitem"
-            tabIndex={navOpen ? 0 : -1}
-            aria-label={link.text}
-          >
-            <Link href={link.href} onClick={() => setNavOpen(false)}>
+          <li key={index}>
+            <Link
+              href={link.href}
+              aria-label={link.text}
+              tabIndex={navOpen ? 0 : -1}
+              onClick={() => setNavOpen(false)}
+            >
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
-      <button
-        className="high-contrast-mode-toggle"
-        onClick={handleHighContrastMode}
-        aria-label="Toggle high contrast mode"
-      >
-        High Contrast Mode
-      </button>
       <form
         onSubmit={handleSearch}
         className="search-form"
@@ -123,11 +122,23 @@ const Nav = memo(() => {
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search"
           aria-label="Search input"
+          tabIndex={navOpen ? 0 : -1}
         />
-        <button type="submit" aria-label="Search button">
+        <button
+          type="submit"
+          aria-label="Search button"
+          tabIndex={navOpen ? 0 : -1}
+        >
           Search
         </button>
       </form>
+      <button
+        className="high-contrast-mode-button"
+        onClick={handleHighContrastMode}
+        aria-label="Toggle high contrast mode"
+      >
+        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+      </button>
     </nav>
   );
 });

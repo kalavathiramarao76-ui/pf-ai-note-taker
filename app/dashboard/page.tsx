@@ -1,5 +1,5 @@
 import client from '../client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Link from 'next/link';
@@ -43,6 +43,7 @@ const initialState = {
   tags: [],
   selectedTags: [],
   noteTags: {}, // store tags for each note
+  tagInput: '', // input for tag autocomplete
 };
 
 // Define the reducer
@@ -90,23 +91,8 @@ const appReducer = (state = initialState, action) => {
       return { ...state, selectedTags: action.selectedTags };
     case 'SET_NOTE_TAGS':
       return { ...state, noteTags: action.noteTags };
-    case 'ADD_TAG_TO_NOTE':
-      const noteId = action.noteId;
-      const tag = action.tag;
-      const updatedNoteTags = { ...state.noteTags };
-      if (!updatedNoteTags[noteId]) {
-        updatedNoteTags[noteId] = [];
-      }
-      updatedNoteTags[noteId].push(tag);
-      return { ...state, noteTags: updatedNoteTags };
-    case 'REMOVE_TAG_FROM_NOTE':
-      const noteIdToRemove = action.noteId;
-      const tagToRemove = action.tag;
-      const updatedNoteTagsRemove = { ...state.noteTags };
-      if (updatedNoteTagsRemove[noteIdToRemove]) {
-        updatedNoteTagsRemove[noteIdToRemove] = updatedNoteTagsRemove[noteIdToRemove].filter((t) => t !== tagToRemove);
-      }
-      return { ...state, noteTags: updatedNoteTagsRemove };
+    case 'SET_TAG_INPUT':
+      return { ...state, tagInput: action.tagInput };
     default:
       return state;
   }
@@ -121,46 +107,72 @@ const store = configureStore({
 });
 
 // Define the page component
-const DashboardPage = () => {
+const Page = () => {
   const dispatch = useDispatch();
-  const { notes, tags, selectedTags, noteTags } = useSelector((state) => state.app);
+  const { notes, tags, selectedTags, noteTags, tagInput } = useSelector((state) => state.app);
+  const [tagSuggestions, setTagSuggestions] = useState([]);
 
   useEffect(() => {
-    // Load initial data
-    client.getNotes().then((notes) => dispatch({ type: 'SET_NOTES', notes }));
-    client.getTags().then((tags) => dispatch({ type: 'SET_TAGS', tags }));
-  }, []);
+    const suggestions = tags.filter((tag) => tag.includes(tagInput));
+    setTagSuggestions(suggestions);
+  }, [tagInput, tags]);
 
-  const handleAddTagToNote = (noteId, tag) => {
-    dispatch({ type: 'ADD_TAG_TO_NOTE', noteId, tag });
+  const handleTagInput = (e) => {
+    dispatch({ type: 'SET_TAG_INPUT', tagInput: e.target.value });
   };
 
-  const handleRemoveTagFromNote = (noteId, tag) => {
-    dispatch({ type: 'REMOVE_TAG_FROM_NOTE', noteId, tag });
+  const handleTagSelect = (tag) => {
+    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: [...selectedTags, tag] });
+    dispatch({ type: 'SET_TAG_INPUT', tagInput: '' });
+  };
+
+  const handleNoteTagAdd = (noteId, tag) => {
+    const newNoteTags = { ...noteTags };
+    if (!newNoteTags[noteId]) {
+      newNoteTags[noteId] = [];
+    }
+    newNoteTags[noteId].push(tag);
+    dispatch({ type: 'SET_NOTE_TAGS', noteTags: newNoteTags });
   };
 
   return (
     <div>
-      <h1>Dashboard</h1>
+      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <input
+        type="text"
+        value={tagInput}
+        onChange={handleTagInput}
+        placeholder="Add tag"
+      />
+      <ul>
+        {tagSuggestions.map((suggestion) => (
+          <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
+            {suggestion}
+          </li>
+        ))}
+      </ul>
       <ul>
         {notes.map((note) => (
           <li key={note.id}>
             <NoteCard note={note} />
+            <input
+              type="text"
+              value={tagInput}
+              onChange={handleTagInput}
+              placeholder="Add tag to note"
+            />
+            <ul>
+              {tagSuggestions.map((suggestion) => (
+                <li key={suggestion} onClick={() => handleNoteTagAdd(note.id, suggestion)}>
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
             <ul>
               {noteTags[note.id] && noteTags[note.id].map((tag) => (
                 <li key={tag}>{tag}</li>
               ))}
             </ul>
-            <input
-              type="text"
-              placeholder="Add tag"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddTagToNote(note.id, e.target.value);
-                  e.target.value = '';
-                }
-              }}
-            />
           </li>
         ))}
       </ul>
@@ -172,7 +184,7 @@ const DashboardPage = () => {
 const App = () => {
   return (
     <Provider store={store}>
-      <DashboardPage />
+      <Page />
     </Provider>
   );
 };

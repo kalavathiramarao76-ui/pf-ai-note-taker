@@ -205,14 +205,21 @@ h6 {
   @apply font-bold text-base;
 }
 
+/* Optimizations for better page loading speed and search engine ranking */
+body {
+  @apply antialiased;
+}
+
 img {
-  @apply max-w-full h-auto;
+  @apply lazy;
 }
 
-img[alt] {
-  @apply max-w-full h-auto;
+a {
+  @apply no-underline;
 }
 
-img:not([alt]) {
-  @apply sr-only;
+button, input, textarea, select {
+  @apply focus:outline-none;
 }
+
+/* End of optimizations */
