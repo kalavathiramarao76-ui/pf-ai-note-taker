@@ -25,6 +25,20 @@ const Nav = memo(() => {
     if (event.key === 'Escape') {
       setNavOpen(false);
     }
+    if (event.key === 'ArrowDown' && navOpen) {
+      const menuItems = document.querySelectorAll('.nav-menu li');
+      const currentActive = document.activeElement;
+      const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
+      const nextIndex = (currentIndex + 1) % menuItems.length;
+      menuItems[nextIndex].focus();
+    }
+    if (event.key === 'ArrowUp' && navOpen) {
+      const menuItems = document.querySelectorAll('.nav-menu li');
+      const currentActive = document.activeElement;
+      const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
+      const nextIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
+      menuItems[nextIndex].focus();
+    }
   };
 
   const handleSearch = (event) => {
@@ -88,32 +102,16 @@ const Nav = memo(() => {
         </li>
         {filteredLinksMemo.map((link) => (
           <li key={link.href} role="menuitem" tabIndex={navOpen ? 0 : -1}>
-            <Link href={link.href} aria-label={link.text}>{link.text}</Link>
+            <Link href={link.href} onClick={() => setNavOpen(false)}>{link.text}</Link>
           </li>
         ))}
       </ul>
-      {navOpen && (
-        <div
-          className="nav-overlay"
-          aria-hidden={true}
-          onClick={toggleNav}
-        />
-      )}
       <button
         className="high-contrast-mode-toggle"
         onClick={handleHighContrastMode}
         aria-label="Toggle high contrast mode"
       >
-        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
-      </button>
-      <button
-        className="screen-reader-support-toggle"
-        aria-label="Toggle screen reader support"
-        onClick={() => {
-          document.body.classList.toggle('screen-reader-support');
-        }}
-      >
-        {document.body.classList.contains('screen-reader-support') ? 'Disable screen reader support' : 'Enable screen reader support'}
+        High Contrast Mode
       </button>
     </nav>
   );
