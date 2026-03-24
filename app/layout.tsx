@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,11 +8,11 @@ import { motion } from 'framer-motion';
 const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const links = [
+  const links = useMemo(() => [
     { href: '/', text: 'Home' },
     { href: '/about', text: 'About' },
     { href: '/contact', text: 'Contact' },
-  ];
+  ], []);
   const [filteredLinks, setFilteredLinks] = useState(links);
   const router = useRouter();
 
@@ -39,6 +39,15 @@ const Nav = memo(() => {
     if (searchQuery === '') {
       setFilteredLinks(links);
     }
+  }, [searchQuery, links]);
+
+  const filteredLinksMemo = useMemo(() => {
+    if (searchQuery === '') {
+      return links;
+    }
+    return links.filter((link) =>
+      link.text.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   }, [searchQuery, links]);
 
   return (
@@ -71,7 +80,7 @@ const Nav = memo(() => {
             <p id="search-description" className="sr-only">Search notes and meetings by keyword or phrase.</p>
           </form>
         </li>
-        {filteredLinks.map((link) => (
+        {filteredLinksMemo.map((link) => (
           <li key={link.href} role="menuitem" tabIndex={navOpen ? 0 : -1}>
             <Link href={link.href} aria-label={link.text}>{link.text}</Link>
           </li>
@@ -92,7 +101,7 @@ const Nav = memo(() => {
 export default function RootLayout({ children }) {
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <html>

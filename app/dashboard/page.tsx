@@ -66,8 +66,22 @@ export default function DashboardPage() {
       filterByTags.every((tag) => note.tags.includes(tag)) &&
       (filterByDate === '' || note.date.includes(filterByDate)) &&
       (priority === 'all' || note.priority === priority) &&
-      (deadline === '' || note.deadline.includes(deadline))
+      (deadline === '' || note.deadline.includes(deadline)) &&
+      (selectedFolder === null || note.folder === selectedFolder.id)
     );
+
+    setSortedNotes(filteredNotes.sort((a, b) => {
+      if (sortBy === 'title') {
+        return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+      } else if (sortBy === 'date') {
+        return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+      } else {
+        return 0;
+      }
+    }));
+  }, [notes, searchQuery, filterByTags, filterByDate, priority, deadline, selectedFolder, sortBy, sortOrder]);
+
+  useEffect(() => {
     const filteredMeetings = meetings.filter((meeting) =>
       meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
       filterByTags.every((tag) => meeting.tags.includes(tag)) &&
@@ -75,39 +89,164 @@ export default function DashboardPage() {
       (priority === 'all' || meeting.priority === priority) &&
       (deadline === '' || meeting.deadline.includes(deadline))
     );
-    setSortedNotes(filteredNotes);
-    setSortedMeetings(filteredMeetings);
-  }, [notes, meetings, searchQuery, filterByTags, filterByDate, priority, deadline]);
 
-  const handleQuickNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setQuickNote(e.target.value);
+    setSortedMeetings(filteredMeetings.sort((a, b) => {
+      if (sortBy === 'title') {
+        return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+      } else if (sortBy === 'date') {
+        return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+      } else {
+        return 0;
+      }
+    }));
+  }, [meetings, searchQuery, filterByTags, filterByDate, priority, deadline, sortBy, sortOrder]);
+
+  useEffect(() => {
+    const filteredTemplates = templates.filter((template) =>
+      template.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      filterByTags.every((tag) => template.tags.includes(tag)) &&
+      (filterByDate === '' || template.date.includes(filterByDate)) &&
+      (priority === 'all' || template.priority === priority) &&
+      (deadline === '' || template.deadline.includes(deadline))
+    );
+
+    setSortedTemplates(filteredTemplates.sort((a, b) => {
+      if (sortBy === 'title') {
+        return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
+      } else if (sortBy === 'date') {
+        return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+      } else {
+        return 0;
+      }
+    }));
+  }, [templates, searchQuery, filterByTags, filterByDate, priority, deadline, sortBy, sortOrder]);
+
+  const handleFolderChange = (folder) => {
+    setSelectedFolder(folder);
   };
 
-  const handleQuickNoteSave = () => {
-    const newNote = {
-      title: 'Quick Note',
-      content: quickNote,
-      date: new Date().toISOString(),
-      tags: [],
-      priority: 'low',
-      deadline: '',
-    };
+  const handleNoteCreate = (note) => {
+    const newNote = { ...note, folder: selectedFolder ? selectedFolder.id : null };
     setNotes([...notes, newNote]);
     localStorage.setItem('notes', JSON.stringify([...notes, newNote]));
-    setQuickNote('');
-    setIsQuickNoteOpen(false);
+  };
+
+  const handleNoteUpdate = (note) => {
+    const updatedNotes = notes.map((n) => (n.id === note.id ? note : n));
+    setNotes(updatedNotes);
+    localStorage.setItem('notes', JSON.stringify(updatedNotes));
+  };
+
+  const handleNoteDelete = (noteId) => {
+    const updatedNotes = notes.filter((note) => note.id !== noteId);
+    setNotes(updatedNotes);
+    localStorage.setItem('notes', JSON.stringify(updatedNotes));
+  };
+
+  const handleFolderCreate = (folder) => {
+    setFolders([...folders, folder]);
+    localStorage.setItem('folders', JSON.stringify([...folders, folder]));
+  };
+
+  const handleFolderUpdate = (folder) => {
+    const updatedFolders = folders.map((f) => (f.id === folder.id ? folder : f));
+    setFolders(updatedFolders);
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  };
+
+  const handleFolderDelete = (folderId) => {
+    const updatedFolders = folders.filter((folder) => folder.id !== folderId);
+    setFolders(updatedFolders);
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
   };
 
   return (
     <div>
-      <button onClick={() => setIsQuickNoteOpen(!isQuickNoteOpen)}>Quick Note</button>
-      {isQuickNoteOpen && (
-        <div>
-          <textarea value={quickNote} onChange={handleQuickNoteChange} />
-          <button onClick={handleQuickNoteSave}>Save</button>
-        </div>
-      )}
-      {/* Rest of the code remains the same */}
+      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search notes"
+        />
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <option value="all">All</option>
+          <option value="notes">Notes</option>
+          <option value="meetings">Meetings</option>
+          <option value="templates">Templates</option>
+        </select>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="title">Title</option>
+          <option value="date">Date</option>
+        </select>
+        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+        <button onClick={() => setFilterByTags([])}>Clear tags</button>
+        <button onClick={() => setFilterByDate('')}>Clear date</button>
+        <button onClick={() => setPriority('all')}>Clear priority</button>
+        <button onClick={() => setDeadline('')}>Clear deadline</button>
+      </div>
+      <div>
+        <h2>Folders</h2>
+        <ul>
+          {folders.map((folder) => (
+            <li key={folder.id}>
+              <button onClick={() => handleFolderChange(folder)}>{folder.name}</button>
+              <button onClick={() => handleFolderUpdate({ ...folder, name: prompt('Enter new folder name') })}>
+                Update
+              </button>
+              <button onClick={() => handleFolderDelete(folder.id)}>Delete</button>
+            </li>
+          ))}
+          <li>
+            <button onClick={() => handleFolderCreate({ id: Math.random(), name: prompt('Enter new folder name') })}>
+              Create new folder
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h2>Notes</h2>
+        <ul>
+          {sortedNotes.map((note) => (
+            <li key={note.id}>
+              <NoteCard note={note} />
+              <button onClick={() => handleNoteUpdate({ ...note, title: prompt('Enter new note title') })}>
+                Update
+              </button>
+              <button onClick={() => handleNoteDelete(note.id)}>Delete</button>
+            </li>
+          ))}
+          <li>
+            <button onClick={() => handleNoteCreate({ id: Math.random(), title: prompt('Enter new note title') })}>
+              Create new note
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h2>Meetings</h2>
+        <ul>
+          {sortedMeetings.map((meeting) => (
+            <li key={meeting.id}>
+              <MeetingCard meeting={meeting} />
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>Templates</h2>
+        <ul>
+          {sortedTemplates.map((template) => (
+            <li key={template.id}>
+              <TemplateCard template={template} />
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

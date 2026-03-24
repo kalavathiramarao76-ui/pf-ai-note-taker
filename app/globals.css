@@ -138,6 +138,18 @@ use client;
     @apply text-yellow-400;
   }
 
+  .high-contrast-mode-inverse {
+    @apply bg-yellow-400 text-black;
+  }
+
+  .high-contrast-mode-inverse button {
+    @apply bg-black text-yellow-400;
+  }
+
+  .high-contrast-mode-inverse a {
+    @apply text-black;
+  }
+
   .sr-only {
     @apply absolute -inset-y-1 -inset-x-1 p-4 w-full h-full overflow-hidden;
     clip: rect(0 0 0 0);
@@ -186,21 +198,21 @@ a::after {
 }
 
 label::after {
-  content: "Label for form input";
+  content: "Label for form field";
   @apply screen-reader-only;
 }
 
 textarea::after {
-  content: "Enter your text in the textarea";
+  content: "Enter your text in the textarea field";
   @apply screen-reader-only;
 }
 
 input[type="checkbox"]::after {
-  content: "Checkbox, check to select";
+  content: "Checkbox to select or deselect an option";
   @apply screen-reader-only;
 }
 
 input[type="radio"]::after {
-  content: "Radio button, select one option";
+  content: "Radio button to select an option";
   @apply screen-reader-only;
 }
