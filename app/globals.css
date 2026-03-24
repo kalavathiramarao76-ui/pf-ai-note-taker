@@ -1,5 +1,3 @@
-use client;
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -173,10 +171,6 @@ img {
   @apply max-w-full h-auto;
 }
 
-img[alt=""] {
-  alt: "AI-Powered Note Taker Image, a screenshot of the AutoNote application";
-}
-
 button::after {
   content: "Click to interact with the button";
   @apply screen-reader-only;
@@ -184,35 +178,5 @@ button::after {
 
 input::after {
   content: "Enter your input in the text field";
-  @apply screen-reader-only;
-}
-
-select::after {
-  content: "Select an option from the dropdown menu";
-  @apply screen-reader-only;
-}
-
-a::after {
-  content: "Link to external resource";
-  @apply screen-reader-only;
-}
-
-label::after {
-  content: "Label for form field";
-  @apply screen-reader-only;
-}
-
-textarea::after {
-  content: "Enter your text in the textarea field";
-  @apply screen-reader-only;
-}
-
-input[type="checkbox"]::after {
-  content: "Checkbox to select or deselect an option";
-  @apply screen-reader-only;
-}
-
-input[type="radio"]::after {
-  content: "Radio button to select an option";
   @apply screen-reader-only;
 }

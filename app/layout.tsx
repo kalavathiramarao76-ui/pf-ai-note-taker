@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [highContrastMode, setHighContrastMode] = useState(false);
   const links = useMemo(() => [
     { href: '/', text: 'Home' },
     { href: '/about', text: 'About' },
@@ -50,8 +51,13 @@ const Nav = memo(() => {
     );
   }, [searchQuery, links]);
 
+  const handleHighContrastMode = () => {
+    setHighContrastMode(!highContrastMode);
+    document.body.classList.toggle('high-contrast-mode');
+  };
+
   return (
-    <nav className="nav" aria-label="Main navigation" onKeyDown={handleKeyDown} role="navigation">
+    <nav className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`} aria-label="Main navigation" onKeyDown={handleKeyDown} role="navigation">
       <button
         className="nav-toggle"
         onClick={toggleNav}
@@ -91,25 +97,26 @@ const Nav = memo(() => {
           className="nav-overlay"
           aria-hidden={true}
           onClick={toggleNav}
-          role="presentation"
         />
       )}
+      <button
+        className="high-contrast-mode-toggle"
+        onClick={handleHighContrastMode}
+        aria-label="Toggle high contrast mode"
+      >
+        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+      </button>
+      <button
+        className="screen-reader-support-toggle"
+        aria-label="Toggle screen reader support"
+        onClick={() => {
+          document.body.classList.toggle('screen-reader-support');
+        }}
+      >
+        {document.body.classList.contains('screen-reader-support') ? 'Disable screen reader support' : 'Enable screen reader support'}
+      </button>
     </nav>
   );
 });
 
-export default function RootLayout({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const router = useRouter();
-
-  return (
-    <html>
-      <Head />
-      <body>
-        <Nav />
-        {children}
-      </body>
-    </html>
-  );
-}
+export default Nav;

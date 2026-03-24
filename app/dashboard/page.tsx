@@ -1,5 +1,5 @@
 import client from '../client';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Link from 'next/link';
@@ -8,37 +8,133 @@ import MeetingCard from '../components/MeetingCard';
 import TemplateCard from '../components/TemplateCard';
 import { Editor, EditorState, ContentState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
+import thunk from 'redux-thunk';
+
+// Define the initial state
+const initialState = {
+  notes: [],
+  meetings: [],
+  templates: [],
+  searchQuery: '',
+  generatedNotes: [],
+  folders: [],
+  selectedFolder: null,
+  editingNote: null,
+  sortedNotes: [],
+  sortedMeetings: [],
+  sortedTemplates: [],
+  filterType: 'all',
+  sortBy: 'title',
+  sortOrder: 'asc',
+  filterByTags: [],
+  filterByDate: '',
+  aiSuggestions: [],
+  autocompleteSuggestions: [],
+  priority: 'all',
+  deadline: '',
+  noteTitle: '',
+  noteContent: '',
+  isGeneratingNote: false,
+  editorState: EditorState.createWithContent(ContentState.createFromText('')),
+  quickNote: '',
+  isQuickNoteOpen: false,
+};
+
+// Define the reducer
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'SET_NOTES':
+      return { ...state, notes: action.notes };
+    case 'SET_MEETINGS':
+      return { ...state, meetings: action.meetings };
+    case 'SET_TEMPLATES':
+      return { ...state, templates: action.templates };
+    case 'SET_SEARCH_QUERY':
+      return { ...state, searchQuery: action.searchQuery };
+    case 'SET_GENERATED_NOTES':
+      return { ...state, generatedNotes: action.generatedNotes };
+    case 'SET_FOLDERS':
+      return { ...state, folders: action.folders };
+    case 'SET_SELECTED_FOLDER':
+      return { ...state, selectedFolder: action.selectedFolder };
+    case 'SET_EDITING_NOTE':
+      return { ...state, editingNote: action.editingNote };
+    case 'SET_SORTED_NOTES':
+      return { ...state, sortedNotes: action.sortedNotes };
+    case 'SET_SORTED_MEETINGS':
+      return { ...state, sortedMeetings: action.sortedMeetings };
+    case 'SET_SORTED_TEMPLATES':
+      return { ...state, sortedTemplates: action.sortedTemplates };
+    case 'SET_FILTER_TYPE':
+      return { ...state, filterType: action.filterType };
+    case 'SET_SORT_BY':
+      return { ...state, sortBy: action.sortBy };
+    case 'SET_SORT_ORDER':
+      return { ...state, sortOrder: action.sortOrder };
+    case 'SET_FILTER_BY_TAGS':
+      return { ...state, filterByTags: action.filterByTags };
+    case 'SET_FILTER_BY_DATE':
+      return { ...state, filterByDate: action.filterByDate };
+    case 'SET_AI_SUGGESTIONS':
+      return { ...state, aiSuggestions: action.aiSuggestions };
+    case 'SET_AUTOCOMPLETE_SUGGESTIONS':
+      return { ...state, autocompleteSuggestions: action.autocompleteSuggestions };
+    case 'SET_PRIORITY':
+      return { ...state, priority: action.priority };
+    case 'SET_DEADLINE':
+      return { ...state, deadline: action.deadline };
+    case 'SET_NOTE_TITLE':
+      return { ...state, noteTitle: action.noteTitle };
+    case 'SET_NOTE_CONTENT':
+      return { ...state, noteContent: action.noteContent };
+    case 'SET_IS_GENERATING_NOTE':
+      return { ...state, isGeneratingNote: action.isGeneratingNote };
+    case 'SET_EDITOR_STATE':
+      return { ...state, editorState: action.editorState };
+    case 'SET_QUICK_NOTE':
+      return { ...state, quickNote: action.quickNote };
+    case 'SET_IS_QUICK_NOTE_OPEN':
+      return { ...state, isQuickNoteOpen: action.isQuickNoteOpen };
+    default:
+      return state;
+  }
+};
+
+// Create the store
+const store = createStore(reducer, applyMiddleware(thunk));
 
 export default function DashboardPage() {
-  const [notes, setNotes] = useState([]);
-  const [meetings, setMeetings] = useState([]);
-  const [templates, setTemplates] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [generatedNotes, setGeneratedNotes] = useState([]);
-  const [folders, setFolders] = useState([]);
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [editingNote, setEditingNote] = useState(null);
-  const [sortedNotes, setSortedNotes] = useState([]);
-  const [sortedMeetings, setSortedMeetings] = useState([]);
-  const [sortedTemplates, setSortedTemplates] = useState([]);
-  const [filterType, setFilterType] = useState('all');
-  const [sortBy, setSortBy] = useState('title');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [filterByTags, setFilterByTags] = useState([]);
-  const [filterByDate, setFilterByDate] = useState('');
-  const [aiSuggestions, setAiSuggestions] = useState([]);
-  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
-  const [priority, setPriority] = useState('all');
-  const [deadline, setDeadline] = useState('');
-  const router = useRouter();
-  const [noteTitle, setNoteTitle] = useState('');
-  const [noteContent, setNoteContent] = useState('');
-  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
-  const [editorState, setEditorState] = useState(
-    EditorState.createWithContent(ContentState.createFromText(''))
-  );
-  const [quickNote, setQuickNote] = useState('');
-  const [isQuickNoteOpen, setIsQuickNoteOpen] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    notes,
+    meetings,
+    templates,
+    searchQuery,
+    generatedNotes,
+    folders,
+    selectedFolder,
+    editingNote,
+    sortedNotes,
+    sortedMeetings,
+    sortedTemplates,
+    filterType,
+    sortBy,
+    sortOrder,
+    filterByTags,
+    filterByDate,
+    aiSuggestions,
+    autocompleteSuggestions,
+    priority,
+    deadline,
+    noteTitle,
+    noteContent,
+    isGeneratingNote,
+    editorState,
+    quickNote,
+    isQuickNoteOpen,
+  } = useSelector((state) => state);
 
   useEffect(() => {
     const storedNotes = localStorage.getItem('notes');
@@ -47,16 +143,16 @@ export default function DashboardPage() {
     const storedFolders = localStorage.getItem('folders');
 
     if (storedNotes) {
-      setNotes(JSON.parse(storedNotes));
+      dispatch({ type: 'SET_NOTES', notes: JSON.parse(storedNotes) });
     }
     if (storedMeetings) {
-      setMeetings(JSON.parse(storedMeetings));
+      dispatch({ type: 'SET_MEETINGS', meetings: JSON.parse(storedMeetings) });
     }
     if (storedTemplates) {
-      setTemplates(JSON.parse(storedTemplates));
+      dispatch({ type: 'SET_TEMPLATES', templates: JSON.parse(storedTemplates) });
     }
     if (storedFolders) {
-      setFolders(JSON.parse(storedFolders));
+      dispatch({ type: 'SET_FOLDERS', folders: JSON.parse(storedFolders) });
     }
   }, []);
 
@@ -66,187 +162,52 @@ export default function DashboardPage() {
       filterByTags.every((tag) => note.tags.includes(tag)) &&
       (filterByDate === '' || note.date.includes(filterByDate)) &&
       (priority === 'all' || note.priority === priority) &&
-      (deadline === '' || note.deadline.includes(deadline)) &&
-      (selectedFolder === null || note.folder === selectedFolder.id)
+      (deadline === '' || note.deadline.includes(deadline))
     );
-
-    setSortedNotes(filteredNotes.sort((a, b) => {
-      if (sortBy === 'title') {
-        return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
-      } else if (sortBy === 'date') {
-        return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
-      } else {
-        return 0;
-      }
-    }));
-  }, [notes, searchQuery, filterByTags, filterByDate, priority, deadline, selectedFolder, sortBy, sortOrder]);
-
-  useEffect(() => {
-    const filteredMeetings = meetings.filter((meeting) =>
-      meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      filterByTags.every((tag) => meeting.tags.includes(tag)) &&
-      (filterByDate === '' || meeting.date.includes(filterByDate)) &&
-      (priority === 'all' || meeting.priority === priority) &&
-      (deadline === '' || meeting.deadline.includes(deadline))
-    );
-
-    setSortedMeetings(filteredMeetings.sort((a, b) => {
-      if (sortBy === 'title') {
-        return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
-      } else if (sortBy === 'date') {
-        return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
-      } else {
-        return 0;
-      }
-    }));
-  }, [meetings, searchQuery, filterByTags, filterByDate, priority, deadline, sortBy, sortOrder]);
-
-  useEffect(() => {
-    const filteredTemplates = templates.filter((template) =>
-      template.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      filterByTags.every((tag) => template.tags.includes(tag)) &&
-      (filterByDate === '' || template.date.includes(filterByDate)) &&
-      (priority === 'all' || template.priority === priority) &&
-      (deadline === '' || template.deadline.includes(deadline))
-    );
-
-    setSortedTemplates(filteredTemplates.sort((a, b) => {
-      if (sortBy === 'title') {
-        return sortOrder === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
-      } else if (sortBy === 'date') {
-        return sortOrder === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
-      } else {
-        return 0;
-      }
-    }));
-  }, [templates, searchQuery, filterByTags, filterByDate, priority, deadline, sortBy, sortOrder]);
-
-  const handleFolderChange = (folder) => {
-    setSelectedFolder(folder);
-  };
-
-  const handleNoteCreate = (note) => {
-    const newNote = { ...note, folder: selectedFolder ? selectedFolder.id : null };
-    setNotes([...notes, newNote]);
-    localStorage.setItem('notes', JSON.stringify([...notes, newNote]));
-  };
-
-  const handleNoteUpdate = (note) => {
-    const updatedNotes = notes.map((n) => (n.id === note.id ? note : n));
-    setNotes(updatedNotes);
-    localStorage.setItem('notes', JSON.stringify(updatedNotes));
-  };
-
-  const handleNoteDelete = (noteId) => {
-    const updatedNotes = notes.filter((note) => note.id !== noteId);
-    setNotes(updatedNotes);
-    localStorage.setItem('notes', JSON.stringify(updatedNotes));
-  };
-
-  const handleFolderCreate = (folder) => {
-    setFolders([...folders, folder]);
-    localStorage.setItem('folders', JSON.stringify([...folders, folder]));
-  };
-
-  const handleFolderUpdate = (folder) => {
-    const updatedFolders = folders.map((f) => (f.id === folder.id ? folder : f));
-    setFolders(updatedFolders);
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
-  };
-
-  const handleFolderDelete = (folderId) => {
-    const updatedFolders = folders.filter((folder) => folder.id !== folderId);
-    setFolders(updatedFolders);
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
-  };
+    dispatch({ type: 'SET_SORTED_NOTES', sortedNotes: filteredNotes });
+  }, [notes, searchQuery, filterByTags, filterByDate, priority, deadline]);
 
   return (
-    <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
+    <Provider store={store}>
       <div>
+        <Link href="/notes">
+          <a>
+            <AiOutlinePlus />
+            Create Note
+          </a>
+        </Link>
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => dispatch({ type: 'SET_SEARCH_QUERY', searchQuery: e.target.value })}
           placeholder="Search notes"
         />
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-          <option value="all">All</option>
-          <option value="notes">Notes</option>
-          <option value="meetings">Meetings</option>
-          <option value="templates">Templates</option>
-        </select>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="title">Title</option>
-          <option value="date">Date</option>
-        </select>
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-        <button onClick={() => setFilterByTags([])}>Clear tags</button>
-        <button onClick={() => setFilterByDate('')}>Clear date</button>
-        <button onClick={() => setPriority('all')}>Clear priority</button>
-        <button onClick={() => setDeadline('')}>Clear deadline</button>
-      </div>
-      <div>
-        <h2>Folders</h2>
-        <ul>
-          {folders.map((folder) => (
-            <li key={folder.id}>
-              <button onClick={() => handleFolderChange(folder)}>{folder.name}</button>
-              <button onClick={() => handleFolderUpdate({ ...folder, name: prompt('Enter new folder name') })}>
-                Update
-              </button>
-              <button onClick={() => handleFolderDelete(folder.id)}>Delete</button>
-            </li>
-          ))}
-          <li>
-            <button onClick={() => handleFolderCreate({ id: Math.random(), name: prompt('Enter new folder name') })}>
-              Create new folder
-            </button>
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h2>Notes</h2>
-        <ul>
+        <div>
           {sortedNotes.map((note) => (
-            <li key={note.id}>
-              <NoteCard note={note} />
-              <button onClick={() => handleNoteUpdate({ ...note, title: prompt('Enter new note title') })}>
-                Update
-              </button>
-              <button onClick={() => handleNoteDelete(note.id)}>Delete</button>
-            </li>
+            <NoteCard key={note.id} note={note} />
           ))}
-          <li>
-            <button onClick={() => handleNoteCreate({ id: Math.random(), title: prompt('Enter new note title') })}>
-              Create new note
-            </button>
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h2>Meetings</h2>
-        <ul>
+        </div>
+        <div>
           {sortedMeetings.map((meeting) => (
-            <li key={meeting.id}>
-              <MeetingCard meeting={meeting} />
-            </li>
+            <MeetingCard key={meeting.id} meeting={meeting} />
           ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Templates</h2>
-        <ul>
+        </div>
+        <div>
           {sortedTemplates.map((template) => (
-            <li key={template.id}>
-              <TemplateCard template={template} />
-            </li>
+            <TemplateCard key={template.id} template={template} />
           ))}
-        </ul>
+        </div>
+        <Editor editorState={editorState} onChange={(editorState) => dispatch({ type: 'SET_EDITOR_STATE', editorState })} />
+        <input
+          type="text"
+          value={quickNote}
+          onChange={(e) => dispatch({ type: 'SET_QUICK_NOTE', quickNote: e.target.value })}
+          placeholder="Quick note"
+        />
+        <button onClick={() => dispatch({ type: 'SET_IS_QUICK_NOTE_OPEN', isQuickNoteOpen: !isQuickNoteOpen })}>
+          {isQuickNoteOpen ? 'Close' : 'Open'} Quick Note
+        </button>
       </div>
-    </div>
+    </Provider>
   );
 }
