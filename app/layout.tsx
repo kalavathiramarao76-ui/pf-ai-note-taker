@@ -82,10 +82,12 @@ const Nav = memo(() => {
         onClick={toggleNav}
         aria-expanded={navOpen}
         aria-label="Toggle navigation menu"
+        aria-controls="nav-menu"
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
+        id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
         aria-hidden={!navOpen}
         role="menu"
@@ -96,50 +98,9 @@ const Nav = memo(() => {
             role="menuitem"
             tabIndex={navOpen ? 0 : -1}
           >
-            <Link
-              href={link.href}
-              aria-label={link.text}
-              onClick={() => setNavOpen(false)}
-            >
-              {link.text}
-            </Link>
+            <Link href={link.href}>{link.text}</Link>
           </li>
         ))}
-        <li
-          role="menuitem"
-          tabIndex={navOpen ? 0 : -1}
-        >
-          <form
-            onSubmit={handleSearch}
-            aria-label="Search form"
-          >
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              aria-label="Search input"
-              placeholder="Search"
-            />
-            <button
-              type="submit"
-              aria-label="Search button"
-            >
-              Search
-            </button>
-          </form>
-        </li>
-        <li
-          role="menuitem"
-          tabIndex={navOpen ? 0 : -1}
-        >
-          <button
-            type="button"
-            onClick={handleHighContrastMode}
-            aria-label="Toggle high contrast mode"
-          >
-            {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
-          </button>
-        </li>
       </ul>
     </nav>
   );

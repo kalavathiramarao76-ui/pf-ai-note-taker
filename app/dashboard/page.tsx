@@ -8,7 +8,7 @@ import MeetingCard from '../components/MeetingCard';
 import TemplateCard from '../components/TemplateCard';
 import { Editor, EditorState, ContentState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { configureStore } from '@reduxjs/toolkit';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import thunk from 'redux-thunk';
 
@@ -46,7 +46,7 @@ const initialState = {
 };
 
 // Define the reducer
-const reducer = (state = initialState, action) => {
+const appReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'SET_NOTES':
       return { ...state, notes: action.notes };
@@ -84,75 +84,83 @@ const reducer = (state = initialState, action) => {
       return { ...state, aiSuggestions: action.aiSuggestions };
     case 'SET_AUTOCOMPLETE_SUGGESTIONS':
       return { ...state, autocompleteSuggestions: action.autocompleteSuggestions };
-    case 'ADD_TAG':
-      return { ...state, tags: [...state.tags, action.tag] };
-    case 'REMOVE_TAG':
-      return { ...state, tags: state.tags.filter(tag => tag !== action.tag) };
-    case 'ASSIGN_TAG_TO_NOTE':
-      return { ...state, noteTags: { ...state.noteTags, [action.noteId]: [...(state.noteTags[action.noteId] || []), action.tag] } };
-    case 'REMOVE_TAG_FROM_NOTE':
-      return { ...state, noteTags: { ...state.noteTags, [action.noteId]: state.noteTags[action.noteId].filter(tag => tag !== action.tag) } };
     default:
       return state;
   }
 };
 
 // Create the store
-const store = createStore(reducer, applyMiddleware(thunk));
+const store = configureStore({
+  reducer: {
+    app: appReducer,
+  },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+    serializableCheck: false,
+  }),
+});
+
+// Define the actions
+export const setNotes = (notes) => ({ type: 'SET_NOTES', notes });
+export const setMeetings = (meetings) => ({ type: 'SET_MEETINGS', meetings });
+export const setTemplates = (templates) => ({ type: 'SET_TEMPLATES', templates });
+export const setSearchQuery = (searchQuery) => ({ type: 'SET_SEARCH_QUERY', searchQuery });
+export const setGeneratedNotes = (generatedNotes) => ({ type: 'SET_GENERATED_NOTES', generatedNotes });
+export const setFolders = (folders) => ({ type: 'SET_FOLDERS', folders });
+export const setSelectedFolder = (selectedFolder) => ({ type: 'SET_SELECTED_FOLDER', selectedFolder });
+export const setEditingNote = (editingNote) => ({ type: 'SET_EDITING_NOTE', editingNote });
+export const setSortedNotes = (sortedNotes) => ({ type: 'SET_SORTED_NOTES', sortedNotes });
+export const setSortedMeetings = (sortedMeetings) => ({ type: 'SET_SORTED_MEETINGS', sortedMeetings });
+export const setSortedTemplates = (sortedTemplates) => ({ type: 'SET_SORTED_TEMPLATES', sortedTemplates });
+export const setFilterType = (filterType) => ({ type: 'SET_FILTER_TYPE', filterType });
+export const setSortBy = (sortBy) => ({ type: 'SET_SORT_BY', sortBy });
+export const setSortOrder = (sortOrder) => ({ type: 'SET_SORT_ORDER', sortOrder });
+export const setFilterByTags = (filterByTags) => ({ type: 'SET_FILTER_BY_TAGS', filterByTags });
+export const setFilterByDate = (filterByDate) => ({ type: 'SET_FILTER_BY_DATE', filterByDate });
+export const setAiSuggestions = (aiSuggestions) => ({ type: 'SET_AI_SUGGESTIONS', aiSuggestions });
+export const setAutocompleteSuggestions = (autocompleteSuggestions) => ({ type: 'SET_AUTOCOMPLETE_SUGGESTIONS', autocompleteSuggestions });
 
 // Define the page component
-const DashboardPage = () => {
+const Page = () => {
   const dispatch = useDispatch();
-  const { notes, tags, noteTags } = useSelector(state => state);
+  const state = useSelector((state) => state.app);
 
-  // Handle adding a new tag
-  const handleAddTag = (tag) => {
-    dispatch({ type: 'ADD_TAG', tag });
-  };
-
-  // Handle removing a tag
-  const handleRemoveTag = (tag) => {
-    dispatch({ type: 'REMOVE_TAG', tag });
-  };
-
-  // Handle assigning a tag to a note
-  const handleAssignTagToNote = (noteId, tag) => {
-    dispatch({ type: 'ASSIGN_TAG_TO_NOTE', noteId, tag });
-  };
-
-  // Handle removing a tag from a note
-  const handleRemoveTagFromNote = (noteId, tag) => {
-    dispatch({ type: 'REMOVE_TAG_FROM_NOTE', noteId, tag });
-  };
+  useEffect(() => {
+    // Initialize the state
+    dispatch(setNotes([]));
+    dispatch(setMeetings([]));
+    dispatch(setTemplates([]));
+    dispatch(setSearchQuery(''));
+    dispatch(setGeneratedNotes([]));
+    dispatch(setFolders([]));
+    dispatch(setSelectedFolder(null));
+    dispatch(setEditingNote(null));
+    dispatch(setSortedNotes([]));
+    dispatch(setSortedMeetings([]));
+    dispatch(setSortedTemplates([]));
+    dispatch(setFilterType('all'));
+    dispatch(setSortBy('title'));
+    dispatch(setSortOrder('asc'));
+    dispatch(setFilterByTags([]));
+    dispatch(setFilterByDate(''));
+    dispatch(setAiSuggestions([]));
+    dispatch(setAutocompleteSuggestions([]));
+  }, [dispatch]);
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
       <Link href="/notes">
-        <a>
-          <AiOutlinePlus />
-          Create a new note
-        </a>
+        <a>Notes</a>
       </Link>
-      <div>
-        {notes.map(note => (
-          <NoteCard key={note.id} note={note} tags={noteTags[note.id] || []} onAssignTag={handleAssignTagToNote} onRemoveTag={handleRemoveTagFromNote} />
-        ))}
-      </div>
-      <div>
-        <h2>Tags</h2>
-        <ul>
-          {tags.map(tag => (
-            <li key={tag}>{tag} <button onClick={() => handleRemoveTag(tag)}>Remove</button></li>
-          ))}
-        </ul>
-        <input type="text" placeholder="Add a new tag" onKeyPress={(e) => {
-          if (e.key === 'Enter') {
-            handleAddTag(e.target.value);
-            e.target.value = '';
-          }
-        }} />
-      </div>
+      <Link href="/meetings">
+        <a>Meetings</a>
+      </Link>
+      <Link href="/templates">
+        <a>Templates</a>
+      </Link>
+      <NoteCard />
+      <MeetingCard />
+      <TemplateCard />
+      <Editor editorState={state.editorState} />
     </div>
   );
 };
@@ -161,7 +169,7 @@ const DashboardPage = () => {
 const App = () => {
   return (
     <Provider store={store}>
-      <DashboardPage />
+      <Page />
     </Provider>
   );
 };

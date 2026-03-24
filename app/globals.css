@@ -167,10 +167,6 @@
   }
 }
 
-img {
-  @apply max-w-full h-auto;
-}
-
 button::after {
   content: "Click to interact with the button";
   @apply screen-reader-only;
@@ -183,20 +179,4 @@ input::after {
 
 img[alt=""] {
   @apply sr-only;
-}
-
-img {
-  @apply max-w-full h-auto;
-}
-
-body {
-  @apply bg-gray-900;
-}
-
-img:not([alt]) {
-  @apply sr-only;
-}
-
-img[alt] {
-  @apply max-w-full h-auto;
 }
