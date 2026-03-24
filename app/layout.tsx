@@ -45,6 +45,14 @@ const Nav = memo(() => {
         currentActive.click();
       }
     }
+    if (event.key === 'Tab' && navOpen) {
+      event.preventDefault();
+      const menuItems = document.querySelectorAll('.nav-menu li');
+      const currentActive = document.activeElement;
+      const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
+      const nextIndex = (currentIndex + 1) % menuItems.length;
+      menuItems[nextIndex].focus();
+    }
   };
 
   const handleSearch = (event) => {
@@ -91,6 +99,7 @@ const Nav = memo(() => {
         aria-controls="nav-menu"
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+
       </button>
       <ul
         className={`nav-menu ${navOpen ? 'open' : ''}`}
@@ -99,16 +108,8 @@ const Nav = memo(() => {
         role="menu"
       >
         {filteredLinksMemo.map((link, index) => (
-          <li
-            key={index}
-            role="menuitem"
-            tabIndex={navOpen ? 0 : -1}
-          >
-            <Link
-              href={link.href}
-              aria-label={link.text}
-              onClick={() => setNavOpen(false)}
-            >
+          <li key={index} role="menuitem">
+            <Link href={link.href} role="link">
               {link.text}
             </Link>
           </li>
@@ -124,15 +125,11 @@ const Nav = memo(() => {
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          aria-label="Search input"
           placeholder="Search"
+          aria-label="Search input"
           role="searchbox"
         />
-        <button
-          type="submit"
-          aria-label="Search button"
-          role="button"
-        >
+        <button type="submit" aria-label="Search button">
           Search
         </button>
       </form>
@@ -140,8 +137,6 @@ const Nav = memo(() => {
         className="high-contrast-mode-toggle"
         onClick={handleHighContrastMode}
         aria-label="Toggle high contrast mode"
-        aria-pressed={highContrastMode}
-        role="button"
       >
         {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
       </button>
