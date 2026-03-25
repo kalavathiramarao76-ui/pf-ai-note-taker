@@ -82,43 +82,58 @@ const Nav = memo(() => {
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <div className="nav-header">
-        <Link href="/">
-          <a>AutoNote</a>
-        </Link>
-        <button
+      <div className="nav-header" role="banner">
+        <Link
+          href="#nav-menu"
           className="nav-toggle"
-          aria-label="Toggle navigation"
+          aria-label="Open navigation menu"
+          aria-expanded={navOpen}
+          aria-controls="nav-menu"
           onClick={toggleNav}
         >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </button>
+        </Link>
+        <Link href="/" className="nav-logo">
+          AutoNote
+        </Link>
       </div>
-      <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
+      <ul
+        id="nav-menu"
+        className={`nav-menu ${navOpen ? 'open' : ''}`}
+        role="menu"
+        aria-label="Navigation menu"
+        aria-hidden={!navOpen}
+      >
         {filteredLinks.map((link, index) => (
-          <li key={index}>
-            <Link href={link.href}>
-              <a>{link.text}</a>
+          <li key={index} role="menuitem">
+            <Link
+              href={link.href}
+              className="nav-link"
+              aria-label={link.text}
+              aria-current={router.asPath === link.href ? 'page' : undefined}
+            >
+              {link.text}
             </Link>
           </li>
         ))}
       </ul>
-      <div className="nav-search">
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-          aria-label="Search"
-        />
-      </div>
       <button
-        className="nav-contrast"
+        className="high-contrast-mode-toggle"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
         High Contrast Mode
       </button>
+      <form className="search-form" role="search">
+        <input
+          type="search"
+          className="search-input"
+          aria-label="Search"
+          value={searchQuery}
+          onChange={handleSearch}
+          onKeyDown={handleKeyDown}
+        />
+      </form>
     </nav>
   );
 });

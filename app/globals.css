@@ -184,39 +184,3 @@ input::after {
   content: "Enter your input in the text field";
   @apply screen-reader-only;
 }
-
-img[alt=""] {
-  @apply sr-only;
-}
-
-img::after {
-  content: attr(alt);
-  @apply screen-reader-only;
-}
-
-label {
-  @apply sr-only;
-}
-
-label::after {
-  content: attr(for);
-  @apply screen-reader-only;
-}
-
-select {
-  @apply appearance-none;
-}
-
-select::after {
-  content: "Select an option";
-  @apply screen-reader-only;
-}
-
-textarea {
-  @apply resize-none;
-}
-
-textarea::after {
-  content: "Enter your text";
-  @apply screen-reader-only;
-}
