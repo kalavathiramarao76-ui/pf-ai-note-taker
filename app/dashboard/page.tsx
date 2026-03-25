@@ -16,9 +16,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // Define the initial state
 interface AppState {
-  notes: any[];
-  meetings: any[];
-  templates: any[];
+  notes: Map<string, any>;
+  meetings: Map<string, any>;
+  templates: Map<string, any>;
   searchQuery: string;
   generatedNotes: any[];
   folders: any[];
@@ -64,9 +64,9 @@ interface AppState {
 const appSlice = createSlice({
   name: 'app',
   initialState: {
-    notes: [],
-    meetings: [],
-    templates: [],
+    notes: new Map(),
+    meetings: new Map(),
+    templates: new Map(),
     searchQuery: '',
     generatedNotes: [],
     folders: [],
@@ -115,14 +115,32 @@ const appSlice = createSlice({
     }
   },
   reducers: {
-    setNotes(state, action: PayloadAction<any[]>) {
-      state.notes = action.payload;
+    setNotes(state, action: PayloadAction<{ id: string, note: any }>) {
+      state.notes.set(action.payload.id, action.payload.note);
     },
-    setMeetings(state, action: PayloadAction<any[]>) {
-      state.meetings = action.payload;
+    addNote(state, action: PayloadAction<{ id: string, note: any }>) {
+      state.notes.set(action.payload.id, action.payload.note);
     },
-    setTemplates(state, action: PayloadAction<any[]>) {
-      state.templates = action.payload;
+    removeNote(state, action: PayloadAction<string>) {
+      state.notes.delete(action.payload);
+    },
+    setMeetings(state, action: PayloadAction<{ id: string, meeting: any }>) {
+      state.meetings.set(action.payload.id, action.payload.meeting);
+    },
+    addMeeting(state, action: PayloadAction<{ id: string, meeting: any }>) {
+      state.meetings.set(action.payload.id, action.payload.meeting);
+    },
+    removeMeeting(state, action: PayloadAction<string>) {
+      state.meetings.delete(action.payload);
+    },
+    setTemplates(state, action: PayloadAction<{ id: string, template: any }>) {
+      state.templates.set(action.payload.id, action.payload.template);
+    },
+    addTemplate(state, action: PayloadAction<{ id: string, template: any }>) {
+      state.templates.set(action.payload.id, action.payload.template);
+    },
+    removeTemplate(state, action: PayloadAction<string>) {
+      state.templates.delete(action.payload);
     },
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
@@ -240,83 +258,9 @@ const appSlice = createSlice({
     },
     setFolderStructure(state, action: PayloadAction<any>) {
       state.folderStructure = action.payload;
-    },
-    addTag(state, action: PayloadAction<string>) {
-      if (!state.tags.includes(action.payload)) {
-        state.tags = [...state.tags, action.payload];
-      }
-    },
-    removeTag(state, action: PayloadAction<string>) {
-      state.tags = state.tags.filter(tag => tag !== action.payload);
-    },
-    addSelectedTag(state, action: PayloadAction<string>) {
-      if (!state.selectedTags.includes(action.payload)) {
-        state.selectedTags = [...state.selectedTags, action.payload];
-      }
-    },
-    removeSelectedTag(state, action: PayloadAction<string>) {
-      state.selectedTags = state.selectedTags.filter(tag => tag !== action.payload);
-    },
-    filterNotesByTags(state, action: PayloadAction<any[]>) {
-      state.sortedNotes = state.notes.filter(note => {
-        const noteTags = state.noteTags[note.id];
-        return action.payload.every(tag => noteTags.includes(tag));
-      });
     }
   }
 });
-
-export const {
-  setNotes,
-  setMeetings,
-  setTemplates,
-  setSearchQuery,
-  setGeneratedNotes,
-  setFolders,
-  setSelectedFolder,
-  setEditingNote,
-  setSortedNotes,
-  setSortedMeetings,
-  setSortedTemplates,
-  setFilterType,
-  setSortBy,
-  setSortOrder,
-  setFilterByTags,
-  setFilterByDate,
-  setAiSuggestions,
-  setAutocompleteSuggestions,
-  setPriority,
-  setDeadline,
-  setNoteTitle,
-  setNoteContent,
-  setIsGeneratingNote,
-  setEditorState,
-  setQuickNote,
-  setIsQuickNoteOpen,
-  setTags,
-  setSelectedTags,
-  setNoteTags,
-  setTagInput,
-  setTagSuggestions,
-  setSocket,
-  setCollaborators,
-  setCollaborativeEditorState,
-  setNoteVersions,
-  setConflictResolution,
-  setRealTimeCollaboration,
-  setFolderNotes,
-  setFolderTags,
-  setVersionHistory,
-  setCollaborativeNotes,
-  setFolderStructure,
-  addTag,
-  removeTag,
-  addSelectedTag,
-  removeSelectedTag,
-  filterNotesByTags
-} = appSlice.actions;
-
-export default appSlice.reducer;
 
 const store = configureStore({
   reducer: {
@@ -325,66 +269,70 @@ const store = configureStore({
   middleware: [thunk]
 });
 
-function App() {
+const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, tags, selectedTags, noteTags } = useSelector((state: any) => state.app);
+  const { notes, meetings, templates, searchQuery, generatedNotes, folders, selectedFolder, editingNote, sortedNotes, sortedMeetings, sortedTemplates, filterType, sortBy, sortOrder, filterByTags, filterByDate, aiSuggestions, autocompleteSuggestions, priority, deadline, noteTitle, noteContent, isGeneratingNote, editorState, quickNote, isQuickNoteOpen, tags, selectedTags, noteTags, tagInput, tagSuggestions, socket, collaborators, collaborativeEditorState, noteVersions, conflictResolution, realTimeCollaboration, folderNotes, folderTags, versionHistory, collaborativeNotes, folderStructure } = useSelector((state: any) => state.app);
 
-  const handleTagInput = (e: any) => {
-    const tagInput = e.target.value;
-    dispatch(setTagInput(tagInput));
-    const tagSuggestions = tags.filter(tag => tag.includes(tagInput));
-    dispatch(setTagSuggestions(tagSuggestions));
-  };
+  useEffect(() => {
+    // Initialize notes, meetings, and templates with some data
+    const notesData = [
+      { id: 'note1', title: 'Note 1', content: 'This is note 1' },
+      { id: 'note2', title: 'Note 2', content: 'This is note 2' },
+      { id: 'note3', title: 'Note 3', content: 'This is note 3' }
+    ];
+    const meetingsData = [
+      { id: 'meeting1', title: 'Meeting 1', date: '2024-01-01' },
+      { id: 'meeting2', title: 'Meeting 2', date: '2024-01-02' },
+      { id: 'meeting3', title: 'Meeting 3', date: '2024-01-03' }
+    ];
+    const templatesData = [
+      { id: 'template1', title: 'Template 1', content: 'This is template 1' },
+      { id: 'template2', title: 'Template 2', content: 'This is template 2' },
+      { id: 'template3', title: 'Template 3', content: 'This is template 3' }
+    ];
 
-  const handleAddTag = (tag: string) => {
-    dispatch(addTag(tag));
-    dispatch(addSelectedTag(tag));
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    dispatch(removeTag(tag));
-    dispatch(removeSelectedTag(tag));
-  };
-
-  const handleFilterNotes = () => {
-    dispatch(filterNotesByTags(selectedTags));
-  };
+    notesData.forEach((note) => dispatch(appSlice.actions.addNote({ id: note.id, note })));
+    meetingsData.forEach((meeting) => dispatch(appSlice.actions.addMeeting({ id: meeting.id, meeting })));
+    templatesData.forEach((template) => dispatch(appSlice.actions.addTemplate({ id: template.id, template })));
+  }, [dispatch]);
 
   return (
     <div>
-      <input type="text" value={tags} onChange={handleTagInput} />
-      <ul>
-        {tags.map((tag: string) => (
-          <li key={tag}>
-            <span>{tag}</span>
-            <button onClick={() => handleAddTag(tag)}>Add</button>
-            <button onClick={() => handleRemoveTag(tag)}>Remove</button>
-          </li>
+      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <Link href="/notes">
+        <a>Notes</a>
+      </Link>
+      <Link href="/meetings">
+        <a>Meetings</a>
+      </Link>
+      <Link href="/templates">
+        <a>Templates</a>
+      </Link>
+      <div>
+        <h2>Notes</h2>
+        {Array.from(notes.values()).map((note) => (
+          <NoteCard key={note.id} note={note} />
         ))}
-      </ul>
-      <button onClick={handleFilterNotes}>Filter Notes</button>
-      <ul>
-        {notes.map((note: any) => (
-          <li key={note.id}>
-            <span>{note.title}</span>
-            <ul>
-              {noteTags[note.id].map((tag: string) => (
-                <li key={tag}>
-                  <span>{tag}</span>
-                </li>
-              ))}
-            </ul>
-          </li>
+      </div>
+      <div>
+        <h2>Meetings</h2>
+        {Array.from(meetings.values()).map((meeting) => (
+          <MeetingCard key={meeting.id} meeting={meeting} />
         ))}
-      </ul>
+      </div>
+      <div>
+        <h2>Templates</h2>
+        {Array.from(templates.values()).map((template) => (
+          <TemplateCard key={template.id} template={template} />
+        ))}
+      </div>
+      <Editor editorState={editorState} />
     </div>
   );
-}
+};
 
-export function DashboardPage() {
-  return (
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
-}
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);

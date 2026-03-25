@@ -95,12 +95,12 @@ const Nav = memo(() => {
       <ul
         id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
-        aria-label="Navigation menu"
         role="menu"
+        aria-hidden={!navOpen}
       >
         {filteredLinks.map((link) => (
-          <li key={link.href} role="menuitem">
-            <Link href={link.href} aria-label={link.text}>
+          <li key={link.text} role="menuitem">
+            <Link href={link.href} onClick={() => setNavOpen(false)}>
               {link.text}
             </Link>
           </li>
@@ -114,21 +114,25 @@ const Nav = memo(() => {
       >
         High Contrast Mode
       </button>
-      <form
-        className="search-form"
-        aria-label="Search form"
-        role="search"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <input
-          type="search"
-          className="search-input"
-          aria-label="Search input"
-          placeholder="Search"
-          value={searchQuery}
-          onChange={handleSearch}
+      <input
+        type="search"
+        className="search-input"
+        aria-label="Search"
+        value={searchQuery}
+        onChange={handleSearch}
+        placeholder="Search"
+      />
+      {navOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="nav-overlay"
+          onClick={toggleNav}
+          aria-hidden="true"
         />
-      </form>
+      )}
     </nav>
   );
 });
