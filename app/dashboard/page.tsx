@@ -241,35 +241,29 @@ const appSlice = createSlice({
     setFolderStructure(state, action: PayloadAction<any>) {
       state.folderStructure = action.payload;
     },
-    addFolder(state, action: PayloadAction<any>) {
-      const newFolder = action.payload;
-      if (state.folderStructure[newFolder.parentId]) {
-        state.folderStructure[newFolder.parentId].children.push(newFolder.id);
-      }
-      state.folderStructure[newFolder.id] = newFolder;
-    },
-    removeFolder(state, action: PayloadAction<string>) {
-      const folderId = action.payload;
-      if (state.folderStructure[folderId]) {
-        delete state.folderStructure[folderId];
-        Object.values(state.folderStructure).forEach((folder) => {
-          if (folder.children.includes(folderId)) {
-            folder.children = folder.children.filter((id) => id !== folderId);
-          }
-        });
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags = [...state.tags, action.payload];
       }
     },
-    addNoteToFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      const { noteId, folderId } = action.payload;
-      if (state.folderStructure[folderId]) {
-        state.folderStructure[folderId].notes.push(noteId);
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter((tag: string) => tag !== action.payload);
+    },
+    addSelectedTag(state, action: PayloadAction<string>) {
+      if (!state.selectedTags.includes(action.payload)) {
+        state.selectedTags = [...state.selectedTags, action.payload];
       }
     },
-    removeNoteFromFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      const { noteId, folderId } = action.payload;
-      if (state.folderStructure[folderId]) {
-        state.folderStructure[folderId].notes = state.folderStructure[folderId].notes.filter((id) => id !== noteId);
-      }
+    removeSelectedTag(state, action: PayloadAction<string>) {
+      state.selectedTags = state.selectedTags.filter((tag: string) => tag !== action.payload);
+    },
+    updateTagSuggestions(state, action: PayloadAction<any[]>) {
+      state.tagSuggestions = action.payload;
+    },
+    filterNotesByTags(state, action: PayloadAction<any[]>) {
+      state.sortedNotes = state.notes.filter((note: any) => {
+        return action.payload.every((tag: string) => note.tags.includes(tag));
+      });
     }
   }
 });
@@ -283,58 +277,79 @@ const store = configureStore({
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, folders, selectedFolder, folderStructure } = useSelector((state: any) => state.app);
+  const { notes, tags, selectedTags, tagInput, tagSuggestions } = useSelector((state: AppState) => state);
+  const [isTagInputFocused, setIsTagInputFocused] = useState(false);
 
   useEffect(() => {
-    // Initialize folder structure
-    dispatch(setFolderStructure({
-      root: {
-        id: 'root',
-        name: 'Root',
-        children: [],
-        notes: []
+    const handleTagInput = () => {
+      if (tagInput) {
+        const suggestions = tags.filter((tag: string) => tag.includes(tagInput));
+        dispatch(updateTagSuggestions(suggestions));
+      } else {
+        dispatch(updateTagSuggestions([]));
       }
-    }));
-  }, []);
+    };
+    handleTagInput();
+  }, [tagInput, tags, dispatch]);
 
-  const handleAddFolder = (folder: any) => {
-    dispatch(addFolder(folder));
+  const handleTagInputFocus = () => {
+    setIsTagInputFocused(true);
   };
 
-  const handleRemoveFolder = (folderId: string) => {
-    dispatch(removeFolder(folderId));
+  const handleTagInputBlur = () => {
+    setTimeout(() => {
+      setIsTagInputFocused(false);
+    }, 200);
   };
 
-  const handleAddNoteToFolder = (noteId: string, folderId: string) => {
-    dispatch(addNoteToFolder({ noteId, folderId }));
+  const handleTagSelect = (tag: string) => {
+    dispatch(addSelectedTag(tag));
+    dispatch(filterNotesByTags(selectedTags));
   };
 
-  const handleRemoveNoteFromFolder = (noteId: string, folderId: string) => {
-    dispatch(removeNoteFromFolder({ noteId, folderId }));
+  const handleTagRemove = (tag: string) => {
+    dispatch(removeSelectedTag(tag));
+    dispatch(filterNotesByTags(selectedTags));
   };
 
   return (
     <div>
       <h1>AutoNote: AI-Powered Note Taker</h1>
-      <button onClick={() => handleAddFolder({ id: 'new-folder', name: 'New Folder', children: [], notes: [] })}>
-        Add Folder
-      </button>
-      <ul>
-        {Object.values(folderStructure).map((folder: any) => (
-          <li key={folder.id}>
-            {folder.name}
-            <button onClick={() => handleRemoveFolder(folder.id)}>Remove</button>
-            <ul>
-              {folder.notes.map((noteId: string) => (
-                <li key={noteId}>{noteId}</li>
-              ))}
-            </ul>
-            <button onClick={() => handleAddNoteToFolder('new-note', folder.id)}>Add Note</button>
-          </li>
+      <input
+        type="text"
+        value={tagInput}
+        onChange={(e) => dispatch(setTagInput(e.target.value))}
+        onFocus={handleTagInputFocus}
+        onBlur={handleTagInputBlur}
+        placeholder="Search or add tags"
+      />
+      {isTagInputFocused && tagSuggestions.length > 0 && (
+        <ul>
+          {tagSuggestions.map((suggestion: string) => (
+            <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
+              {suggestion}
+            </li>
+          ))}
+        </ul>
+      )}
+      <div>
+        {selectedTags.map((tag: string) => (
+          <span key={tag} onClick={() => handleTagRemove(tag)}>
+            {tag}
+          </span>
         ))}
-      </ul>
+      </div>
+      <div>
+        {notes.map((note: any) => (
+          <NoteCard key={note.id} note={note} />
+        ))}
+      </div>
     </div>
   );
 };
 
-export default DashboardPage;
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);

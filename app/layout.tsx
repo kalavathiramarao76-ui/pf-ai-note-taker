@@ -80,133 +80,59 @@ const Nav = memo(() => {
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
       aria-label="Main navigation"
+      role="navigation"
     >
-      <div className="nav-container">
-        <button
-          className="nav-toggle"
-          aria-label="Toggle navigation"
-          onClick={toggleNav}
-        >
-          {navOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
-        </button>
-        <div
-          className={`nav-menu ${navOpen ? 'open' : ''}`}
-          aria-hidden={!navOpen}
-        >
-          <ul>
-            {filteredLinks.map((link) => (
-              <li key={link.text}>
-                <Link href={link.href} onClick={toggleNav}>
-                  {link.text}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="nav-search">
-          <input
-            type="search"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={handleSearch}
-            aria-label="Search"
-          />
-        </div>
-        <button
-          className="nav-high-contrast"
-          aria-label="Toggle high contrast mode"
-          onClick={handleHighContrastMode}
-        >
-          High Contrast Mode
-        </button>
-      </div>
-      <style jsx>
-        {`
-          .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background-color: #333;
-            color: #fff;
-          }
-          .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-          }
-          .nav-toggle {
-            background-color: transparent;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-          }
-          .nav-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #333;
-            padding: 1rem;
-            border: 1px solid #444;
-            width: 100%;
-          }
-          .nav-menu.open {
-            display: block;
-          }
-          .nav-menu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-          }
-          .nav-menu li {
-            margin-bottom: 1rem;
-          }
-          .nav-menu a {
-            color: #fff;
-            text-decoration: none;
-          }
-          .nav-search {
-            display: flex;
-            justify-content: flex-end;
-            width: 100%;
-          }
-          .nav-search input {
-            padding: 0.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            width: 100%;
-          }
-          .nav-high-contrast {
-            background-color: transparent;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            color: #fff;
-          }
-          @media (min-width: 768px) {
-            .nav-menu {
-              display: flex;
-              position: static;
-              background-color: transparent;
-              padding: 0;
-              border: none;
-            }
-            .nav-menu ul {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .nav-menu li {
-              margin-right: 2rem;
-            }
-            .nav-search {
-              display: none;
-            }
-          }
-        `}
-      </style>
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        aria-controls="nav-menu"
+        onClick={toggleNav}
+        onKeyDown={handleKeyDown}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul
+        id="nav-menu"
+        className={`nav-menu ${navOpen ? 'open' : ''}`}
+        role="menu"
+        aria-label="Navigation menu"
+      >
+        {filteredLinks.map((link) => (
+          <li key={link.text} role="menuitem">
+            <Link href={link.href} onClick={toggleNav}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <form
+        className="search-form"
+        role="search"
+        aria-label="Search form"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <label htmlFor="search-input" className="sr-only">
+          Search
+        </label>
+        <input
+          type="search"
+          id="search-input"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search input"
+        />
+      </form>
+      <button
+        type="button"
+        className="high-contrast-mode-toggle"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
     </nav>
   );
 });
