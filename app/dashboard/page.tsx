@@ -115,149 +115,32 @@ const appSlice = createSlice({
     }
   },
   reducers: {
-    setNotes(state, action: PayloadAction<{ id: string, note: any }>) {
-      state.notes.set(action.payload.id, action.payload.note);
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags.push(action.payload);
+      }
     },
-    addNote(state, action: PayloadAction<{ id: string, note: any }>) {
-      state.notes.set(action.payload.id, action.payload.note);
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter(tag => tag !== action.payload);
     },
-    removeNote(state, action: PayloadAction<string>) {
-      state.notes.delete(action.payload);
-    },
-    setMeetings(state, action: PayloadAction<{ id: string, meeting: any }>) {
-      state.meetings.set(action.payload.id, action.payload.meeting);
-    },
-    addMeeting(state, action: PayloadAction<{ id: string, meeting: any }>) {
-      state.meetings.set(action.payload.id, action.payload.meeting);
-    },
-    removeMeeting(state, action: PayloadAction<string>) {
-      state.meetings.delete(action.payload);
-    },
-    setTemplates(state, action: PayloadAction<{ id: string, template: any }>) {
-      state.templates.set(action.payload.id, action.payload.template);
-    },
-    addTemplate(state, action: PayloadAction<{ id: string, template: any }>) {
-      state.templates.set(action.payload.id, action.payload.template);
-    },
-    removeTemplate(state, action: PayloadAction<string>) {
-      state.templates.delete(action.payload);
-    },
-    setSearchQuery(state, action: PayloadAction<string>) {
-      state.searchQuery = action.payload;
-    },
-    setGeneratedNotes(state, action: PayloadAction<any[]>) {
-      state.generatedNotes = action.payload;
-    },
-    setFolders(state, action: PayloadAction<any[]>) {
-      state.folders = action.payload;
-    },
-    setSelectedFolder(state, action: PayloadAction<any>) {
-      state.selectedFolder = action.payload;
-    },
-    setEditingNote(state, action: PayloadAction<any>) {
-      state.editingNote = action.payload;
-    },
-    setSortedNotes(state, action: PayloadAction<any[]>) {
-      state.sortedNotes = action.payload;
-    },
-    setSortedMeetings(state, action: PayloadAction<any[]>) {
-      state.sortedMeetings = action.payload;
-    },
-    setSortedTemplates(state, action: PayloadAction<any[]>) {
-      state.sortedTemplates = action.payload;
-    },
-    setFilterType(state, action: PayloadAction<string>) {
-      state.filterType = action.payload;
-    },
-    setSortBy(state, action: PayloadAction<string>) {
-      state.sortBy = action.payload;
-    },
-    setSortOrder(state, action: PayloadAction<string>) {
-      state.sortOrder = action.payload;
-    },
-    setFilterByTags(state, action: PayloadAction<any[]>) {
-      state.filterByTags = action.payload;
-    },
-    setFilterByDate(state, action: PayloadAction<string>) {
-      state.filterByDate = action.payload;
-    },
-    setAiSuggestions(state, action: PayloadAction<any[]>) {
-      state.aiSuggestions = action.payload;
-    },
-    setAutocompleteSuggestions(state, action: PayloadAction<any[]>) {
-      state.autocompleteSuggestions = action.payload;
-    },
-    setPriority(state, action: PayloadAction<string>) {
-      state.priority = action.payload;
-    },
-    setDeadline(state, action: PayloadAction<string>) {
-      state.deadline = action.payload;
-    },
-    setNoteTitle(state, action: PayloadAction<string>) {
-      state.noteTitle = action.payload;
-    },
-    setNoteContent(state, action: PayloadAction<string>) {
-      state.noteContent = action.payload;
-    },
-    setIsGeneratingNote(state, action: PayloadAction<boolean>) {
-      state.isGeneratingNote = action.payload;
-    },
-    setEditorState(state, action: PayloadAction<EditorState>) {
-      state.editorState = action.payload;
-    },
-    setQuickNote(state, action: PayloadAction<string>) {
-      state.quickNote = action.payload;
-    },
-    setIsQuickNoteOpen(state, action: PayloadAction<boolean>) {
-      state.isQuickNoteOpen = action.payload;
-    },
-    setTags(state, action: PayloadAction<any[]>) {
-      state.tags = action.payload;
-    },
-    setSelectedTags(state, action: PayloadAction<any[]>) {
-      state.selectedTags = action.payload;
-    },
-    setNoteTags(state, action: PayloadAction<any>) {
-      state.noteTags = action.payload;
-    },
-    setTagInput(state, action: PayloadAction<string>) {
+    updateTagInput(state, action: PayloadAction<string>) {
       state.tagInput = action.payload;
     },
-    setTagSuggestions(state, action: PayloadAction<any[]>) {
+    updateTagSuggestions(state, action: PayloadAction<string[]>) {
       state.tagSuggestions = action.payload;
     },
-    setSocket(state, action: PayloadAction<Socket | null>) {
-      state.socket = action.payload;
+    addNoteTag(state, action: PayloadAction<{ noteId: string, tag: string }>) {
+      if (!state.noteTags[action.payload.noteId]) {
+        state.noteTags[action.payload.noteId] = [];
+      }
+      if (!state.noteTags[action.payload.noteId].includes(action.payload.tag)) {
+        state.noteTags[action.payload.noteId].push(action.payload.tag);
+      }
     },
-    setCollaborators(state, action: PayloadAction<any[]>) {
-      state.collaborators = action.payload;
-    },
-    setCollaborativeEditorState(state, action: PayloadAction<any>) {
-      state.collaborativeEditorState = action.payload;
-    },
-    setNoteVersions(state, action: PayloadAction<any>) {
-      state.noteVersions = action.payload;
-    },
-    setConflictResolution(state, action: PayloadAction<any>) {
-      state.conflictResolution = action.payload;
-    },
-    setRealTimeCollaboration(state, action: PayloadAction<any>) {
-      state.realTimeCollaboration = action.payload;
-    },
-    setFolderNotes(state, action: PayloadAction<any>) {
-      state.folderNotes = action.payload;
-    },
-    setFolderTags(state, action: PayloadAction<any>) {
-      state.folderTags = action.payload;
-    },
-    setVersionHistory(state, action: PayloadAction<any>) {
-      state.versionHistory = action.payload;
-    },
-    setCollaborativeNotes(state, action: PayloadAction<any>) {
-      state.collaborativeNotes = action.payload;
-    },
-    setFolderStructure(state, action: PayloadAction<any>) {
-      state.folderStructure = action.payload;
+    removeNoteTag(state, action: PayloadAction<{ noteId: string, tag: string }>) {
+      if (state.noteTags[action.payload.noteId]) {
+        state.noteTags[action.payload.noteId] = state.noteTags[action.payload.noteId].filter(tag => tag !== action.payload.tag);
+      }
     }
   }
 });
@@ -271,62 +154,43 @@ const store = configureStore({
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, meetings, templates, searchQuery, generatedNotes, folders, selectedFolder, editingNote, sortedNotes, sortedMeetings, sortedTemplates, filterType, sortBy, sortOrder, filterByTags, filterByDate, aiSuggestions, autocompleteSuggestions, priority, deadline, noteTitle, noteContent, isGeneratingNote, editorState, quickNote, isQuickNoteOpen, tags, selectedTags, noteTags, tagInput, tagSuggestions, socket, collaborators, collaborativeEditorState, noteVersions, conflictResolution, realTimeCollaboration, folderNotes, folderTags, versionHistory, collaborativeNotes, folderStructure } = useSelector((state: any) => state.app);
+  const { notes, tags, tagInput, tagSuggestions, noteTags } = useSelector((state: AppState) => state);
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
 
-  useEffect(() => {
-    // Initialize notes, meetings, and templates with some data
-    const notesData = [
-      { id: 'note1', title: 'Note 1', content: 'This is note 1' },
-      { id: 'note2', title: 'Note 2', content: 'This is note 2' },
-      { id: 'note3', title: 'Note 3', content: 'This is note 3' }
-    ];
-    const meetingsData = [
-      { id: 'meeting1', title: 'Meeting 1', date: '2024-01-01' },
-      { id: 'meeting2', title: 'Meeting 2', date: '2024-01-02' },
-      { id: 'meeting3', title: 'Meeting 3', date: '2024-01-03' }
-    ];
-    const templatesData = [
-      { id: 'template1', title: 'Template 1', content: 'This is template 1' },
-      { id: 'template2', title: 'Template 2', content: 'This is template 2' },
-      { id: 'template3', title: 'Template 3', content: 'This is template 3' }
-    ];
+  const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    dispatch(updateTagInput(inputValue));
+    const suggestions = tags.filter(tag => tag.includes(inputValue));
+    dispatch(updateTagSuggestions(suggestions));
+    setAutocompleteOpen(true);
+  };
 
-    notesData.forEach((note) => dispatch(appSlice.actions.addNote({ id: note.id, note })));
-    meetingsData.forEach((meeting) => dispatch(appSlice.actions.addMeeting({ id: meeting.id, meeting })));
-    templatesData.forEach((template) => dispatch(appSlice.actions.addTemplate({ id: template.id, template })));
-  }, [dispatch]);
+  const handleTagSelect = (tag: string) => {
+    dispatch(addTag(tag));
+    setAutocompleteOpen(false);
+  };
+
+  const handleNoteTagAdd = (noteId: string, tag: string) => {
+    dispatch(addNoteTag({ noteId, tag }));
+  };
+
+  const handleNoteTagRemove = (noteId: string, tag: string) => {
+    dispatch(removeNoteTag({ noteId, tag }));
+  };
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
-      <Link href="/notes">
-        <a>Notes</a>
-      </Link>
-      <Link href="/meetings">
-        <a>Meetings</a>
-      </Link>
-      <Link href="/templates">
-        <a>Templates</a>
-      </Link>
-      <div>
-        <h2>Notes</h2>
-        {Array.from(notes.values()).map((note) => (
-          <NoteCard key={note.id} note={note} />
-        ))}
-      </div>
-      <div>
-        <h2>Meetings</h2>
-        {Array.from(meetings.values()).map((meeting) => (
-          <MeetingCard key={meeting.id} meeting={meeting} />
-        ))}
-      </div>
-      <div>
-        <h2>Templates</h2>
-        {Array.from(templates.values()).map((template) => (
-          <TemplateCard key={template.id} template={template} />
-        ))}
-      </div>
-      <Editor editorState={editorState} />
+      <input type="text" value={tagInput} onChange={handleTagInput} placeholder="Add tag" />
+      {autocompleteOpen && (
+        <ul>
+          {tagSuggestions.map((suggestion, index) => (
+            <li key={index} onClick={() => handleTagSelect(suggestion)}>{suggestion}</li>
+          ))}
+        </ul>
+      )}
+      {notes.map((note, index) => (
+        <NoteCard key={index} note={note} tags={noteTags[note.id]} onTagAdd={(tag) => handleNoteTagAdd(note.id, tag)} onTagRemove={(tag) => handleNoteTagRemove(note.id, tag)} />
+      ))}
     </div>
   );
 };

@@ -95,8 +95,8 @@ const Nav = memo(() => {
       <ul
         id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
+        aria-label="Navigation menu"
         role="menu"
-        aria-hidden={!navOpen}
       >
         {filteredLinks.map((link) => (
           <li key={link.text} role="menuitem">
@@ -106,33 +106,38 @@ const Nav = memo(() => {
           </li>
         ))}
       </ul>
+      <form
+        className="search-form"
+        aria-label="Search form"
+        role="search"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <label htmlFor="search-input" className="sr-only">
+          Search
+        </label>
+        <input
+          type="search"
+          id="search-input"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={handleSearch}
+          aria-label="Search input"
+        />
+      </form>
       <button
         type="button"
         className="high-contrast-mode-toggle"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
-        High Contrast Mode
+        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
       </button>
-      <input
-        type="search"
-        className="search-input"
-        aria-label="Search"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Search"
+      <div
+        className="sr-only"
+        aria-live="assertive"
+        aria-atomic="true"
+        id="nav-announcement"
       />
-      {navOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="nav-overlay"
-          onClick={toggleNav}
-          aria-hidden="true"
-        />
-      )}
     </nav>
   );
 });
