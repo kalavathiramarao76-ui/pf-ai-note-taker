@@ -9,11 +9,14 @@ const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highContrastMode, setHighContrastMode] = useState(false);
-  const links = useMemo(() => [
-    { href: '/', text: 'Home' },
-    { href: '/about', text: 'About' },
-    { href: '/contact', text: 'Contact' },
-  ], []);
+  const linksMap = useMemo(() => {
+    const links = [
+      { href: '/', text: 'Home' },
+      { href: '/about', text: 'About' },
+      { href: '/contact', text: 'Contact' },
+    ];
+    return new Map(links.map((link) => [link.text.toLowerCase(), link]));
+  }, []);
   const router = useRouter();
 
   const toggleNav = useCallback(() => {
@@ -61,12 +64,12 @@ const Nav = memo(() => {
 
   const filteredLinks = useMemo(() => {
     if (searchQuery === '') {
-      return links;
+      return Array.from(linksMap.values());
     }
-    return links.filter((link) =>
+    return Array.from(linksMap.values()).filter((link) =>
       link.text.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery, links]);
+  }, [searchQuery, linksMap]);
 
   const handleHighContrastMode = useCallback(() => {
     setHighContrastMode(!highContrastMode);
@@ -83,57 +86,46 @@ const Nav = memo(() => {
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
       <div className="nav-header" role="banner">
-        <Link
-          href="#nav-menu"
+        <Link href="/">
+          <a>
+            <img src="/logo.png" alt="AutoNote Logo" />
+          </a>
+        </Link>
+        <button
+          type="button"
           className="nav-toggle"
-          aria-label="Open navigation menu"
-          aria-expanded={navOpen}
-          aria-controls="nav-menu"
+          aria-label="Toggle navigation"
           onClick={toggleNav}
         >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </Link>
-        <Link href="/" className="nav-logo">
-          AutoNote
-        </Link>
+        </button>
       </div>
-      <ul
-        id="nav-menu"
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
-        role="menu"
-        aria-label="Navigation menu"
-        aria-hidden={!navOpen}
-      >
-        {filteredLinks.map((link, index) => (
-          <li key={index} role="menuitem">
-            <Link
-              href={link.href}
-              className="nav-link"
-              aria-label={link.text}
-              aria-current={router.asPath === link.href ? 'page' : undefined}
-            >
-              {link.text}
+      <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
+        {filteredLinks.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href}>
+              <a>{link.text}</a>
             </Link>
           </li>
         ))}
       </ul>
+      <div className="nav-search">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </div>
       <button
-        className="high-contrast-mode-toggle"
+        type="button"
+        className="nav-high-contrast-mode"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
-        High Contrast Mode
+        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
       </button>
-      <form className="search-form" role="search">
-        <input
-          type="search"
-          className="search-input"
-          aria-label="Search"
-          value={searchQuery}
-          onChange={handleSearch}
-          onKeyDown={handleKeyDown}
-        />
-      </form>
     </nav>
   );
 });

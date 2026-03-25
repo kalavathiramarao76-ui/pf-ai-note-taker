@@ -229,6 +229,25 @@ const appSlice = createSlice({
     setCollaborativeNotes(state, action: PayloadAction<any>) {
       state.collaborativeNotes = action.payload;
     },
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags = [...state.tags, action.payload];
+      }
+    },
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter(tag => tag !== action.payload);
+    },
+    addSelectedTag(state, action: PayloadAction<string>) {
+      if (!state.selectedTags.includes(action.payload)) {
+        state.selectedTags = [...state.selectedTags, action.payload];
+      }
+    },
+    removeSelectedTag(state, action: PayloadAction<string>) {
+      state.selectedTags = state.selectedTags.filter(tag => tag !== action.payload);
+    },
+    updateTagSuggestions(state, action: PayloadAction<any[]>) {
+      state.tagSuggestions = action.payload;
+    },
   },
 });
 
@@ -237,36 +256,75 @@ const store = configureStore({
   reducer: {
     app: appSlice.reducer,
   },
+  middleware: [thunk],
 });
 
-// Use the store in the component
-function DashboardPage() {
+// Define the component
+const DashboardPage = () => {
   const dispatch = useDispatch();
-  const state = useSelector((state: any) => state.app);
+  const { notes, tags, selectedTags, tagInput, tagSuggestions } = useSelector((state: any) => state.app);
+  const [filteredNotes, setFilteredNotes] = useState(notes);
 
-  // Use the state and dispatch in the component
   useEffect(() => {
-    // Initialize the state
-    dispatch(appSlice.actions.setNotes([]));
-    dispatch(appSlice.actions.setMeetings([]));
-    dispatch(appSlice.actions.setTemplates([]));
-  }, [dispatch]);
+    const filterNotes = () => {
+      const filteredNotes = notes.filter(note => {
+        const noteTags = note.tags || [];
+        return selectedTags.every(tag => noteTags.includes(tag));
+      });
+      setFilteredNotes(filteredNotes);
+    };
+    filterNotes();
+  }, [notes, selectedTags]);
+
+  const handleTagInput = (e: any) => {
+    const input = e.target.value;
+    dispatch(setTagInput(input));
+    const suggestions = tags.filter(tag => tag.includes(input));
+    dispatch(updateTagSuggestions(suggestions));
+  };
+
+  const handleAddTag = (tag: string) => {
+    dispatch(addTag(tag));
+    dispatch(addSelectedTag(tag));
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    dispatch(removeTag(tag));
+    dispatch(removeSelectedTag(tag));
+  };
 
   return (
-    // Render the component
     <div>
-      <NoteCard />
-      <MeetingCard />
-      <TemplateCard />
-      <Editor editorState={state.editorState} />
+      <h1>Dashboard</h1>
+      <input type="text" value={tagInput} onChange={handleTagInput} placeholder="Search tags" />
+      <ul>
+        {tagSuggestions.map((tag: string) => (
+          <li key={tag}>
+            <button onClick={() => handleAddTag(tag)}>{tag}</button>
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {selectedTags.map((tag: string) => (
+          <li key={tag}>
+            <button onClick={() => handleRemoveTag(tag)}>{tag}</button>
+          </li>
+        ))}
+      </ul>
+      <h2>Notes</h2>
+      <ul>
+        {filteredNotes.map((note: any) => (
+          <li key={note.id}>
+            <NoteCard note={note} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
 
-export default function App() {
-  return (
-    <Provider store={store}>
-      <DashboardPage />
-    </Provider>
-  );
-}
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);
