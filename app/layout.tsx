@@ -94,50 +94,53 @@ const Nav = memo(() => {
         className="nav-toggle"
         aria-label="Toggle navigation"
         aria-expanded={navOpen}
+        aria-controls="nav-menu"
         onClick={toggleNav}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
+        id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
+        aria-hidden={!navOpen}
         role="menu"
-        aria-label="Navigation menu"
       >
         {filteredLinksMemo.map((link, index) => (
           <li key={index} role="menuitem">
-            <Link href={link.href} aria-label={link.text}>
+            <Link
+              href={link.href}
+              aria-label={link.text}
+              onClick={() => setNavOpen(false)}
+            >
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
       <form
-        className="search-form"
         onSubmit={handleSearch}
-        aria-label="Search form"
+        className="nav-search"
+        aria-label="Search"
       >
         <input
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search"
-          aria-label="Search input"
+          aria-label="Search query"
         />
-        <button type="submit" aria-label="Search button">
+        <button type="submit" aria-label="Search">
           Search
         </button>
       </form>
       <button
         type="button"
-        className="high-contrast-mode-toggle"
+        className="nav-high-contrast-mode"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
         {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
       </button>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
     </nav>
   );
 });

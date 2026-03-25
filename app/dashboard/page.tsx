@@ -52,6 +52,8 @@ const initialState = {
   noteVersions: {}, // store versions of each note
   conflictResolution: {}, // store conflict resolution data for each note
   realTimeCollaboration: {}, // store real-time collaboration data for each note
+  folderNotes: {}, // store notes for each folder
+  folderTags: {}, // store tags for each folder
 };
 
 // Define the reducer
@@ -131,15 +133,28 @@ const appReducer = (state = initialState, action) => {
       return { ...state, conflictResolution: action.conflictResolution };
     case 'SET_REAL_TIME_COLLABORATION':
       return { ...state, realTimeCollaboration: action.realTimeCollaboration };
-    case 'ADD_TAG_SUGGESTION':
-      return { ...state, tagSuggestions: [...state.tagSuggestions, action.tag] };
-    case 'REMOVE_TAG_SUGGESTION':
-      return { ...state, tagSuggestions: state.tagSuggestions.filter(tag => tag !== action.tag) };
+    case 'SET_FOLDER_NOTES':
+      return { ...state, folderNotes: action.folderNotes };
+    case 'SET_FOLDER_TAGS':
+      return { ...state, folderTags: action.folderTags };
+    case 'CREATE_FOLDER':
+      return { ...state, folders: [...state.folders, action.folder] };
+    case 'DELETE_FOLDER':
+      return { ...state, folders: state.folders.filter(folder => folder.id !== action.folderId) };
+    case 'ADD_NOTE_TO_FOLDER':
+      return { ...state, folderNotes: { ...state.folderNotes, [action.folderId]: [...(state.folderNotes[action.folderId] || []), action.noteId] } };
+    case 'REMOVE_NOTE_FROM_FOLDER':
+      return { ...state, folderNotes: { ...state.folderNotes, [action.folderId]: state.folderNotes[action.folderId].filter(noteId => noteId !== action.noteId) } };
+    case 'ADD_TAG_TO_FOLDER':
+      return { ...state, folderTags: { ...state.folderTags, [action.folderId]: [...(state.folderTags[action.folderId] || []), action.tag] } };
+    case 'REMOVE_TAG_FROM_FOLDER':
+      return { ...state, folderTags: { ...state.folderTags, [action.folderId]: state.folderTags[action.folderId].filter(tag => tag !== action.tag) } };
     default:
       return state;
   }
 };
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appReducer,
@@ -147,63 +162,64 @@ const store = configureStore({
   middleware: [thunk],
 });
 
+// Define the Dashboard page
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, noteTags, tagInput, tagSuggestions } = useSelector((state) => state.app);
-  const [tagInputValue, setTagInputValue] = useState('');
+  const { notes, folders, selectedFolder, folderNotes, folderTags } = useSelector((state) => state.app);
 
-  useEffect(() => {
-    const fetchTags = async () => {
-      const response = await client.get('/tags');
-      dispatch({ type: 'SET_TAGS', tags: response.data });
-    };
-    fetchTags();
-  }, []);
-
-  const handleTagInput = (e) => {
-    setTagInputValue(e.target.value);
-    const suggestions = notes.map((note) => noteTags[note.id]).flat().filter((tag) => tag.includes(e.target.value));
-    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: suggestions });
+  // Create a new folder
+  const createFolder = (folder) => {
+    dispatch({ type: 'CREATE_FOLDER', folder });
   };
 
-  const handleTagSelect = (tag) => {
-    dispatch({ type: 'ADD_TAG_SUGGESTION', tag });
-    setTagInputValue('');
+  // Delete a folder
+  const deleteFolder = (folderId) => {
+    dispatch({ type: 'DELETE_FOLDER', folderId });
   };
 
-  const handleTagRemove = (tag) => {
-    dispatch({ type: 'REMOVE_TAG_SUGGESTION', tag });
+  // Add a note to a folder
+  const addNoteToFolder = (folderId, noteId) => {
+    dispatch({ type: 'ADD_NOTE_TO_FOLDER', folderId, noteId });
+  };
+
+  // Remove a note from a folder
+  const removeNoteFromFolder = (folderId, noteId) => {
+    dispatch({ type: 'REMOVE_NOTE_FROM_FOLDER', folderId, noteId });
+  };
+
+  // Add a tag to a folder
+  const addTagToFolder = (folderId, tag) => {
+    dispatch({ type: 'ADD_TAG_TO_FOLDER', folderId, tag });
+  };
+
+  // Remove a tag from a folder
+  const removeTagFromFolder = (folderId, tag) => {
+    dispatch({ type: 'REMOVE_TAG_FROM_FOLDER', folderId, tag });
   };
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
-      <input
-        type="text"
-        value={tagInputValue}
-        onChange={handleTagInput}
-        placeholder="Enter a tag"
-      />
+      <h1>Dashboard</h1>
+      <button onClick={() => createFolder({ id: Math.random(), name: 'New Folder' })}>Create Folder</button>
       <ul>
-        {tagSuggestions.map((tag) => (
-          <li key={tag}>
-            <span>{tag}</span>
-            <button onClick={() => handleTagSelect(tag)}>Add</button>
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {notes.map((note) => (
-          <li key={note.id}>
-            <NoteCard note={note} />
+        {folders.map((folder) => (
+          <li key={folder.id}>
+            {folder.name}
+            <button onClick={() => deleteFolder(folder.id)}>Delete</button>
             <ul>
-              {noteTags[note.id].map((tag) => (
-                <li key={tag}>
-                  <span>{tag}</span>
-                  <button onClick={() => handleTagRemove(tag)}>Remove</button>
-                </li>
+              {folderNotes[folder.id] && folderNotes[folder.id].map((noteId) => (
+                <li key={noteId}>{notes.find((note) => note.id === noteId).title}</li>
               ))}
             </ul>
+            <button onClick={() => addNoteToFolder(folder.id, notes[0].id)}>Add Note</button>
+            <button onClick={() => removeNoteFromFolder(folder.id, notes[0].id)}>Remove Note</button>
+            <ul>
+              {folderTags[folder.id] && folderTags[folder.id].map((tag) => (
+                <li key={tag}>{tag}</li>
+              ))}
+            </ul>
+            <button onClick={() => addTagToFolder(folder.id, 'New Tag')}>Add Tag</button>
+            <button onClick={() => removeTagFromFolder(folder.id, 'New Tag')}>Remove Tag</button>
           </li>
         ))}
       </ul>
@@ -211,8 +227,13 @@ const DashboardPage = () => {
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+// Render the Dashboard page
+const App = () => {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+};
+
+export default App;

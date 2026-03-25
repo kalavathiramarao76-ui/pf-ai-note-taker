@@ -188,39 +188,3 @@ img[alt=""] {
 img {
   @apply max-w-full h-auto;
 }
-
-/* Optimizations for better page load times and search engine crawling */
-body {
-  @apply overflow-x-hidden;
-}
-
-a {
-  @apply transition duration-300 ease-in-out;
-}
-
-button {
-  @apply transition duration-300 ease-in-out;
-}
-
-input, textarea, select {
-  @apply transition duration-300 ease-in-out;
-}
-
-/* Critical CSS for above-the-fold content */
-#header, #nav, #main {
-  @apply will-change contents;
-}
-
-/* Lazy loading for images */
-img {
-  @apply lazy;
-}
-
-/* Accessibility improvements */
-button, input, textarea, select {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
-}
-
-a {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
-}
