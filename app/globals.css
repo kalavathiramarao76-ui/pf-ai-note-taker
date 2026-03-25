@@ -169,6 +169,10 @@
   .button-text {
     @apply sr-only;
   }
+
+  .screen-reader-text {
+    @apply sr-only;
+  }
 }
 
 button::after {
@@ -183,4 +187,36 @@ input::after {
 
 img[alt=""] {
   @apply sr-only;
+}
+
+img::after {
+  content: attr(alt);
+  @apply screen-reader-only;
+}
+
+label {
+  @apply sr-only;
+}
+
+label::after {
+  content: attr(for);
+  @apply screen-reader-only;
+}
+
+select {
+  @apply appearance-none;
+}
+
+select::after {
+  content: "Select an option";
+  @apply screen-reader-only;
+}
+
+textarea {
+  @apply resize-none;
+}
+
+textarea::after {
+  content: "Enter your text";
+  @apply screen-reader-only;
 }

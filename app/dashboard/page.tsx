@@ -14,7 +14,52 @@ import thunk from 'redux-thunk';
 import { Socket } from 'socket.io-client';
 
 // Define the initial state
-const initialState = {
+interface AppState {
+  notes: any[];
+  meetings: any[];
+  templates: any[];
+  searchQuery: string;
+  generatedNotes: any[];
+  folders: any[];
+  selectedFolder: any;
+  editingNote: any;
+  sortedNotes: any[];
+  sortedMeetings: any[];
+  sortedTemplates: any[];
+  filterType: string;
+  sortBy: string;
+  sortOrder: string;
+  filterByTags: any[];
+  filterByDate: string;
+  aiSuggestions: any[];
+  autocompleteSuggestions: any[];
+  priority: string;
+  deadline: string;
+  noteTitle: string;
+  noteContent: string;
+  isGeneratingNote: boolean;
+  editorState: EditorState;
+  quickNote: string;
+  isQuickNoteOpen: boolean;
+  tags: any[];
+  selectedTags: any[];
+  noteTags: any;
+  tagInput: string;
+  tagSuggestions: any[];
+  socket: Socket | null;
+  collaborators: any[];
+  collaborativeEditorState: any;
+  noteVersions: any;
+  conflictResolution: any;
+  realTimeCollaboration: any;
+  folderNotes: any;
+  folderTags: any;
+  versionHistory: any;
+  collaborativeNotes: any;
+}
+
+// Define the reducer
+const appReducer = (state: AppState = {
   notes: [],
   meetings: [],
   templates: [],
@@ -43,23 +88,20 @@ const initialState = {
   isQuickNoteOpen: false,
   tags: [],
   selectedTags: [],
-  noteTags: {}, // store tags for each note
-  tagInput: '', // input for tag autocomplete
-  tagSuggestions: [], // suggestions for tag autocomplete
+  noteTags: {}, 
+  tagInput: '', 
+  tagSuggestions: [], 
   socket: null,
-  collaborators: [], // store collaborators for each note
-  collaborativeEditorState: {}, // store collaborative editor state for each note
-  noteVersions: {}, // store versions of each note
-  conflictResolution: {}, // store conflict resolution data for each note
-  realTimeCollaboration: {}, // store real-time collaboration data for each note
-  folderNotes: {}, // store notes for each folder
-  folderTags: {}, // store tags for each folder
-  versionHistory: {}, // store version history for each note
-  collaborativeNotes: {}, // store collaborative notes
-};
-
-// Define the reducer
-const appReducer = (state = initialState, action) => {
+  collaborators: [], 
+  collaborativeEditorState: {}, 
+  noteVersions: {}, 
+  conflictResolution: {}, 
+  realTimeCollaboration: {}, 
+  folderNotes: {}, 
+  folderTags: {}, 
+  versionHistory: {}, 
+  collaborativeNotes: {}, 
+}, action: any) => {
   switch (action.type) {
     case 'SET_NOTES':
       return { ...state, notes: action.notes };
@@ -148,6 +190,7 @@ const appReducer = (state = initialState, action) => {
   }
 };
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appReducer,
@@ -155,92 +198,126 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-const DashboardPage = () => {
+// Define the actions
+export const setNotes = (notes: any[]) => ({ type: 'SET_NOTES', notes });
+export const setMeetings = (meetings: any[]) => ({ type: 'SET_MEETINGS', meetings });
+export const setTemplates = (templates: any[]) => ({ type: 'SET_TEMPLATES', templates });
+export const setSearchQuery = (searchQuery: string) => ({ type: 'SET_SEARCH_QUERY', searchQuery });
+export const setGeneratedNotes = (generatedNotes: any[]) => ({ type: 'SET_GENERATED_NOTES', generatedNotes });
+export const setFolders = (folders: any[]) => ({ type: 'SET_FOLDERS', folders });
+export const setSelectedFolder = (selectedFolder: any) => ({ type: 'SET_SELECTED_FOLDER', selectedFolder });
+export const setEditingNote = (editingNote: any) => ({ type: 'SET_EDITING_NOTE', editingNote });
+export const setSortedNotes = (sortedNotes: any[]) => ({ type: 'SET_SORTED_NOTES', sortedNotes });
+export const setSortedMeetings = (sortedMeetings: any[]) => ({ type: 'SET_SORTED_MEETINGS', sortedMeetings });
+export const setSortedTemplates = (sortedTemplates: any[]) => ({ type: 'SET_SORTED_TEMPLATES', sortedTemplates });
+export const setFilterType = (filterType: string) => ({ type: 'SET_FILTER_TYPE', filterType });
+export const setSortBy = (sortBy: string) => ({ type: 'SET_SORT_BY', sortBy });
+export const setSortOrder = (sortOrder: string) => ({ type: 'SET_SORT_ORDER', sortOrder });
+export const setFilterByTags = (filterByTags: any[]) => ({ type: 'SET_FILTER_BY_TAGS', filterByTags });
+export const setFilterByDate = (filterByDate: string) => ({ type: 'SET_FILTER_BY_DATE', filterByDate });
+export const setAiSuggestions = (aiSuggestions: any[]) => ({ type: 'SET_AI_SUGGESTIONS', aiSuggestions });
+export const setAutocompleteSuggestions = (autocompleteSuggestions: any[]) => ({ type: 'SET_AUTOCOMPLETE_SUGGESTIONS', autocompleteSuggestions });
+export const setPriority = (priority: string) => ({ type: 'SET_PRIORITY', priority });
+export const setDeadline = (deadline: string) => ({ type: 'SET_DEADLINE', deadline });
+export const setNoteTitle = (noteTitle: string) => ({ type: 'SET_NOTE_TITLE', noteTitle });
+export const setNoteContent = (noteContent: string) => ({ type: 'SET_NOTE_CONTENT', noteContent });
+export const setIsGeneratingNote = (isGeneratingNote: boolean) => ({ type: 'SET_IS_GENERATING_NOTE', isGeneratingNote });
+export const setEditorState = (editorState: EditorState) => ({ type: 'SET_EDITOR_STATE', editorState });
+export const setQuickNote = (quickNote: string) => ({ type: 'SET_QUICK_NOTE', quickNote });
+export const setIsQuickNoteOpen = (isQuickNoteOpen: boolean) => ({ type: 'SET_IS_QUICK_NOTE_OPEN', isQuickNoteOpen });
+export const setTags = (tags: any[]) => ({ type: 'SET_TAGS', tags });
+export const setSelectedTags = (selectedTags: any[]) => ({ type: 'SET_SELECTED_TAGS', selectedTags });
+export const setNoteTags = (noteTags: any) => ({ type: 'SET_NOTE_TAGS', noteTags });
+export const setTagInput = (tagInput: string) => ({ type: 'SET_TAG_INPUT', tagInput });
+export const setTagSuggestions = (tagSuggestions: any[]) => ({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions });
+export const setSocket = (socket: Socket | null) => ({ type: 'SET_SOCKET', socket });
+export const setCollaborators = (collaborators: any[]) => ({ type: 'SET_COLLABORATORS', collaborators });
+export const setCollaborativeEditorState = (collaborativeEditorState: any) => ({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState });
+export const setNoteVersions = (noteVersions: any) => ({ type: 'SET_NOTE_VERSIONS', noteVersions });
+export const setConflictResolution = (conflictResolution: any) => ({ type: 'SET_CONFLICT_RESOLUTION', conflictResolution });
+export const setRealTimeCollaboration = (realTimeCollaboration: any) => ({ type: 'SET_REAL_TIME_COLLABORATION', realTimeCollaboration });
+export const setFolderNotes = (folderNotes: any) => ({ type: 'SET_FOLDER_NOTES', folderNotes });
+export const setFolderTags = (folderTags: any) => ({ type: 'SET_FOLDER_TAGS', folderTags });
+export const setVersionHistory = (versionHistory: any) => ({ type: 'SET_VERSION_HISTORY', versionHistory });
+export const setCollaborativeNotes = (collaborativeNotes: any) => ({ type: 'SET_COLLABORATIVE_NOTES', collaborativeNotes });
+
+// Define the Dashboard component
+const Dashboard = () => {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state.app);
-  const router = useRouter();
+  const state = useSelector((state: any) => state.app);
 
-  const handleTagInput = (e) => {
-    const tagInput = e.target.value;
-    dispatch({ type: 'SET_TAG_INPUT', tagInput });
-    const tagSuggestions = state.tags.filter((tag) => tag.includes(tagInput));
-    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions });
-  };
-
-  const handleTagSelect = (tag) => {
-    const selectedTags = [...state.selectedTags, tag];
-    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags });
-    dispatch({ type: 'SET_TAG_INPUT', tagInput: '' });
-    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions: [] });
-  };
-
-  const handleNoteTagAdd = (noteId, tag) => {
-    const noteTags = { ...state.noteTags };
-    if (!noteTags[noteId]) {
-      noteTags[noteId] = [];
-    }
-    noteTags[noteId].push(tag);
-    dispatch({ type: 'SET_NOTE_TAGS', noteTags });
-  };
-
-  const handleNoteTagRemove = (noteId, tag) => {
-    const noteTags = { ...state.noteTags };
-    if (noteTags[noteId]) {
-      noteTags[noteId] = noteTags[noteId].filter((t) => t !== tag);
-    }
-    dispatch({ type: 'SET_NOTE_TAGS', noteTags });
-  };
+  useEffect(() => {
+    // Initialize the store with default values
+    dispatch(setNotes([]));
+    dispatch(setMeetings([]));
+    dispatch(setTemplates([]));
+    dispatch(setSearchQuery(''));
+    dispatch(setGeneratedNotes([]));
+    dispatch(setFolders([]));
+    dispatch(setSelectedFolder(null));
+    dispatch(setEditingNote(null));
+    dispatch(setSortedNotes([]));
+    dispatch(setSortedMeetings([]));
+    dispatch(setSortedTemplates([]));
+    dispatch(setFilterType('all'));
+    dispatch(setSortBy('title'));
+    dispatch(setSortOrder('asc'));
+    dispatch(setFilterByTags([]));
+    dispatch(setFilterByDate(''));
+    dispatch(setAiSuggestions([]));
+    dispatch(setAutocompleteSuggestions([]));
+    dispatch(setPriority('all'));
+    dispatch(setDeadline(''));
+    dispatch(setNoteTitle(''));
+    dispatch(setNoteContent(''));
+    dispatch(setIsGeneratingNote(false));
+    dispatch(setEditorState(EditorState.createWithContent(ContentState.createFromText(''))));
+    dispatch(setQuickNote(''));
+    dispatch(setIsQuickNoteOpen(false));
+    dispatch(setTags([]));
+    dispatch(setSelectedTags([]));
+    dispatch(setNoteTags({}));
+    dispatch(setTagInput(''));
+    dispatch(setTagSuggestions([]));
+    dispatch(setSocket(null));
+    dispatch(setCollaborators([]));
+    dispatch(setCollaborativeEditorState({}));
+    dispatch(setNoteVersions({}));
+    dispatch(setConflictResolution({}));
+    dispatch(setRealTimeCollaboration({}));
+    dispatch(setFolderNotes({}));
+    dispatch(setFolderTags({}));
+    dispatch(setVersionHistory({}));
+    dispatch(setCollaborativeNotes({}));
+  }, [dispatch]);
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
-      <input
-        type="text"
-        value={state.tagInput}
-        onChange={handleTagInput}
-        placeholder="Add tag"
-      />
-      <ul>
-        {state.tagSuggestions.map((tag) => (
-          <li key={tag} onClick={() => handleTagSelect(tag)}>
-            {tag}
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {state.notes.map((note) => (
-          <li key={note.id}>
-            <NoteCard note={note} />
-            <ul>
-              {state.noteTags[note.id] && state.noteTags[note.id].map((tag) => (
-                <li key={tag}>
-                  {tag}
-                  <button onClick={() => handleNoteTagRemove(note.id, tag)}>Remove</button>
-                </li>
-              ))}
-            </ul>
-            <input
-              type="text"
-              value={state.tagInput}
-              onChange={handleTagInput}
-              placeholder="Add tag to note"
-            />
-            <ul>
-              {state.tagSuggestions.map((tag) => (
-                <li key={tag} onClick={() => handleNoteTagAdd(note.id, tag)}>
-                  {tag}
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+      <h1>Dashboard</h1>
+      <Link href="/notes">
+        <a>Notes</a>
+      </Link>
+      <Link href="/meetings">
+        <a>Meetings</a>
+      </Link>
+      <Link href="/templates">
+        <a>Templates</a>
+      </Link>
+      <NoteCard />
+      <MeetingCard />
+      <TemplateCard />
+      <Editor editorState={state.editorState} />
     </div>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+// Wrap the Dashboard component with the Provider
+const App = () => {
+  return (
+    <Provider store={store}>
+      <Dashboard />
+    </Provider>
+  );
+};
+
+export default App;

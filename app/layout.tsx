@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useMemo } from 'react';
+import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,11 +16,11 @@ const Nav = memo(() => {
   ], []);
   const router = useRouter();
 
-  const toggleNav = () => {
+  const toggleNav = useCallback(() => {
     setNavOpen(!navOpen);
-  };
+  }, [navOpen]);
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = useCallback((event) => {
     if (event.key === 'Escape') {
       setNavOpen(false);
     }
@@ -52,12 +52,12 @@ const Nav = memo(() => {
       const nextIndex = (currentIndex + 1) % menuItems.length;
       menuItems[nextIndex].focus();
     }
-  };
+  }, [navOpen]);
 
-  const handleSearch = (event) => {
+  const handleSearch = useCallback((event) => {
     event.preventDefault();
     setSearchQuery(event.target.value);
-  };
+  }, []);
 
   const filteredLinks = useMemo(() => {
     if (searchQuery === '') {
@@ -68,10 +68,10 @@ const Nav = memo(() => {
     );
   }, [searchQuery, links]);
 
-  const handleHighContrastMode = () => {
+  const handleHighContrastMode = useCallback(() => {
     setHighContrastMode(!highContrastMode);
     document.body.classList.toggle('high-contrast-mode');
-  };
+  }, [highContrastMode]);
 
   return (
     <nav
@@ -88,43 +88,37 @@ const Nav = memo(() => {
         </Link>
         <button
           className="nav-toggle"
-          aria-label="Toggle navigation menu"
-          aria-expanded={navOpen}
-          aria-controls="nav-menu"
+          aria-label="Toggle navigation"
           onClick={toggleNav}
         >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
       </div>
-      <ul
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
-        id="nav-menu"
-        role="menu"
-        aria-hidden={!navOpen}
-      >
+      <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
         {filteredLinks.map((link, index) => (
-          <li key={index} role="menuitem">
+          <li key={index}>
             <Link href={link.href}>
               <a>{link.text}</a>
             </Link>
           </li>
         ))}
       </ul>
+      <div className="nav-search">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </div>
       <button
-        className="high-contrast-mode-toggle"
+        className="nav-contrast"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
         High Contrast Mode
       </button>
-      <input
-        type="search"
-        className="search-input"
-        aria-label="Search"
-        value={searchQuery}
-        onChange={handleSearch}
-        onKeyDown={handleKeyDown}
-      />
     </nav>
   );
 });
