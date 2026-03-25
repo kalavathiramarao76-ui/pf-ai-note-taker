@@ -247,7 +247,7 @@ const appSlice = createSlice({
       }
     },
     removeTag(state, action: PayloadAction<string>) {
-      state.tags = state.tags.filter((tag: string) => tag !== action.payload);
+      state.tags = state.tags.filter(tag => tag !== action.payload);
     },
     addSelectedTag(state, action: PayloadAction<string>) {
       if (!state.selectedTags.includes(action.payload)) {
@@ -255,18 +255,68 @@ const appSlice = createSlice({
       }
     },
     removeSelectedTag(state, action: PayloadAction<string>) {
-      state.selectedTags = state.selectedTags.filter((tag: string) => tag !== action.payload);
-    },
-    updateTagSuggestions(state, action: PayloadAction<any[]>) {
-      state.tagSuggestions = action.payload;
+      state.selectedTags = state.selectedTags.filter(tag => tag !== action.payload);
     },
     filterNotesByTags(state, action: PayloadAction<any[]>) {
-      state.sortedNotes = state.notes.filter((note: any) => {
-        return action.payload.every((tag: string) => note.tags.includes(tag));
+      state.sortedNotes = state.notes.filter(note => {
+        const noteTags = state.noteTags[note.id];
+        return action.payload.every(tag => noteTags.includes(tag));
       });
     }
   }
 });
+
+export const {
+  setNotes,
+  setMeetings,
+  setTemplates,
+  setSearchQuery,
+  setGeneratedNotes,
+  setFolders,
+  setSelectedFolder,
+  setEditingNote,
+  setSortedNotes,
+  setSortedMeetings,
+  setSortedTemplates,
+  setFilterType,
+  setSortBy,
+  setSortOrder,
+  setFilterByTags,
+  setFilterByDate,
+  setAiSuggestions,
+  setAutocompleteSuggestions,
+  setPriority,
+  setDeadline,
+  setNoteTitle,
+  setNoteContent,
+  setIsGeneratingNote,
+  setEditorState,
+  setQuickNote,
+  setIsQuickNoteOpen,
+  setTags,
+  setSelectedTags,
+  setNoteTags,
+  setTagInput,
+  setTagSuggestions,
+  setSocket,
+  setCollaborators,
+  setCollaborativeEditorState,
+  setNoteVersions,
+  setConflictResolution,
+  setRealTimeCollaboration,
+  setFolderNotes,
+  setFolderTags,
+  setVersionHistory,
+  setCollaborativeNotes,
+  setFolderStructure,
+  addTag,
+  removeTag,
+  addSelectedTag,
+  removeSelectedTag,
+  filterNotesByTags
+} = appSlice.actions;
+
+export default appSlice.reducer;
 
 const store = configureStore({
   reducer: {
@@ -275,81 +325,66 @@ const store = configureStore({
   middleware: [thunk]
 });
 
-const DashboardPage = () => {
+function App() {
   const dispatch = useDispatch();
-  const { notes, tags, selectedTags, tagInput, tagSuggestions } = useSelector((state: AppState) => state);
-  const [isTagInputFocused, setIsTagInputFocused] = useState(false);
+  const { notes, tags, selectedTags, noteTags } = useSelector((state: any) => state.app);
 
-  useEffect(() => {
-    const handleTagInput = () => {
-      if (tagInput) {
-        const suggestions = tags.filter((tag: string) => tag.includes(tagInput));
-        dispatch(updateTagSuggestions(suggestions));
-      } else {
-        dispatch(updateTagSuggestions([]));
-      }
-    };
-    handleTagInput();
-  }, [tagInput, tags, dispatch]);
-
-  const handleTagInputFocus = () => {
-    setIsTagInputFocused(true);
+  const handleTagInput = (e: any) => {
+    const tagInput = e.target.value;
+    dispatch(setTagInput(tagInput));
+    const tagSuggestions = tags.filter(tag => tag.includes(tagInput));
+    dispatch(setTagSuggestions(tagSuggestions));
   };
 
-  const handleTagInputBlur = () => {
-    setTimeout(() => {
-      setIsTagInputFocused(false);
-    }, 200);
-  };
-
-  const handleTagSelect = (tag: string) => {
+  const handleAddTag = (tag: string) => {
+    dispatch(addTag(tag));
     dispatch(addSelectedTag(tag));
-    dispatch(filterNotesByTags(selectedTags));
   };
 
-  const handleTagRemove = (tag: string) => {
+  const handleRemoveTag = (tag: string) => {
+    dispatch(removeTag(tag));
     dispatch(removeSelectedTag(tag));
+  };
+
+  const handleFilterNotes = () => {
     dispatch(filterNotesByTags(selectedTags));
   };
 
   return (
     <div>
-      <h1>AutoNote: AI-Powered Note Taker</h1>
-      <input
-        type="text"
-        value={tagInput}
-        onChange={(e) => dispatch(setTagInput(e.target.value))}
-        onFocus={handleTagInputFocus}
-        onBlur={handleTagInputBlur}
-        placeholder="Search or add tags"
-      />
-      {isTagInputFocused && tagSuggestions.length > 0 && (
-        <ul>
-          {tagSuggestions.map((suggestion: string) => (
-            <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
-              {suggestion}
-            </li>
-          ))}
-        </ul>
-      )}
-      <div>
-        {selectedTags.map((tag: string) => (
-          <span key={tag} onClick={() => handleTagRemove(tag)}>
-            {tag}
-          </span>
+      <input type="text" value={tags} onChange={handleTagInput} />
+      <ul>
+        {tags.map((tag: string) => (
+          <li key={tag}>
+            <span>{tag}</span>
+            <button onClick={() => handleAddTag(tag)}>Add</button>
+            <button onClick={() => handleRemoveTag(tag)}>Remove</button>
+          </li>
         ))}
-      </div>
-      <div>
+      </ul>
+      <button onClick={handleFilterNotes}>Filter Notes</button>
+      <ul>
         {notes.map((note: any) => (
-          <NoteCard key={note.id} note={note} />
+          <li key={note.id}>
+            <span>{note.title}</span>
+            <ul>
+              {noteTags[note.id].map((tag: string) => (
+                <li key={tag}>
+                  <span>{tag}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
-};
+}
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export function DashboardPage() {
+  return (
+    <Provider store={store}>
+      <App />
+    </Provider>
+  );
+}

@@ -177,30 +177,4 @@
   .screen-reader-only {
     @apply sr-only;
   }
-
-  .image-with-alt {
-    @apply max-w-full h-auto;
-  }
-
-  .image-with-alt img {
-    @apply max-w-full h-auto;
-  }
-
-  .image-with-alt .image-description {
-    @apply sr-only;
-  }
-}
-
-@layer base {
-  img {
-    @apply max-w-full h-auto;
-  }
-
-  img[alt] {
-    @apply max-w-full h-auto;
-  }
-
-  img[alt=""] {
-    @apply max-w-full h-auto;
-  }
 }

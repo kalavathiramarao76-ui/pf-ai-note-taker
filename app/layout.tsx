@@ -89,42 +89,23 @@ const Nav = memo(() => {
         aria-expanded={navOpen}
         aria-controls="nav-menu"
         onClick={toggleNav}
-        onKeyDown={handleKeyDown}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
         id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
-        role="menu"
         aria-label="Navigation menu"
+        role="menu"
       >
         {filteredLinks.map((link) => (
-          <li key={link.text} role="menuitem">
-            <Link href={link.href} onClick={toggleNav}>
+          <li key={link.href} role="menuitem">
+            <Link href={link.href} aria-label={link.text}>
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
-      <form
-        className="search-form"
-        role="search"
-        aria-label="Search form"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <label htmlFor="search-input" className="sr-only">
-          Search
-        </label>
-        <input
-          type="search"
-          id="search-input"
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-          aria-label="Search input"
-        />
-      </form>
       <button
         type="button"
         className="high-contrast-mode-toggle"
@@ -133,6 +114,21 @@ const Nav = memo(() => {
       >
         High Contrast Mode
       </button>
+      <form
+        className="search-form"
+        aria-label="Search form"
+        role="search"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <input
+          type="search"
+          className="search-input"
+          aria-label="Search input"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+      </form>
     </nav>
   );
 });
