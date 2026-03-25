@@ -87,59 +87,54 @@ const Nav = memo(() => {
   return (
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
-      aria-label="Main navigation"
+      aria-label="Main Navigation"
+      role="navigation"
     >
       <button
-        type="button"
         className="nav-toggle"
-        aria-label="Toggle navigation"
+        aria-label="Toggle Navigation"
         aria-expanded={navOpen}
         aria-controls="nav-menu"
         onClick={toggleNav}
+        onKeyDown={handleKeyDown}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
-        id="nav-menu"
         className={`nav-menu ${navOpen ? 'open' : ''}`}
-        aria-hidden={!navOpen}
+        id="nav-menu"
         role="menu"
       >
         {filteredLinksMemo.map((link, index) => (
           <li key={index} role="menuitem">
-            <Link
-              href={link.href}
-              aria-label={link.text}
-              onClick={() => setNavOpen(false)}
-            >
+            <Link href={link.href} onClick={toggleNav}>
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
       <form
+        className="search-form"
         onSubmit={handleSearch}
-        className="nav-search"
-        aria-label="Search"
+        role="search"
       >
         <input
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search"
-          aria-label="Search query"
+          aria-label="Search"
         />
-        <button type="submit" aria-label="Search">
+        <button type="submit" aria-label="Submit Search">
           Search
         </button>
       </form>
       <button
-        type="button"
-        className="nav-high-contrast-mode"
-        aria-label="Toggle high contrast mode"
+        className="high-contrast-mode-toggle"
+        aria-label="Toggle High Contrast Mode"
         onClick={handleHighContrastMode}
       >
-        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+        {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
       </button>
     </nav>
   );

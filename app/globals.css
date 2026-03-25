@@ -188,3 +188,39 @@ img[alt=""] {
 img {
   @apply max-w-full h-auto;
 }
+
+img:not([alt]) {
+  @apply sr-only;
+}
+
+img[alt] {
+  @apply max-w-full h-auto;
+}
+
+figure {
+  @apply mb-4;
+}
+
+figcaption {
+  @apply text-gray-500 text-sm;
+}
+
+main {
+  @apply flex-1;
+}
+
+header, footer {
+  @apply bg-gray-800;
+}
+
+header nav, footer nav {
+  @apply flex justify-between;
+}
+
+header nav a, footer nav a {
+  @apply text-gray-100;
+}
+
+header nav a:hover, footer nav a:hover {
+  @apply text-blue-500;
+}
