@@ -77,6 +77,7 @@ const Nav = memo(() => {
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
       aria-label="Main navigation"
+      role="navigation"
     >
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
@@ -87,7 +88,7 @@ const Nav = memo(() => {
         </Link>
         <button
           className="nav-toggle"
-          aria-label="Toggle navigation"
+          aria-label="Toggle navigation menu"
           aria-expanded={navOpen}
           aria-controls="nav-menu"
           onClick={toggleNav}
@@ -99,6 +100,7 @@ const Nav = memo(() => {
         className={`nav-menu ${navOpen ? 'open' : ''}`}
         id="nav-menu"
         role="menu"
+        aria-hidden={!navOpen}
       >
         {filteredLinks.map((link, index) => (
           <li key={index} role="menuitem">
@@ -109,26 +111,20 @@ const Nav = memo(() => {
         ))}
       </ul>
       <button
-        className="search-button"
-        aria-label="Search"
-        onClick={handleSearch}
+        className="high-contrast-mode-toggle"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
       >
-        Search
+        High Contrast Mode
       </button>
       <input
         type="search"
         className="search-input"
-        aria-label="Search input"
+        aria-label="Search"
         value={searchQuery}
         onChange={handleSearch}
+        onKeyDown={handleKeyDown}
       />
-      <button
-        className="high-contrast-button"
-        aria-label="Toggle high contrast mode"
-        onClick={handleHighContrastMode}
-      >
-        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
-      </button>
     </nav>
   );
 });
