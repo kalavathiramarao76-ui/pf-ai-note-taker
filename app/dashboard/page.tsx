@@ -141,10 +141,14 @@ const appSlice = createSlice({
       if (state.noteTags[action.payload.noteId]) {
         state.noteTags[action.payload.noteId] = state.noteTags[action.payload.noteId].filter(tag => tag !== action.payload.tag);
       }
+    },
+    filterNotesByTags(state, action: PayloadAction<string[]>) {
+      state.filterByTags = action.payload;
     }
   }
 });
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appSlice.reducer
@@ -152,51 +156,105 @@ const store = configureStore({
   middleware: [thunk]
 });
 
-const DashboardPage = () => {
+// Define the component
+function DashboardPage() {
   const dispatch = useDispatch();
-  const { notes, tags, tagInput, tagSuggestions, noteTags } = useSelector((state: AppState) => state);
-  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const { notes, tags, tagInput, tagSuggestions, noteTags, filterByTags } = useSelector((state: AppState) => state);
+  const [selectedNote, setSelectedNote] = useState(null);
 
-  const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    dispatch(updateTagInput(inputValue));
-    const suggestions = tags.filter(tag => tag.includes(inputValue));
-    dispatch(updateTagSuggestions(suggestions));
-    setAutocompleteOpen(true);
-  };
+  useEffect(() => {
+    const fetchTags = async () => {
+      const response = await client.get('/tags');
+      dispatch(updateTagSuggestions(response.data));
+    };
+    fetchTags();
+  }, []);
 
-  const handleTagSelect = (tag: string) => {
+  const handleAddTag = (tag: string) => {
     dispatch(addTag(tag));
-    setAutocompleteOpen(false);
   };
 
-  const handleNoteTagAdd = (noteId: string, tag: string) => {
+  const handleRemoveTag = (tag: string) => {
+    dispatch(removeTag(tag));
+  };
+
+  const handleUpdateTagInput = (tagInput: string) => {
+    dispatch(updateTagInput(tagInput));
+  };
+
+  const handleAddNoteTag = (noteId: string, tag: string) => {
     dispatch(addNoteTag({ noteId, tag }));
   };
 
-  const handleNoteTagRemove = (noteId: string, tag: string) => {
+  const handleRemoveNoteTag = (noteId: string, tag: string) => {
     dispatch(removeNoteTag({ noteId, tag }));
+  };
+
+  const handleFilterNotesByTags = (tags: string[]) => {
+    dispatch(filterNotesByTags(tags));
   };
 
   return (
     <div>
-      <input type="text" value={tagInput} onChange={handleTagInput} placeholder="Add tag" />
-      {autocompleteOpen && (
+      <h1>Dashboard</h1>
+      <div>
+        <input
+          type="text"
+          value={tagInput}
+          onChange={(e) => handleUpdateTagInput(e.target.value)}
+          placeholder="Add a tag"
+        />
         <ul>
-          {tagSuggestions.map((suggestion, index) => (
-            <li key={index} onClick={() => handleTagSelect(suggestion)}>{suggestion}</li>
+          {tagSuggestions.map((tag) => (
+            <li key={tag}>
+              <button onClick={() => handleAddTag(tag)}>{tag}</button>
+            </li>
           ))}
         </ul>
-      )}
-      {notes.map((note, index) => (
-        <NoteCard key={index} note={note} tags={noteTags[note.id]} onTagAdd={(tag) => handleNoteTagAdd(note.id, tag)} onTagRemove={(tag) => handleNoteTagRemove(note.id, tag)} />
-      ))}
+      </div>
+      <div>
+        <h2>Notes</h2>
+        <ul>
+          {Array.from(notes.values()).map((note) => (
+            <li key={note.id}>
+              <NoteCard note={note} />
+              <div>
+                <input
+                  type="text"
+                  value={noteTags[note.id] ? noteTags[note.id].join(', ') : ''}
+                  onChange={(e) => handleAddNoteTag(note.id, e.target.value)}
+                  placeholder="Add a tag"
+                />
+                <ul>
+                  {noteTags[note.id] && noteTags[note.id].map((tag) => (
+                    <li key={tag}>
+                      <button onClick={() => handleRemoveNoteTag(note.id, tag)}>{tag}</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>Filter by tags</h2>
+        <ul>
+          {tags.map((tag) => (
+            <li key={tag}>
+              <button onClick={() => handleFilterNotesByTags([tag])}>{tag}</button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
-};
+}
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export default function App() {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+}

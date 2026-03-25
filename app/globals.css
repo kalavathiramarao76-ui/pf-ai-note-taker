@@ -86,6 +86,7 @@
 
   img {
     @apply max-w-full h-auto;
+    alt: "Image description";
   }
 }
 
@@ -178,49 +179,15 @@
     @apply sr-only;
   }
 
-  .dark-mode-toggle {
-    @apply bg-gray-600 hover:bg-gray-700 text-gray-100 font-bold py-2 px-4 rounded;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-
-  .high-contrast-mode-toggle {
-    @apply bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded;
-    position: absolute;
-    top: 10px;
-    right: 60px;
+  .dark-mode {
+    @apply bg-gray-900 text-gray-100;
   }
 }
 
-.dark-mode body {
-  @apply bg-gray-900 text-gray-100;
+img[alt=""] {
+  alt: "Image description";
 }
 
-.light-mode body {
-  @apply bg-white text-gray-900;
-}
-
-.high-contrast-mode body {
-  @apply bg-black text-yellow-400;
-}
-
-.high-contrast-mode body button {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode body a {
-  @apply text-yellow-400;
-}
-
-.high-contrast-mode-inverse body {
-  @apply bg-yellow-400 text-black;
-}
-
-.high-contrast-mode-inverse body button {
-  @apply bg-black text-yellow-400;
-}
-
-.high-contrast-mode-inverse body a {
-  @apply text-black;
+img:not([alt]) {
+  alt: "Image description";
 }
