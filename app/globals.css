@@ -184,37 +184,3 @@ input::after {
 img[alt=""] {
   @apply sr-only;
 }
-
-img {
-  @apply relative;
-}
-
-a::after {
-  content: "Link to external page";
-  @apply screen-reader-only;
-}
-
-select::after {
-  content: "Select an option from the dropdown";
-  @apply screen-reader-only;
-}
-
-textarea::after {
-  content: "Enter your text in the textarea";
-  @apply screen-reader-only;
-}
-
-label::after {
-  content: "Label for the input field";
-  @apply screen-reader-only;
-}
-
-input[type="checkbox"]::after {
-  content: "Checkbox to select an option";
-  @apply screen-reader-only;
-}
-
-input[type="radio"]::after {
-  content: "Radio button to select an option";
-  @apply screen-reader-only;
-}

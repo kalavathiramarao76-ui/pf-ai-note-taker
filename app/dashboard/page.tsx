@@ -83,22 +83,72 @@ const appReducer = (state = initialState, action) => {
       return { ...state, sortedMeetings: action.sortedMeetings };
     case 'SET_SORTED_TEMPLATES':
       return { ...state, sortedTemplates: action.sortedTemplates };
-    case 'SET_VERSION_HISTORY':
-      return { ...state, versionHistory: action.versionHistory };
-    case 'SET_COLLABORATIVE_NOTES':
-      return { ...state, collaborativeNotes: action.collaborativeNotes };
+    case 'SET_FILTER_TYPE':
+      return { ...state, filterType: action.filterType };
+    case 'SET_SORT_BY':
+      return { ...state, sortBy: action.sortBy };
+    case 'SET_SORT_ORDER':
+      return { ...state, sortOrder: action.sortOrder };
+    case 'SET_FILTER_BY_TAGS':
+      return { ...state, filterByTags: action.filterByTags };
+    case 'SET_FILTER_BY_DATE':
+      return { ...state, filterByDate: action.filterByDate };
+    case 'SET_AI_SUGGESTIONS':
+      return { ...state, aiSuggestions: action.aiSuggestions };
+    case 'SET_AUTOCOMPLETE_SUGGESTIONS':
+      return { ...state, autocompleteSuggestions: action.autocompleteSuggestions };
+    case 'SET_PRIORITY':
+      return { ...state, priority: action.priority };
+    case 'SET_DEADLINE':
+      return { ...state, deadline: action.deadline };
+    case 'SET_NOTE_TITLE':
+      return { ...state, noteTitle: action.noteTitle };
+    case 'SET_NOTE_CONTENT':
+      return { ...state, noteContent: action.noteContent };
+    case 'SET_IS_GENERATING_NOTE':
+      return { ...state, isGeneratingNote: action.isGeneratingNote };
+    case 'SET_EDITOR_STATE':
+      return { ...state, editorState: action.editorState };
+    case 'SET_QUICK_NOTE':
+      return { ...state, quickNote: action.quickNote };
+    case 'SET_IS_QUICK_NOTE_OPEN':
+      return { ...state, isQuickNoteOpen: action.isQuickNoteOpen };
+    case 'SET_TAGS':
+      return { ...state, tags: action.tags };
+    case 'SET_SELECTED_TAGS':
+      return { ...state, selectedTags: action.selectedTags };
+    case 'SET_NOTE_TAGS':
+      return { ...state, noteTags: action.noteTags };
+    case 'SET_TAG_INPUT':
+      return { ...state, tagInput: action.tagInput };
+    case 'SET_TAG_SUGGESTIONS':
+      return { ...state, tagSuggestions: action.tagSuggestions };
+    case 'SET_SOCKET':
+      return { ...state, socket: action.socket };
+    case 'SET_COLLABORATORS':
+      return { ...state, collaborators: action.collaborators };
     case 'SET_COLLABORATIVE_EDITOR_STATE':
       return { ...state, collaborativeEditorState: action.collaborativeEditorState };
+    case 'SET_NOTE_VERSIONS':
+      return { ...state, noteVersions: action.noteVersions };
     case 'SET_CONFLICT_RESOLUTION':
       return { ...state, conflictResolution: action.conflictResolution };
     case 'SET_REAL_TIME_COLLABORATION':
       return { ...state, realTimeCollaboration: action.realTimeCollaboration };
+    case 'SET_FOLDER_NOTES':
+      return { ...state, folderNotes: action.folderNotes };
+    case 'SET_FOLDER_TAGS':
+      return { ...state, folderTags: action.folderTags };
+    case 'SET_VERSION_HISTORY':
+      return { ...state, versionHistory: action.versionHistory };
+    case 'SET_COLLABORATIVE_NOTES':
+      return { ...state, collaborativeNotes: action.collaborativeNotes };
     default:
       return state;
   }
 };
 
-// Create the store
+// Create a store with the reducer
 const store = configureStore({
   reducer: {
     app: appReducer,
@@ -106,164 +156,132 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the socket connection
-const socket = Socket('http://localhost:3001');
+// Define actions
+const setNotes = (notes) => ({ type: 'SET_NOTES', notes });
+const setMeetings = (meetings) => ({ type: 'SET_MEETINGS', meetings });
+const setTemplates = (templates) => ({ type: 'SET_TEMPLATES', templates });
+const setSearchQuery = (searchQuery) => ({ type: 'SET_SEARCH_QUERY', searchQuery });
+const setGeneratedNotes = (generatedNotes) => ({ type: 'SET_GENERATED_NOTES', generatedNotes });
+const setFolders = (folders) => ({ type: 'SET_FOLDERS', folders });
+const setSelectedFolder = (selectedFolder) => ({ type: 'SET_SELECTED_FOLDER', selectedFolder });
+const setEditingNote = (editingNote) => ({ type: 'SET_EDITING_NOTE', editingNote });
+const setSortedNotes = (sortedNotes) => ({ type: 'SET_SORTED_NOTES', sortedNotes });
+const setSortedMeetings = (sortedMeetings) => ({ type: 'SET_SORTED_MEETINGS', sortedMeetings });
+const setSortedTemplates = (sortedTemplates) => ({ type: 'SET_SORTED_TEMPLATES', sortedTemplates });
+const setFilterType = (filterType) => ({ type: 'SET_FILTER_TYPE', filterType });
+const setSortBy = (sortBy) => ({ type: 'SET_SORT_BY', sortBy });
+const setSortOrder = (sortOrder) => ({ type: 'SET_SORT_ORDER', sortOrder });
+const setFilterByTags = (filterByTags) => ({ type: 'SET_FILTER_BY_TAGS', filterByTags });
+const setFilterByDate = (filterByDate) => ({ type: 'SET_FILTER_BY_DATE', filterByDate });
+const setAiSuggestions = (aiSuggestions) => ({ type: 'SET_AI_SUGGESTIONS', aiSuggestions });
+const setAutocompleteSuggestions = (autocompleteSuggestions) => ({ type: 'SET_AUTOCOMPLETE_SUGGESTIONS', autocompleteSuggestions });
+const setPriority = (priority) => ({ type: 'SET_PRIORITY', priority });
+const setDeadline = (deadline) => ({ type: 'SET_DEADLINE', deadline });
+const setNoteTitle = (noteTitle) => ({ type: 'SET_NOTE_TITLE', noteTitle });
+const setNoteContent = (noteContent) => ({ type: 'SET_NOTE_CONTENT', noteContent });
+const setIsGeneratingNote = (isGeneratingNote) => ({ type: 'SET_IS_GENERATING_NOTE', isGeneratingNote });
+const setEditorState = (editorState) => ({ type: 'SET_EDITOR_STATE', editorState });
+const setQuickNote = (quickNote) => ({ type: 'SET_QUICK_NOTE', quickNote });
+const setIsQuickNoteOpen = (isQuickNoteOpen) => ({ type: 'SET_IS_QUICK_NOTE_OPEN', isQuickNoteOpen });
+const setTags = (tags) => ({ type: 'SET_TAGS', tags });
+const setSelectedTags = (selectedTags) => ({ type: 'SET_SELECTED_TAGS', selectedTags });
+const setNoteTags = (noteTags) => ({ type: 'SET_NOTE_TAGS', noteTags });
+const setTagInput = (tagInput) => ({ type: 'SET_TAG_INPUT', tagInput });
+const setTagSuggestions = (tagSuggestions) => ({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions });
+const setSocket = (socket) => ({ type: 'SET_SOCKET', socket });
+const setCollaborators = (collaborators) => ({ type: 'SET_COLLABORATORS', collaborators });
+const setCollaborativeEditorState = (collaborativeEditorState) => ({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState });
+const setNoteVersions = (noteVersions) => ({ type: 'SET_NOTE_VERSIONS', noteVersions });
+const setConflictResolution = (conflictResolution) => ({ type: 'SET_CONFLICT_RESOLUTION', conflictResolution });
+const setRealTimeCollaboration = (realTimeCollaboration) => ({ type: 'SET_REAL_TIME_COLLABORATION', realTimeCollaboration });
+const setFolderNotes = (folderNotes) => ({ type: 'SET_FOLDER_NOTES', folderNotes });
+const setFolderTags = (folderTags) => ({ type: 'SET_FOLDER_TAGS', folderTags });
+const setVersionHistory = (versionHistory) => ({ type: 'SET_VERSION_HISTORY', versionHistory });
+const setCollaborativeNotes = (collaborativeNotes) => ({ type: 'SET_COLLABORATIVE_NOTES', collaborativeNotes });
 
-// Define the collaborative editor
-const CollaborativeEditor = () => {
+// Define a hook to use the store
+const useAppStore = () => {
   const dispatch = useDispatch();
-  const collaborativeEditorState = useSelector((state) => state.app.collaborativeEditorState);
-  const noteId = useSelector((state) => state.app.editingNote);
+  const state = useSelector((state) => state.app);
 
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to the server');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from the server');
-    });
-
-    socket.on('collaborative-editor-state', (data) => {
-      dispatch({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState: data });
-    });
-
-    socket.on('conflict-resolution', (data) => {
-      dispatch({ type: 'SET_CONFLICT_RESOLUTION', conflictResolution: data });
-    });
-
-    socket.on('real-time-collaboration', (data) => {
-      dispatch({ type: 'SET_REAL_TIME_COLLABORATION', realTimeCollaboration: data });
-    });
-  }, []);
-
-  const handleEditorChange = (editorState) => {
-    dispatch({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState: editorState });
-    socket.emit('collaborative-editor-state', editorState);
+  return {
+    state,
+    dispatch,
+    setNotes: (notes) => dispatch(setNotes(notes)),
+    setMeetings: (meetings) => dispatch(setMeetings(meetings)),
+    setTemplates: (templates) => dispatch(setTemplates(templates)),
+    setSearchQuery: (searchQuery) => dispatch(setSearchQuery(searchQuery)),
+    setGeneratedNotes: (generatedNotes) => dispatch(setGeneratedNotes(generatedNotes)),
+    setFolders: (folders) => dispatch(setFolders(folders)),
+    setSelectedFolder: (selectedFolder) => dispatch(setSelectedFolder(selectedFolder)),
+    setEditingNote: (editingNote) => dispatch(setEditingNote(editingNote)),
+    setSortedNotes: (sortedNotes) => dispatch(setSortedNotes(sortedNotes)),
+    setSortedMeetings: (sortedMeetings) => dispatch(setSortedMeetings(sortedMeetings)),
+    setSortedTemplates: (sortedTemplates) => dispatch(setSortedTemplates(sortedTemplates)),
+    setFilterType: (filterType) => dispatch(setFilterType(filterType)),
+    setSortBy: (sortBy) => dispatch(setSortBy(sortBy)),
+    setSortOrder: (sortOrder) => dispatch(setSortOrder(sortOrder)),
+    setFilterByTags: (filterByTags) => dispatch(setFilterByTags(filterByTags)),
+    setFilterByDate: (filterByDate) => dispatch(setFilterByDate(filterByDate)),
+    setAiSuggestions: (aiSuggestions) => dispatch(setAiSuggestions(aiSuggestions)),
+    setAutocompleteSuggestions: (autocompleteSuggestions) => dispatch(setAutocompleteSuggestions(autocompleteSuggestions)),
+    setPriority: (priority) => dispatch(setPriority(priority)),
+    setDeadline: (deadline) => dispatch(setDeadline(deadline)),
+    setNoteTitle: (noteTitle) => dispatch(setNoteTitle(noteTitle)),
+    setNoteContent: (noteContent) => dispatch(setNoteContent(noteContent)),
+    setIsGeneratingNote: (isGeneratingNote) => dispatch(setIsGeneratingNote(isGeneratingNote)),
+    setEditorState: (editorState) => dispatch(setEditorState(editorState)),
+    setQuickNote: (quickNote) => dispatch(setQuickNote(quickNote)),
+    setIsQuickNoteOpen: (isQuickNoteOpen) => dispatch(setIsQuickNoteOpen(isQuickNoteOpen)),
+    setTags: (tags) => dispatch(setTags(tags)),
+    setSelectedTags: (selectedTags) => dispatch(setSelectedTags(selectedTags)),
+    setNoteTags: (noteTags) => dispatch(setNoteTags(noteTags)),
+    setTagInput: (tagInput) => dispatch(setTagInput(tagInput)),
+    setTagSuggestions: (tagSuggestions) => dispatch(setTagSuggestions(tagSuggestions)),
+    setSocket: (socket) => dispatch(setSocket(socket)),
+    setCollaborators: (collaborators) => dispatch(setCollaborators(collaborators)),
+    setCollaborativeEditorState: (collaborativeEditorState) => dispatch(setCollaborativeEditorState(collaborativeEditorState)),
+    setNoteVersions: (noteVersions) => dispatch(setNoteVersions(noteVersions)),
+    setConflictResolution: (conflictResolution) => dispatch(setConflictResolution(conflictResolution)),
+    setRealTimeCollaboration: (realTimeCollaboration) => dispatch(setRealTimeCollaboration(realTimeCollaboration)),
+    setFolderNotes: (folderNotes) => dispatch(setFolderNotes(folderNotes)),
+    setFolderTags: (folderTags) => dispatch(setFolderTags(folderTags)),
+    setVersionHistory: (versionHistory) => dispatch(setVersionHistory(versionHistory)),
+    setCollaborativeNotes: (collaborativeNotes) => dispatch(setCollaborativeNotes(collaborativeNotes)),
   };
-
-  return (
-    <Editor
-      editorState={collaborativeEditorState}
-      onChange={handleEditorChange}
-      placeholder="Type here..."
-    />
-  );
 };
 
-// Define the version history component
-const VersionHistory = () => {
-  const versionHistory = useSelector((state) => state.app.versionHistory);
-  const noteId = useSelector((state) => state.app.editingNote);
-
-  return (
-    <div>
-      <h2>Version History</h2>
-      {versionHistory[noteId] && versionHistory[noteId].map((version, index) => (
-        <div key={index}>
-          <p>Version {index + 1}</p>
-          <p>{version.content}</p>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Define the real-time collaboration component
-const RealTimeCollaboration = () => {
-  const realTimeCollaboration = useSelector((state) => state.app.realTimeCollaboration);
-  const noteId = useSelector((state) => state.app.editingNote);
-
-  return (
-    <div>
-      <h2>Real-Time Collaboration</h2>
-      {realTimeCollaboration[noteId] && realTimeCollaboration[noteId].map((collaborator, index) => (
-        <div key={index}>
-          <p>Collaborator {index + 1}</p>
-          <p>{collaborator.name}</p>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Define the note editing system
-const NoteEditingSystem = () => {
-  const dispatch = useDispatch();
-  const editingNote = useSelector((state) => state.app.editingNote);
-  const collaborativeEditorState = useSelector((state) => state.app.collaborativeEditorState);
-  const versionHistory = useSelector((state) => state.app.versionHistory);
-  const realTimeCollaboration = useSelector((state) => state.app.realTimeCollaboration);
-
-  const handleSaveNote = () => {
-    // Save the note to the database
-    client.post('/notes', {
-      title: editingNote.title,
-      content: collaborativeEditorState,
-    })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
-  const handleVersionHistory = () => {
-    // Get the version history from the database
-    client.get(`/notes/${editingNote.id}/version-history`)
-      .then((response) => {
-        dispatch({ type: 'SET_VERSION_HISTORY', versionHistory: response.data });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
-  const handleRealTimeCollaboration = () => {
-    // Get the real-time collaboration data from the database
-    client.get(`/notes/${editingNote.id}/real-time-collaboration`)
-      .then((response) => {
-        dispatch({ type: 'SET_REAL_TIME_COLLABORATION', realTimeCollaboration: response.data });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
-  return (
-    <div>
-      <h2>Note Editing System</h2>
-      <CollaborativeEditor />
-      <button onClick={handleSaveNote}>Save Note</button>
-      <button onClick={handleVersionHistory}>Version History</button>
-      <button onClick={handleRealTimeCollaboration}>Real-Time Collaboration</button>
-      <VersionHistory />
-      <RealTimeCollaboration />
-    </div>
-  );
-};
-
-// Define the dashboard page
 const DashboardPage = () => {
-  const dispatch = useDispatch();
-  const notes = useSelector((state) => state.app.notes);
-  const meetings = useSelector((state) => state.app.meetings);
-  const templates = useSelector((state) => state.app.templates);
+  const { state, dispatch } = useAppStore();
+
+  // Use the state and dispatch as needed
+  useEffect(() => {
+    // Initialize the state
+    dispatch(setNotes([]));
+    dispatch(setMeetings([]));
+    dispatch(setTemplates([]));
+  }, [dispatch]);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <NoteEditingSystem />
-      <NoteCard notes={notes} />
-      <MeetingCard meetings={meetings} />
-      <TemplateCard templates={templates} />
-    </div>
+    <Provider store={store}>
+      <div>
+        <h1>AutoNote: AI-Powered Note Taker</h1>
+        <Link href="/notes">
+          <a>Notes</a>
+        </Link>
+        <Link href="/meetings">
+          <a>Meetings</a>
+        </Link>
+        <Link href="/templates">
+          <a>Templates</a>
+        </Link>
+        <NoteCard />
+        <MeetingCard />
+        <TemplateCard />
+        <Editor editorState={state.editorState} />
+      </div>
+    </Provider>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export default DashboardPage;

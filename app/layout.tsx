@@ -76,6 +76,7 @@ const Nav = memo(() => {
   return (
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
+      aria-label="Main navigation"
     >
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
@@ -87,45 +88,47 @@ const Nav = memo(() => {
         <button
           className="nav-toggle"
           aria-label="Toggle navigation"
+          aria-expanded={navOpen}
+          aria-controls="nav-menu"
           onClick={toggleNav}
         >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
       </div>
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={navOpen ? { x: 0 } : { x: '100%' }}
-        transition={{ duration: 0.3 }}
-        className="nav-menu"
+      <ul
+        className={`nav-menu ${navOpen ? 'open' : ''}`}
+        id="nav-menu"
+        role="menu"
       >
-        <ul>
-          {filteredLinks.map((link, index) => (
-            <li key={index}>
-              <Link href={link.href}>
-                <a>{link.text}</a>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <form
-          onSubmit={(event) => event.preventDefault()}
-          className="nav-search"
-        >
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search"
-          />
-        </form>
-        <button
-          className="nav-high-contrast-mode"
-          aria-label="Toggle high contrast mode"
-          onClick={handleHighContrastMode}
-        >
-          High Contrast Mode
-        </button>
-      </motion.div>
+        {filteredLinks.map((link, index) => (
+          <li key={index} role="menuitem">
+            <Link href={link.href}>
+              <a>{link.text}</a>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <button
+        className="search-button"
+        aria-label="Search"
+        onClick={handleSearch}
+      >
+        Search
+      </button>
+      <input
+        type="search"
+        className="search-input"
+        aria-label="Search input"
+        value={searchQuery}
+        onChange={handleSearch}
+      />
+      <button
+        className="high-contrast-button"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+      </button>
     </nav>
   );
 });
