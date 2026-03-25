@@ -54,6 +54,8 @@ const initialState = {
   realTimeCollaboration: {}, // store real-time collaboration data for each note
   folderNotes: {}, // store notes for each folder
   folderTags: {}, // store tags for each folder
+  versionHistory: {}, // store version history for each note
+  collaborativeNotes: {}, // store collaborative notes
 };
 
 // Define the reducer
@@ -81,16 +83,16 @@ const appReducer = (state = initialState, action) => {
       return { ...state, sortedMeetings: action.sortedMeetings };
     case 'SET_SORTED_TEMPLATES':
       return { ...state, sortedTemplates: action.sortedTemplates };
-    case 'SET_TAG_INPUT':
-      return { ...state, tagInput: action.tagInput };
-    case 'SET_TAG_SUGGESTIONS':
-      return { ...state, tagSuggestions: action.tagSuggestions };
-    case 'ADD_TAG':
-      return { ...state, tags: [...state.tags, action.tag], noteTags: { ...state.noteTags, [action.noteId]: [...(state.noteTags[action.noteId] || []), action.tag] } };
-    case 'REMOVE_TAG':
-      return { ...state, tags: state.tags.filter(tag => tag !== action.tag), noteTags: { ...state.noteTags, [action.noteId]: (state.noteTags[action.noteId] || []).filter(tag => tag !== action.tag) } };
-    case 'SET_FILTER_BY_TAGS':
-      return { ...state, filterByTags: action.tags };
+    case 'SET_VERSION_HISTORY':
+      return { ...state, versionHistory: action.versionHistory };
+    case 'SET_COLLABORATIVE_NOTES':
+      return { ...state, collaborativeNotes: action.collaborativeNotes };
+    case 'SET_COLLABORATIVE_EDITOR_STATE':
+      return { ...state, collaborativeEditorState: action.collaborativeEditorState };
+    case 'SET_CONFLICT_RESOLUTION':
+      return { ...state, conflictResolution: action.conflictResolution };
+    case 'SET_REAL_TIME_COLLABORATION':
+      return { ...state, realTimeCollaboration: action.realTimeCollaboration };
     default:
       return state;
   }
@@ -104,72 +106,164 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the Dashboard page
-const Dashboard = () => {
+// Define the socket connection
+const socket = Socket('http://localhost:3001');
+
+// Define the collaborative editor
+const CollaborativeEditor = () => {
   const dispatch = useDispatch();
-  const { notes, tagInput, tagSuggestions, filterByTags } = useSelector((state) => state.app);
-  const [isTagInputFocused, setIsTagInputFocused] = useState(false);
+  const collaborativeEditorState = useSelector((state) => state.app.collaborativeEditorState);
+  const noteId = useSelector((state) => state.app.editingNote);
 
-  // Handle tag input change
-  const handleTagInputChange = (e) => {
-    const tagInput = e.target.value;
-    dispatch({ type: 'SET_TAG_INPUT', tagInput });
-    const tagSuggestions = notes.reduce((acc, note) => {
-      const noteTags = note.tags || [];
-      return [...acc, ...noteTags.filter(tag => tag.startsWith(tagInput))].filter((tag, index, self) => self.indexOf(tag) === index);
-    }, []);
-    dispatch({ type: 'SET_TAG_SUGGESTIONS', tagSuggestions });
-  };
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Connected to the server');
+    });
 
-  // Handle tag suggestion click
-  const handleTagSuggestionClick = (tag) => {
-    dispatch({ type: 'ADD_TAG', tag, noteId: notes[0].id });
-  };
+    socket.on('disconnect', () => {
+      console.log('Disconnected from the server');
+    });
 
-  // Handle filter by tags change
-  const handleFilterByTagsChange = (tags) => {
-    dispatch({ type: 'SET_FILTER_BY_TAGS', tags });
+    socket.on('collaborative-editor-state', (data) => {
+      dispatch({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState: data });
+    });
+
+    socket.on('conflict-resolution', (data) => {
+      dispatch({ type: 'SET_CONFLICT_RESOLUTION', conflictResolution: data });
+    });
+
+    socket.on('real-time-collaboration', (data) => {
+      dispatch({ type: 'SET_REAL_TIME_COLLABORATION', realTimeCollaboration: data });
+    });
+  }, []);
+
+  const handleEditorChange = (editorState) => {
+    dispatch({ type: 'SET_COLLABORATIVE_EDITOR_STATE', collaborativeEditorState: editorState });
+    socket.emit('collaborative-editor-state', editorState);
   };
 
   return (
+    <Editor
+      editorState={collaborativeEditorState}
+      onChange={handleEditorChange}
+      placeholder="Type here..."
+    />
+  );
+};
+
+// Define the version history component
+const VersionHistory = () => {
+  const versionHistory = useSelector((state) => state.app.versionHistory);
+  const noteId = useSelector((state) => state.app.editingNote);
+
+  return (
     <div>
-      <h1>Dashboard</h1>
-      <input
-        type="text"
-        value={tagInput}
-        onChange={handleTagInputChange}
-        placeholder="Enter a tag"
-        onFocus={() => setIsTagInputFocused(true)}
-        onBlur={() => setIsTagInputFocused(false)}
-      />
-      {isTagInputFocused && tagSuggestions.length > 0 && (
-        <ul>
-          {tagSuggestions.map((tag) => (
-            <li key={tag} onClick={() => handleTagSuggestionClick(tag)}>
-              {tag}
-            </li>
-          ))}
-        </ul>
-      )}
-      <button onClick={() => handleFilterByTagsChange(filterByTags)}>Filter by tags</button>
-      <ul>
-        {notes.map((note) => (
-          <li key={note.id}>
-            <NoteCard note={note} />
-          </li>
-        ))}
-      </ul>
+      <h2>Version History</h2>
+      {versionHistory[noteId] && versionHistory[noteId].map((version, index) => (
+        <div key={index}>
+          <p>Version {index + 1}</p>
+          <p>{version.content}</p>
+        </div>
+      ))}
     </div>
   );
 };
 
-// Render the Dashboard page
-const App = () => {
+// Define the real-time collaboration component
+const RealTimeCollaboration = () => {
+  const realTimeCollaboration = useSelector((state) => state.app.realTimeCollaboration);
+  const noteId = useSelector((state) => state.app.editingNote);
+
   return (
-    <Provider store={store}>
-      <Dashboard />
-    </Provider>
+    <div>
+      <h2>Real-Time Collaboration</h2>
+      {realTimeCollaboration[noteId] && realTimeCollaboration[noteId].map((collaborator, index) => (
+        <div key={index}>
+          <p>Collaborator {index + 1}</p>
+          <p>{collaborator.name}</p>
+        </div>
+      ))}
+    </div>
   );
 };
 
-export default App;
+// Define the note editing system
+const NoteEditingSystem = () => {
+  const dispatch = useDispatch();
+  const editingNote = useSelector((state) => state.app.editingNote);
+  const collaborativeEditorState = useSelector((state) => state.app.collaborativeEditorState);
+  const versionHistory = useSelector((state) => state.app.versionHistory);
+  const realTimeCollaboration = useSelector((state) => state.app.realTimeCollaboration);
+
+  const handleSaveNote = () => {
+    // Save the note to the database
+    client.post('/notes', {
+      title: editingNote.title,
+      content: collaborativeEditorState,
+    })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleVersionHistory = () => {
+    // Get the version history from the database
+    client.get(`/notes/${editingNote.id}/version-history`)
+      .then((response) => {
+        dispatch({ type: 'SET_VERSION_HISTORY', versionHistory: response.data });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleRealTimeCollaboration = () => {
+    // Get the real-time collaboration data from the database
+    client.get(`/notes/${editingNote.id}/real-time-collaboration`)
+      .then((response) => {
+        dispatch({ type: 'SET_REAL_TIME_COLLABORATION', realTimeCollaboration: response.data });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  return (
+    <div>
+      <h2>Note Editing System</h2>
+      <CollaborativeEditor />
+      <button onClick={handleSaveNote}>Save Note</button>
+      <button onClick={handleVersionHistory}>Version History</button>
+      <button onClick={handleRealTimeCollaboration}>Real-Time Collaboration</button>
+      <VersionHistory />
+      <RealTimeCollaboration />
+    </div>
+  );
+};
+
+// Define the dashboard page
+const DashboardPage = () => {
+  const dispatch = useDispatch();
+  const notes = useSelector((state) => state.app.notes);
+  const meetings = useSelector((state) => state.app.meetings);
+  const templates = useSelector((state) => state.app.templates);
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <NoteEditingSystem />
+      <NoteCard notes={notes} />
+      <MeetingCard meetings={meetings} />
+      <TemplateCard templates={templates} />
+    </div>
+  );
+};
+
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);

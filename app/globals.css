@@ -186,41 +186,35 @@ img[alt=""] {
 }
 
 img {
-  @apply max-w-full h-auto;
+  @apply relative;
 }
 
-img:not([alt]) {
-  @apply sr-only;
+a::after {
+  content: "Link to external page";
+  @apply screen-reader-only;
 }
 
-img[alt] {
-  @apply max-w-full h-auto;
+select::after {
+  content: "Select an option from the dropdown";
+  @apply screen-reader-only;
 }
 
-figure {
-  @apply mb-4;
+textarea::after {
+  content: "Enter your text in the textarea";
+  @apply screen-reader-only;
 }
 
-figcaption {
-  @apply text-gray-500 text-sm;
+label::after {
+  content: "Label for the input field";
+  @apply screen-reader-only;
 }
 
-main {
-  @apply flex-1;
+input[type="checkbox"]::after {
+  content: "Checkbox to select an option";
+  @apply screen-reader-only;
 }
 
-header, footer {
-  @apply bg-gray-800;
-}
-
-header nav, footer nav {
-  @apply flex justify-between;
-}
-
-header nav a, footer nav a {
-  @apply text-gray-100;
-}
-
-header nav a:hover, footer nav a:hover {
-  @apply text-blue-500;
+input[type="radio"]::after {
+  content: "Radio button to select an option";
+  @apply screen-reader-only;
 }

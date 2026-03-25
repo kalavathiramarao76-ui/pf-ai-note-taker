@@ -14,7 +14,6 @@ const Nav = memo(() => {
     { href: '/about', text: 'About' },
     { href: '/contact', text: 'Contact' },
   ], []);
-  const [filteredLinks, setFilteredLinks] = useState(links);
   const router = useRouter();
 
   const toggleNav = () => {
@@ -57,20 +56,10 @@ const Nav = memo(() => {
 
   const handleSearch = (event) => {
     event.preventDefault();
-    const filtered = links.filter((link) =>
-      link.text.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredLinks(filtered);
-    console.log('Search query:', searchQuery);
+    setSearchQuery(event.target.value);
   };
 
-  useEffect(() => {
-    if (searchQuery === '') {
-      setFilteredLinks(links);
-    }
-  }, [searchQuery, links]);
-
-  const filteredLinksMemo = useMemo(() => {
+  const filteredLinks = useMemo(() => {
     if (searchQuery === '') {
       return links;
     }
@@ -87,55 +76,56 @@ const Nav = memo(() => {
   return (
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
-      aria-label="Main Navigation"
-      role="navigation"
     >
-      <button
-        className="nav-toggle"
-        aria-label="Toggle Navigation"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
-        onClick={toggleNav}
-        onKeyDown={handleKeyDown}
-      >
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <ul
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
-        id="nav-menu"
-        role="menu"
-      >
-        {filteredLinksMemo.map((link, index) => (
-          <li key={index} role="menuitem">
-            <Link href={link.href} onClick={toggleNav}>
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <form
-        className="search-form"
-        onSubmit={handleSearch}
-        role="search"
-      >
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Search"
-          aria-label="Search"
-        />
-        <button type="submit" aria-label="Submit Search">
-          Search
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <div className="nav-header">
+        <Link href="/">
+          <a>AutoNote</a>
+        </Link>
+        <button
+          className="nav-toggle"
+          aria-label="Toggle navigation"
+          onClick={toggleNav}
+        >
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
-      </form>
-      <button
-        className="high-contrast-mode-toggle"
-        aria-label="Toggle High Contrast Mode"
-        onClick={handleHighContrastMode}
+      </div>
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={navOpen ? { x: 0 } : { x: '100%' }}
+        transition={{ duration: 0.3 }}
+        className="nav-menu"
       >
-        {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
-      </button>
+        <ul>
+          {filteredLinks.map((link, index) => (
+            <li key={index}>
+              <Link href={link.href}>
+                <a>{link.text}</a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <form
+          onSubmit={(event) => event.preventDefault()}
+          className="nav-search"
+        >
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search"
+          />
+        </form>
+        <button
+          className="nav-high-contrast-mode"
+          aria-label="Toggle high contrast mode"
+          onClick={handleHighContrastMode}
+        >
+          High Contrast Mode
+        </button>
+      </motion.div>
     </nav>
   );
 });
