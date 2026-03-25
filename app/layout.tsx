@@ -9,14 +9,12 @@ const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highContrastMode, setHighContrastMode] = useState(false);
-  const linksMap = useMemo(() => {
-    const links = [
-      { href: '/', text: 'Home' },
-      { href: '/about', text: 'About' },
-      { href: '/contact', text: 'Contact' },
-    ];
-    return new Map(links.map((link) => [link.text.toLowerCase(), link]));
-  }, []);
+  const links = useMemo(() => [
+    { href: '/', text: 'Home' },
+    { href: '/about', text: 'About' },
+    { href: '/contact', text: 'Contact' },
+  ], []);
+  const linksMap = useMemo(() => new Map(links.map((link) => [link.text.toLowerCase(), link])), [links]);
   const router = useRouter();
 
   const toggleNav = useCallback(() => {
@@ -64,12 +62,12 @@ const Nav = memo(() => {
 
   const filteredLinks = useMemo(() => {
     if (searchQuery === '') {
-      return Array.from(linksMap.values());
+      return links;
     }
-    return Array.from(linksMap.values()).filter((link) =>
+    return links.filter((link) =>
       link.text.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery, linksMap]);
+  }, [searchQuery, links]);
 
   const handleHighContrastMode = useCallback(() => {
     setHighContrastMode(!highContrastMode);
@@ -80,42 +78,25 @@ const Nav = memo(() => {
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
       aria-label="Main navigation"
-      role="navigation"
     >
       <button
         type="button"
         className="nav-toggle"
         aria-label="Toggle navigation"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
         onClick={toggleNav}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul
-        id="nav-menu"
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
-        aria-hidden={!navOpen}
-        role="menu"
-      >
+      <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
         {filteredLinks.map((link) => (
-          <li key={link.text} role="menuitem">
-            <Link href={link.href} onClick={toggleNav}>
-              {link.text}
-            </Link>
+          <li key={link.text}>
+            <Link href={link.href}>{link.text}</Link>
           </li>
         ))}
       </ul>
-      <form
-        className="search-form"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <label htmlFor="search-input" className="sr-only">
-          Search
-        </label>
+      <form className="nav-search" onSubmit={(event) => event.preventDefault()}>
         <input
           type="search"
-          id="search-input"
           placeholder="Search"
           value={searchQuery}
           onChange={handleSearch}
@@ -124,11 +105,11 @@ const Nav = memo(() => {
       </form>
       <button
         type="button"
-        className="high-contrast-mode-toggle"
+        className="nav-high-contrast-mode"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
-        {highContrastMode ? 'Disable high contrast mode' : 'Enable high contrast mode'}
+        High Contrast Mode
       </button>
     </nav>
   );
