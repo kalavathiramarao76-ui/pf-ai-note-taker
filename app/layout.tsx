@@ -84,48 +84,40 @@ const Nav = memo(() => {
   const SearchBar = lazy(() => import('./SearchBar'));
 
   return (
-    <nav className="nav">
+    <nav>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <div className="nav-header">
-        <Link href="/">
-          <a>AutoNote</a>
-        </Link>
+      <div className="nav-container">
         <button
           className="nav-toggle"
-          aria-label="Toggle navigation"
           onClick={toggleNav}
+          aria-label="Toggle navigation"
         >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
+        <ul className="nav-menu" hidden={!navOpen}>
+          {filteredLinks.map((link) => (
+            <li key={link.href}>
+              <Link href={link.href}>{link.text}</Link>
+            </li>
+          ))}
+        </ul>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search"
+          />
+        </Suspense>
+        <button
+          className="high-contrast-mode-toggle"
+          onClick={handleHighContrastMode}
+          aria-label="Toggle high contrast mode"
+        >
+          High Contrast Mode
+        </button>
       </div>
-      <ul className="nav-menu" hidden={!navOpen}>
-        {filteredLinks.map((link) => (
-          <li key={link.href}>
-            <Link href={link.href}>
-              <a>{link.text}</a>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-        />
-      </Suspense>
-      <button
-        className="nav-high-contrast-mode"
-        aria-label="Toggle high contrast mode"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Menu />
-      </Suspense>
     </nav>
   );
 });
