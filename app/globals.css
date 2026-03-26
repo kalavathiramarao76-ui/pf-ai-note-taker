@@ -151,6 +151,7 @@
   input[type="text"], input[type="email"], input[type="password"] {
     @apply rounded-lg;
     padding: 0.5rem;
+    font-size: var(--font-size-base);
   }
 
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
@@ -159,7 +160,7 @@
   }
 
   label {
-    @apply block;
+    font-size: var(--font-size-base);
     margin-bottom: 0.5rem;
   }
 
@@ -167,14 +168,10 @@
     cursor: pointer;
   }
 
-  label[for]:focus {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-  }
-
   select {
     @apply rounded-lg;
     padding: 0.5rem;
+    font-size: var(--font-size-base);
   }
 
   select:focus {
@@ -185,6 +182,7 @@
   textarea {
     @apply rounded-lg;
     padding: 0.5rem;
+    font-size: var(--font-size-base);
   }
 
   textarea:focus {
@@ -192,29 +190,37 @@
     outline-offset: 2px;
   }
 
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
+  [role="alert"] {
+    font-size: var(--font-size-base);
+    padding: 0.5rem;
+    background-color: var(--primary-color);
+    color: var(--text-color);
   }
 
-  .sr-only:focus {
-    position: static;
-    width: auto;
-    height: auto;
+  [role="alert"]:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  [role="dialog"] {
+    font-size: var(--font-size-base);
     padding: 0.5rem;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    clip-path: none;
-    white-space: normal;
-    border: 2px solid var(--focus-color);
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+
+  [role="dialog"]:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  [role="button"] {
+    @apply rounded-lg;
+    cursor: pointer;
+  }
+
+  [role="button"]:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
   }
 }

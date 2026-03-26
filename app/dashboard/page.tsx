@@ -131,43 +131,40 @@ const appSlice = createSlice({
     noteFolderMap: new Map(),
   },
   reducers: {
-    addFolder(state, action: PayloadAction<string>) {
-      state.folders.push({ id: action.payload, name: action.payload, notes: [] });
-    },
-    removeFolder(state, action: PayloadAction<string>) {
-      state.folders = state.folders.filter((folder) => folder.id !== action.payload);
-    },
-    addNoteToFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      const folder = state.folders.find((folder) => folder.id === action.payload.folderId);
-      if (folder) {
-        folder.notes.push(action.payload.noteId);
-        state.folderNotesMap.set(action.payload.folderId, folder.notes);
-        state.noteFolderMap.set(action.payload.noteId, action.payload.folderId);
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags.push(action.payload);
       }
     },
-    removeNoteFromFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      const folder = state.folders.find((folder) => folder.id === action.payload.folderId);
-      if (folder) {
-        folder.notes = folder.notes.filter((noteId) => noteId !== action.payload.noteId);
-        state.folderNotesMap.set(action.payload.folderId, folder.notes);
-        state.noteFolderMap.delete(action.payload.noteId);
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter((tag) => tag !== action.payload);
+    },
+    updateTagInput(state, action: PayloadAction<string>) {
+      state.tagInput = action.payload;
+    },
+    updateTagSuggestions(state, action: PayloadAction<string[]>) {
+      state.tagSuggestions = action.payload;
+    },
+    addNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
+      if (!state.noteTags[action.payload.noteId]) {
+        state.noteTags[action.payload.noteId] = [];
+      }
+      if (!state.noteTags[action.payload.noteId].includes(action.payload.tag)) {
+        state.noteTags[action.payload.noteId].push(action.payload.tag);
       }
     },
-    addTagToNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      const noteTags = state.noteTags[action.payload.noteId];
-      if (noteTags) {
-        noteTags.push(action.payload.tag);
-      } else {
-        state.noteTags[action.payload.noteId] = [action.payload.tag];
+    removeNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
+      if (state.noteTags[action.payload.noteId]) {
+        state.noteTags[action.payload.noteId] = state.noteTags[action.payload.noteId].filter((tag) => tag !== action.payload.tag);
       }
-      state.noteTagMap.set(action.payload.noteId, state.noteTags[action.payload.noteId]);
     },
-    removeTagFromNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      const noteTags = state.noteTags[action.payload.noteId];
-      if (noteTags) {
-        state.noteTags[action.payload.noteId] = noteTags.filter((tag) => tag !== action.payload.tag);
-        state.noteTagMap.set(action.payload.noteId, state.noteTags[action.payload.noteId]);
-      }
+    filterNotesByTags(state, action: PayloadAction<string[]>) {
+      state.filteredNotes = state.notes.filter((note) => {
+        if (action.payload.length === 0) {
+          return true;
+        }
+        return action.payload.some((tag) => note.tags.includes(tag));
+      });
     },
   },
 });
@@ -180,109 +177,101 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the dashboard page component
-function DashboardPage() {
+// Define the page component
+function Page() {
   const dispatch = useDispatch();
-  const router = useRouter();
-  const [editorState, setEditorState] = useState(EditorState.createWithContent(ContentState.createFromText('')));
-  const [quickNote, setQuickNote] = useState('');
-  const [isQuickNoteOpen, setIsQuickNoteOpen] = useState(false);
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [tagInput, setTagInput] = useState('');
-  const [tagSuggestions, setTagSuggestions] = useState([]);
-  const [folderNotesMap, setFolderNotesMap] = useState(new Map());
-  const [noteFolderMap, setNoteFolderMap] = useState(new Map());
+  const { notes, tags, tagInput, tagSuggestions, noteTags, filteredNotes } = useSelector((state: AppState) => state);
 
-  // Get the state from the store
-  const state = useSelector((state: any) => state.app);
+  useEffect(() => {
+    const handleTagInput = () => {
+      if (tagInput.length > 0) {
+        const suggestions = tags.filter((tag) => tag.includes(tagInput));
+        dispatch(updateTagSuggestions(suggestions));
+      } else {
+        dispatch(updateTagSuggestions([]));
+      }
+    };
+    handleTagInput();
+  }, [tagInput, tags, dispatch]);
 
-  // Handle folder and note operations
-  const handleAddFolder = (folderName: string) => {
-    dispatch(appSlice.actions.addFolder(folderName));
+  const handleAddTag = (tag: string) => {
+    dispatch(addTag(tag));
   };
 
-  const handleRemoveFolder = (folderId: string) => {
-    dispatch(appSlice.actions.removeFolder(folderId));
+  const handleRemoveTag = (tag: string) => {
+    dispatch(removeTag(tag));
   };
 
-  const handleAddNoteToFolder = (noteId: string, folderId: string) => {
-    dispatch(appSlice.actions.addNoteToFolder({ noteId, folderId }));
+  const handleUpdateTagInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateTagInput(event.target.value));
   };
 
-  const handleRemoveNoteFromFolder = (noteId: string, folderId: string) => {
-    dispatch(appSlice.actions.removeNoteFromFolder({ noteId, folderId }));
+  const handleAddNoteTag = (noteId: string, tag: string) => {
+    dispatch(addNoteTag({ noteId, tag }));
   };
 
-  const handleAddTagToNote = (noteId: string, tag: string) => {
-    dispatch(appSlice.actions.addTagToNote({ noteId, tag }));
+  const handleRemoveNoteTag = (noteId: string, tag: string) => {
+    dispatch(removeNoteTag({ noteId, tag }));
   };
 
-  const handleRemoveTagFromNote = (noteId: string, tag: string) => {
-    dispatch(appSlice.actions.removeTagFromNote({ noteId, tag }));
+  const handleFilterNotesByTags = (tags: string[]) => {
+    dispatch(filterNotesByTags(tags));
   };
 
-  // Render the dashboard page
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="dashboard-page">
-        <div className="folder-list">
-          {state.folders.map((folder: any) => (
-            <div key={folder.id} className="folder">
-              <span>{folder.name}</span>
-              <button onClick={() => handleRemoveFolder(folder.id)}>Remove</button>
-            </div>
+      <div>
+        <h1>AutoNote: AI-Powered Note Taker</h1>
+        <input type="text" value={tagInput} onChange={handleUpdateTagInput} placeholder="Add a tag" />
+        <ul>
+          {tagSuggestions.map((suggestion) => (
+            <li key={suggestion}>
+              <button onClick={() => handleAddTag(suggestion)}>{suggestion}</button>
+            </li>
           ))}
-          <button onClick={() => handleAddFolder('New Folder')}>Add Folder</button>
-        </div>
-        <div className="note-list">
-          {state.notes.size > 0 ? (
-            Array.from(state.notes.values()).map((note: any) => (
-              <NoteCard key={note.id} note={note} />
-            ))
-          ) : (
-            <p>No notes found.</p>
-          )}
-        </div>
-        <div className="tag-list">
-          {state.tags.map((tag: any) => (
-            <div key={tag} className="tag">
-              <span>{tag}</span>
-              <button onClick={() => handleRemoveTagFromNote(note.id, tag)}>Remove</button>
-            </div>
+        </ul>
+        <ul>
+          {tags.map((tag) => (
+            <li key={tag}>
+              <button onClick={() => handleRemoveTag(tag)}>{tag}</button>
+            </li>
           ))}
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            placeholder="Add tag"
-          />
-          <button onClick={() => handleAddTagToNote(note.id, tagInput)}>Add Tag</button>
-        </div>
-        <div className="quick-note">
-          <input
-            type="text"
-            value={quickNote}
-            onChange={(e) => setQuickNote(e.target.value)}
-            placeholder="Quick note"
-          />
-          <button onClick={() => setIsQuickNoteOpen(true)}>Open Quick Note</button>
-          {isQuickNoteOpen && (
-            <div className="quick-note-editor">
-              <Editor editorState={editorState} onChange={setEditorState} />
-            </div>
-          )}
-        </div>
+        </ul>
+        <h2>Notes</h2>
+        <ul>
+          {notes.map((note) => (
+            <li key={note.id}>
+              <NoteCard note={note} />
+              <input type="text" value={noteTags[note.id]} onChange={(event) => handleAddNoteTag(note.id, event.target.value)} placeholder="Add a tag" />
+              <ul>
+                {noteTags[note.id] && noteTags[note.id].map((tag) => (
+                  <li key={tag}>
+                    <button onClick={() => handleRemoveNoteTag(note.id, tag)}>{tag}</button>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+        <h2>Filtered Notes</h2>
+        <ul>
+          {filteredNotes.map((note) => (
+            <li key={note.id}>
+              <NoteCard note={note} />
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => handleFilterNotesByTags(tags)}>Filter by tags</button>
       </div>
     </DndProvider>
   );
 }
 
-// Render the dashboard page with the store
+// Render the page component
 function App() {
   return (
     <Provider store={store}>
-      <DashboardPage />
+      <Page />
     </Provider>
   );
 }
