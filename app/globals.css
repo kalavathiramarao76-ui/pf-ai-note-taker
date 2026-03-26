@@ -14,6 +14,8 @@
   --dark-mode-text-color: #adb5bd;
   --dark-mode-primary-color: #66d9ef;
   --dark-mode-secondary-color: #455a64;
+  --high-contrast-primary-color: #ff69b4;
+  --high-contrast-secondary-color: #33cc33;
 }
 
 :root.dark-mode {
@@ -26,6 +28,8 @@
 :root.high-contrast {
   --background-color: var(--high-contrast-background-color);
   --text-color: var(--high-contrast-text-color);
+  --primary-color: var(--high-contrast-primary-color);
+  --secondary-color: var(--high-contrast-secondary-color);
 }
 
 @layer base {
@@ -154,44 +158,26 @@
   }
 
   input[role="textbox"] {
-    aria-label: "Input field for AutoNote: AI-Powered Note Taker";
-  }
-}
-
-/* Optimizations for better page load times and search engine crawling */
-@layer utilities {
-  .preload {
-    @apply opacity-0;
-    transition: opacity 0.5s ease-in-out;
+    aria-label: "Input field for AutoNote: AI-Powered Note Taker"
   }
 
-  .preload.loaded {
-    @apply opacity-100;
-  }
-}
-
-/* Preload fonts to improve page load times */
-@layer base {
-  link[rel="preload"] {
-    @apply hidden;
-  }
-}
-
-/* Add meta tags for search engine optimization */
-@layer base {
-  meta[name="description"] {
-    content: "AutoNote: AI-Powered Note Taker";
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
-  meta[name="keywords"] {
-    content: "note taking, AI, productivity";
+  .high-contrast-mode {
+    filter: invert(100%);
   }
 
-  meta[name="robots"] {
-    content: "index, follow";
-  }
-
-  meta[name="viewport"] {
-    content: "width=device-width, initial-scale=1.0";
+  .high-contrast-mode button, .high-contrast-mode input, .high-contrast-mode textarea, .high-contrast-mode select {
+    filter: invert(100%);
   }
 }
