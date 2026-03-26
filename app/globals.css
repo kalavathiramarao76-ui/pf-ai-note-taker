@@ -171,15 +171,27 @@
   }
 
   select[role="listbox"] {
-    aria-label: "Select option for AutoNote: AI-Powered Note Taker";
+    aria-label: "Select dropdown for AutoNote: AI-Powered Note Taker";
   }
 
   img {
     @apply max-w-full h-auto;
   }
 
-  img::before {
-    content: "Image: ";
+  img[alt=""] {
+    aria-label: "Image for AutoNote: AI-Powered Note Taker";
+  }
+
+  img[alt] {
+    aria-label: attr(alt);
+  }
+
+  .icon {
+    @apply w-6 h-6;
+  }
+
+  .icon::before {
+    content: "Icon: ";
     font-size: 0;
     clip: rect(0, 0, 0, 0);
     clip-path: inset(50%);
@@ -187,7 +199,11 @@
     border: 0;
   }
 
-  .dark-mode-toggle {
-    @apply cursor-pointer;
+  .icon[role="img"] {
+    aria-label: "Icon for AutoNote: AI-Powered Note Taker";
+  }
+
+  .icon[alt] {
+    aria-label: attr(alt);
   }
 }

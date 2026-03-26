@@ -91,49 +91,45 @@ const Nav = memo(() => {
   }, [handleKeyDown]);
 
   return (
-    <nav
-      className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
-      aria-label="Main navigation"
-      role="navigation"
-    >
-      <button
-        type="button"
-        className="nav-toggle"
-        aria-label="Toggle navigation"
-        aria-expanded={navOpen}
-        onClick={toggleNav}
-      >
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <ul className="nav-menu" role="menu">
-        {filteredLinks.map((link, index) => (
-          <li key={index} role="menuitem">
-            <Link href={link.href} aria-label={link.text}>
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <form
-        className="nav-search"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-          aria-label="Search"
-        />
-      </form>
-      <button
-        type="button"
-        className="nav-high-contrast-mode"
-        aria-label="Toggle high contrast mode"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
+    <nav className="nav">
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <div className="nav-header">
+        <Link href="/">
+          <a>AutoNote</a>
+        </Link>
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+      </div>
+      {navOpen && (
+        <motion.div
+          initial={{ x: '-100%' }}
+          animate={{ x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="nav-menu"
+        >
+          <ul>
+            {filteredLinks.map((link) => (
+              <li key={link.text}>
+                <Link href={link.href}>
+                  <a>{link.text}</a>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+          </button>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search"
+          />
+        </motion.div>
+      )}
     </nav>
   );
 });

@@ -65,6 +65,7 @@ interface AppState {
   folderMap: Map<string, any>;
   draggedNote: any;
   draggedOverFolder: any;
+  folderTree: any[];
 }
 
 // Define the reducer using createSlice
@@ -117,43 +118,43 @@ const appSlice = createSlice({
     folderMap: new Map(),
     draggedNote: null,
     draggedOverFolder: null,
+    folderTree: [],
   },
   reducers: {
-    addFolder: (state, action: PayloadAction<string>) => {
-      state.folders.push({ id: action.payload, name: action.payload, notes: [] });
+    addFolder(state, action: PayloadAction<any>) {
+      state.folders.push(action.payload);
+      state.folderMap.set(action.payload.id, action.payload);
     },
-    removeFolder: (state, action: PayloadAction<string>) => {
-      state.folders = state.folders.filter((folder) => folder.id !== action.payload);
+    removeFolder(state, action: PayloadAction<any>) {
+      state.folders = state.folders.filter((folder) => folder.id !== action.payload.id);
+      state.folderMap.delete(action.payload.id);
     },
-    addNoteToFolder: (state, action: PayloadAction<{ noteId: string; folderId: string }>) => {
-      const folder = state.folders.find((folder) => folder.id === action.payload.folderId);
+    addNoteToFolder(state, action: PayloadAction<any>) {
+      const folder = state.folderMap.get(action.payload.folderId);
       if (folder) {
-        folder.notes.push(action.payload.noteId);
+        folder.notes.push(action.payload.note);
       }
     },
-    removeNoteFromFolder: (state, action: PayloadAction<{ noteId: string; folderId: string }>) => {
-      const folder = state.folders.find((folder) => folder.id === action.payload.folderId);
+    removeNoteFromFolder(state, action: PayloadAction<any>) {
+      const folder = state.folderMap.get(action.payload.folderId);
       if (folder) {
-        folder.notes = folder.notes.filter((noteId) => noteId !== action.payload.noteId);
+        folder.notes = folder.notes.filter((note) => note.id !== action.payload.noteId);
       }
     },
-    dragNote: (state, action: PayloadAction<string>) => {
-      state.draggedNote = action.payload;
-    },
-    dragOverFolder: (state, action: PayloadAction<string>) => {
-      state.draggedOverFolder = action.payload;
-    },
-    dropNote: (state) => {
-      if (state.draggedNote && state.draggedOverFolder) {
-        const noteId = state.draggedNote;
-        const folderId = state.draggedOverFolder;
-        const folder = state.folders.find((folder) => folder.id === folderId);
-        if (folder) {
-          folder.notes.push(noteId);
-        }
-        state.draggedNote = null;
-        state.draggedOverFolder = null;
+    addTagToNote(state, action: PayloadAction<any>) {
+      const note = state.notes.get(action.payload.noteId);
+      if (note) {
+        note.tags.push(action.payload.tag);
       }
+    },
+    removeTagFromNote(state, action: PayloadAction<any>) {
+      const note = state.notes.get(action.payload.noteId);
+      if (note) {
+        note.tags = note.tags.filter((tag) => tag !== action.payload.tag);
+      }
+    },
+    updateFolderTree(state, action: PayloadAction<any>) {
+      state.folderTree = action.payload;
     },
   },
 });
@@ -165,81 +166,176 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-const DashboardPage = () => {
+function DashboardPage() {
   const dispatch = useDispatch();
-  const { folders, notes, draggedNote, draggedOverFolder } = useSelector((state: AppState) => state);
+  const router = useRouter();
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [newNoteTitle, setNewNoteTitle] = useState('');
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [folderTree, setFolderTree] = useState([]);
+  const [notes, setNotes] = useState(new Map());
+  const [folders, setFolders] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [noteTags, setNoteTags] = useState({});
 
-  const handleAddFolder = (folderName: string) => {
-    dispatch(appSlice.actions.addFolder(folderName));
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const response = await client.get('/notes');
+      setNotes(new Map(response.data));
+    };
+    fetchNotes();
+  }, []);
+
+  useEffect(() => {
+    const fetchFolders = async () => {
+      const response = await client.get('/folders');
+      setFolders(response.data);
+    };
+    fetchFolders();
+  }, []);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const response = await client.get('/tags');
+      setTags(response.data);
+    };
+    fetchTags();
+  }, []);
+
+  const handleCreateFolder = async () => {
+    const response = await client.post('/folders', { name: newFolderName });
+    dispatch(appSlice.actions.addFolder(response.data));
+    setIsCreatingFolder(false);
+    setNewFolderName('');
   };
 
-  const handleRemoveFolder = (folderId: string) => {
-    dispatch(appSlice.actions.removeFolder(folderId));
+  const handleCreateNote = async () => {
+    const response = await client.post('/notes', { title: newNoteTitle, content: newNoteContent });
+    dispatch(appSlice.actions.addNoteToFolder({ folderId: selectedFolder.id, note: response.data }));
+    setIsCreatingNote(false);
+    setNewNoteTitle('');
+    setNewNoteContent('');
   };
 
-  const handleAddNoteToFolder = (noteId: string, folderId: string) => {
-    dispatch(appSlice.actions.addNoteToFolder({ noteId, folderId }));
+  const handleAddTagToNote = async (noteId, tag) => {
+    await client.post(`/notes/${noteId}/tags`, { tag });
+    dispatch(appSlice.actions.addTagToNote({ noteId, tag }));
   };
 
-  const handleRemoveNoteFromFolder = (noteId: string, folderId: string) => {
-    dispatch(appSlice.actions.removeNoteFromFolder({ noteId, folderId }));
+  const handleRemoveTagFromNote = async (noteId, tag) => {
+    await client.delete(`/notes/${noteId}/tags/${tag}`);
+    dispatch(appSlice.actions.removeTagFromNote({ noteId, tag }));
   };
 
-  const handleDragNote = (noteId: string) => {
-    dispatch(appSlice.actions.dragNote(noteId));
-  };
-
-  const handleDragOverFolder = (folderId: string) => {
-    dispatch(appSlice.actions.dragOverFolder(folderId));
-  };
-
-  const handleDropNote = () => {
-    dispatch(appSlice.actions.dropNote());
+  const handleUpdateFolderTree = async () => {
+    const response = await client.get('/folders/tree');
+    dispatch(appSlice.actions.updateFolderTree(response.data));
+    setFolderTree(response.data);
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div>
+      <div className="dashboard-page">
         <h1>AutoNote: AI-Powered Note Taker</h1>
-        <button onClick={() => handleAddFolder('New Folder')}>Add Folder</button>
-        <ul>
-          {folders.map((folder) => (
-            <li key={folder.id}>
+        <div className="folder-tree">
+          {folderTree.map((folder) => (
+            <div key={folder.id} className="folder">
               <span>{folder.name}</span>
-              <button onClick={() => handleRemoveFolder(folder.id)}>Remove</button>
               <ul>
-                {folder.notes.map((noteId) => (
-                  <li key={noteId}>
-                    <DraggableNoteCard noteId={noteId} onDragStart={() => handleDragNote(noteId)} />
+                {folder.notes.map((note) => (
+                  <li key={note.id}>
+                    <NoteCard note={note} />
                   </li>
                 ))}
               </ul>
-            </li>
+            </div>
           ))}
-        </ul>
-        {draggedNote && (
-          <div>
-            <span>Dragged Note: {draggedNote}</span>
-            {folders.map((folder) => (
-              <button key={folder.id} onClick={() => handleAddNoteToFolder(draggedNote, folder.id)}>
-                Add to {folder.name}
-              </button>
-            ))}
-          </div>
-        )}
-        {draggedOverFolder && (
-          <div>
-            <span>Dragged Over Folder: {draggedOverFolder}</span>
-            <button onClick={handleDropNote}>Drop Note</button>
-          </div>
-        )}
+        </div>
+        <div className="note-list">
+          {notes.size > 0 ? (
+            Array.from(notes.values()).map((note) => (
+              <NoteCard key={note.id} note={note} />
+            ))
+          ) : (
+            <p>No notes found.</p>
+          )}
+        </div>
+        <div className="create-folder">
+          {isCreatingFolder ? (
+            <input
+              type="text"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="Enter folder name"
+            />
+          ) : (
+            <button onClick={() => setIsCreatingFolder(true)}>Create Folder</button>
+          )}
+          {isCreatingFolder && (
+            <button onClick={handleCreateFolder}>Create</button>
+          )}
+        </div>
+        <div className="create-note">
+          {isCreatingNote ? (
+            <input
+              type="text"
+              value={newNoteTitle}
+              onChange={(e) => setNewNoteTitle(e.target.value)}
+              placeholder="Enter note title"
+            />
+          ) : (
+            <button onClick={() => setIsCreatingNote(true)}>Create Note</button>
+          )}
+          {isCreatingNote && (
+            <textarea
+              value={newNoteContent}
+              onChange={(e) => setNewNoteContent(e.target.value)}
+              placeholder="Enter note content"
+            />
+          )}
+          {isCreatingNote && (
+            <button onClick={handleCreateNote}>Create</button>
+          )}
+        </div>
+        <div className="tag-list">
+          {tags.map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
+        </div>
+        <div className="selected-tags">
+          {selectedTags.map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
+        </div>
+        <div className="note-tags">
+          {noteTags && Object.keys(noteTags).map((noteId) => (
+            <div key={noteId}>
+              <span>{noteId}</span>
+              <ul>
+                {noteTags[noteId].map((tag) => (
+                  <li key={tag}>
+                    <span>{tag}</span>
+                    <button onClick={() => handleRemoveTagFromNote(noteId, tag)}>Remove</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </DndProvider>
   );
-};
+}
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export default function App() {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+}
