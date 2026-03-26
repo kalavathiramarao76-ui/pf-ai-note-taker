@@ -83,33 +83,49 @@ const Nav = memo(() => {
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
 
-  const navItems = useMemo(() => {
-    return links.map((link, index) => (
-      <li key={index}>
-        <Link href={link.href}>{link.text}</Link>
-      </li>
-    ));
-  }, [links]);
-
   return (
-    <nav>
+    <nav className="nav">
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <div className="nav-container">
-        <button className="nav-toggle" onClick={toggleNav}>
+      <div className="nav-header">
+        <Link href="/">
+          <a>AutoNote</a>
+        </Link>
+        <button
+          className="nav-toggle"
+          aria-label="Toggle navigation"
+          onClick={toggleNav}
+        >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
-        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
-          {navItems}
-        </ul>
-        <Suspense fallback={<div>Loading...</div>}>
-          <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
-        </Suspense>
-        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
-          Toggle High Contrast Mode
-        </button>
       </div>
+      <ul className="nav-menu" hidden={!navOpen}>
+        {filteredLinks.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href}>
+              <a>{link.text}</a>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchBar
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+        />
+      </Suspense>
+      <button
+        className="nav-high-contrast-mode"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Menu />
+      </Suspense>
     </nav>
   );
 });
