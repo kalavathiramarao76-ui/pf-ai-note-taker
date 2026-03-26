@@ -137,9 +137,14 @@ const appSlice = createSlice({
     },
     updateTagInput(state, action: PayloadAction<string>) {
       state.tagInput = action.payload;
+      const suggestions = state.tags.filter((tag) =>
+        tag.toLowerCase().includes(action.payload.toLowerCase())
+      );
+      state.tagSuggestions = suggestions;
     },
-    updateTagSuggestions(state, action: PayloadAction<string[]>) {
-      state.tagSuggestions = action.payload;
+    clearTagInput(state) {
+      state.tagInput = '';
+      state.tagSuggestions = [];
     },
     addNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
       if (!state.noteTags[action.payload.noteId]) {
@@ -151,19 +156,10 @@ const appSlice = createSlice({
     },
     removeNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
       if (state.noteTags[action.payload.noteId]) {
-        state.noteTags[action.payload.noteId] = state.noteTags[action.payload.noteId].filter((tag) => tag !== action.payload.tag);
+        state.noteTags[action.payload.noteId] = state.noteTags[action.payload.noteId].filter(
+          (tag) => tag !== action.payload.tag
+        );
       }
-    },
-    updateSelectedTags(state, action: PayloadAction<string[]>) {
-      state.selectedTags = action.payload;
-    },
-    filterNotesByTags(state) {
-      state.filteredNotes = Array.from(state.notes.values()).filter((note) => {
-        if (state.selectedTags.length === 0) {
-          return true;
-        }
-        return state.selectedTags.some((tag) => state.noteTags[note.id] && state.noteTags[note.id].includes(tag));
-      });
     },
   },
 });
@@ -177,24 +173,70 @@ const store = configureStore({
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, tags, tagInput, tagSuggestions, noteTags, selectedTags } = useSelector((state: AppState) => state);
-  const [autoSuggestTags, setAutoSuggestTags] = useState([]);
+  const {
+    notes,
+    meetings,
+    templates,
+    searchQuery,
+    generatedNotes,
+    folders,
+    selectedFolder,
+    editingNote,
+    sortedNotes,
+    sortedMeetings,
+    sortedTemplates,
+    filterType,
+    sortBy,
+    sortOrder,
+    filterByTags,
+    filterByDate,
+    aiSuggestions,
+    autocompleteSuggestions,
+    priority,
+    deadline,
+    noteTitle,
+    noteContent,
+    isGeneratingNote,
+    editorState,
+    quickNote,
+    isQuickNoteOpen,
+    tags,
+    selectedTags,
+    noteTags,
+    tagInput,
+    tagSuggestions,
+    socket,
+    collaborators,
+    collaborativeEditorState,
+    noteVersions,
+    conflictResolution,
+    realTimeCollaboration,
+    folderNotes,
+    folderTags,
+    versionHistory,
+    collaborativeNotes,
+    folderStructure,
+    noteSummaries,
+    folderMap,
+    draggedNote,
+    draggedOverFolder,
+    folderTree,
+    noteTagMap,
+    suggestedTags,
+    filteredNotes,
+  } = useSelector((state: any) => state.app);
 
-  useEffect(() => {
-    const suggestTags = tags.filter((tag) => tag.startsWith(tagInput));
-    setAutoSuggestTags(suggestTags);
-  }, [tagInput, tags]);
+  const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(appSlice.actions.updateTagInput(e.target.value));
+  };
 
   const handleAddTag = (tag: string) => {
     dispatch(appSlice.actions.addTag(tag));
+    dispatch(appSlice.actions.clearTagInput());
   };
 
   const handleRemoveTag = (tag: string) => {
     dispatch(appSlice.actions.removeTag(tag));
-  };
-
-  const handleUpdateTagInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(appSlice.actions.updateTagInput(event.target.value));
   };
 
   const handleAddNoteTag = (noteId: string, tag: string) => {
@@ -205,14 +247,6 @@ const DashboardPage = () => {
     dispatch(appSlice.actions.removeNoteTag({ noteId, tag }));
   };
 
-  const handleUpdateSelectedTags = (tags: string[]) => {
-    dispatch(appSlice.actions.updateSelectedTags(tags));
-  };
-
-  const handleFilterNotesByTags = () => {
-    dispatch(appSlice.actions.filterNotesByTags());
-  };
-
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
@@ -220,79 +254,60 @@ const DashboardPage = () => {
         <input
           type="text"
           value={tagInput}
-          onChange={handleUpdateTagInput}
-          placeholder="Enter a tag"
-          list="tags"
+          onChange={handleTagInput}
+          placeholder="Add tag"
         />
-        <datalist id="tags">
-          {autoSuggestTags.map((tag) => (
-            <option key={tag} value={tag} />
-          ))}
-        </datalist>
-        <button onClick={() => handleAddTag(tagInput)}>Add Tag</button>
         <ul>
-          {tags.map((tag) => (
+          {tagSuggestions.map((tag: string) => (
             <li key={tag}>
-              {tag}
-              <button onClick={() => handleRemoveTag(tag)}>Remove</button>
+              <button onClick={() => handleAddTag(tag)}>{tag}</button>
             </li>
           ))}
         </ul>
-        <h2>Notes</h2>
         <ul>
-          {Array.from(notes.values()).map((note) => (
-            <li key={note.id}>
-              <NoteCard note={note} />
-              <input
-                type="text"
-                value={noteTags[note.id] ? noteTags[note.id].join(', ') : ''}
-                onChange={(event) => handleUpdateTagInput(event.target.value)}
-                placeholder="Enter tags for this note"
-              />
-              <button onClick={() => handleAddNoteTag(note.id, tagInput)}>Add Tag</button>
-              <ul>
-                {noteTags[note.id] && noteTags[note.id].map((tag) => (
-                  <li key={tag}>
+          {tags.map((tag: string) => (
+            <li key={tag}>
+              <button onClick={() => handleRemoveTag(tag)}>{tag}</button>
+            </li>
+          ))}
+        </ul>
+        {notes.map((note: any) => (
+          <NoteCard key={note.id} note={note}>
+            <ul>
+              {noteTags[note.id].map((tag: string) => (
+                <li key={tag}>
+                  <button onClick={() => handleRemoveNoteTag(note.id, tag)}>
                     {tag}
-                    <button onClick={() => handleRemoveNoteTag(note.id, tag)}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-        <h2>Selected Tags</h2>
-        <ul>
-          {selectedTags.map((tag) => (
-            <li key={tag}>
-              {tag}
-              <button onClick={() => handleUpdateSelectedTags(selectedTags.filter((t) => t !== tag))}>
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button onClick={handleFilterNotesByTags}>Filter Notes by Tags</button>
-        <h2>Filtered Notes</h2>
-        <ul>
-          {Array.from(notes.values()).filter((note) => {
-            if (selectedTags.length === 0) {
-              return true;
-            }
-            return selectedTags.some((tag) => noteTags[note.id] && noteTags[note.id].includes(tag));
-          }).map((note) => (
-            <li key={note.id}>
-              <NoteCard note={note} />
-            </li>
-          ))}
-        </ul>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <input
+              type="text"
+              value={tagInput}
+              onChange={handleTagInput}
+              placeholder="Add tag to note"
+            />
+            <ul>
+              {tagSuggestions.map((tag: string) => (
+                <li key={tag}>
+                  <button onClick={() => handleAddNoteTag(note.id, tag)}>
+                    {tag}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </NoteCard>
+        ))}
       </div>
     </DndProvider>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export default () => {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+};
