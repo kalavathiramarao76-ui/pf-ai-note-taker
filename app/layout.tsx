@@ -83,54 +83,44 @@ const Nav = memo(() => {
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
 
+  const navigationMenu = useMemo(() => {
+    const menu = [];
+    links.forEach((link) => {
+      menu.push({
+        id: link.text.toLowerCase(),
+        href: link.href,
+        text: link.text,
+      });
+    });
+    return menu;
+  }, [links]);
+
   return (
-    <nav
-      aria-label="Main navigation"
-      role="navigation"
-      className="nav"
-      onKeyDown={handleKeyDown}
-    >
-      <button
-        type="button"
-        aria-label="Toggle navigation menu"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
-        className="nav-toggle"
-        onClick={toggleNav}
-      >
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <ul
-        id="nav-menu"
-        role="menu"
-        aria-label="Navigation menu"
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
-      >
-        {filteredLinks.map((link) => (
-          <li key={link.href} role="menuitem">
-            <Link href={link.href} aria-label={link.text}>
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <SearchBar
-        value={searchQuery}
-        onChange={handleSearch}
-        aria-label="Search"
-        placeholder="Search"
-      />
-      <button
-        type="button"
-        aria-label="Toggle high contrast mode"
-        className="high-contrast-toggle"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Menu />
-      </Suspense>
+    <nav>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <div className="nav-container">
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
+          {navigationMenu.map((link) => (
+            <li key={link.id}>
+              <Link href={link.href}>{link.text}</Link>
+            </li>
+          ))}
+        </ul>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+        </Suspense>
+        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+          High Contrast Mode
+        </button>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Menu />
+        </Suspense>
+      </div>
     </nav>
   );
 });
