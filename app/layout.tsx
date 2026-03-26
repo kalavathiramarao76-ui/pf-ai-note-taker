@@ -14,7 +14,13 @@ const Nav = memo(() => {
     { href: '/about', text: 'About' },
     { href: '/contact', text: 'Contact' },
   ], []);
-  const linksMap = useMemo(() => new Map(links.map((link) => [link.text.toLowerCase(), link])), [links]);
+  const linksMap = useMemo(() => {
+    const map = new Map();
+    links.forEach((link) => {
+      map.set(link.text.toLowerCase(), link);
+    });
+    return map;
+  }, [links]);
   const router = useRouter();
 
   const toggleNav = useCallback(() => {
@@ -89,28 +95,28 @@ const Nav = memo(() => {
       </button>
       <ul className={`nav-menu ${navOpen ? 'open' : ''}`}>
         {filteredLinks.map((link) => (
-          <li key={link.text}>
+          <li key={link.href}>
             <Link href={link.href}>{link.text}</Link>
           </li>
         ))}
       </ul>
-      <form className="nav-search" onSubmit={(event) => event.preventDefault()}>
-        <input
-          type="search"
-          placeholder="Search"
-          value={searchQuery}
-          onChange={handleSearch}
-          aria-label="Search"
-        />
-      </form>
       <button
         type="button"
-        className="nav-high-contrast-mode"
+        className="high-contrast-mode-toggle"
         aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
         High Contrast Mode
       </button>
+      <form className="search-form">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </form>
     </nav>
   );
 });

@@ -59,6 +59,7 @@ interface AppState {
   collaborativeNotes: any;
   folderStructure: any;
   noteSummaries: any[];
+  folderMap: Map<string, any>;
 }
 
 // Define the reducer using createSlice
@@ -111,77 +112,133 @@ const appSlice = createSlice({
         id: 'root',
         name: 'Root',
         children: [],
-        notes: []
-      }
+      },
     },
-    noteSummaries: []
+    noteSummaries: [],
+    folderMap: new Map(),
   },
   reducers: {
-    generateNoteSummary(state, action: PayloadAction<{ noteId: string, summary: string }>) {
-      const noteId = action.payload.noteId;
-      const summary = action.payload.summary;
-      state.noteSummaries = [...state.noteSummaries, { noteId, summary }];
-    }
-  }
+    addFolder(state, action: PayloadAction<any>) {
+      const folder = action.payload;
+      state.folders.push(folder);
+      state.folderMap.set(folder.id, folder);
+      state.folderStructure.root.children.push(folder);
+    },
+    removeFolder(state, action: PayloadAction<any>) {
+      const folderId = action.payload;
+      state.folders = state.folders.filter((folder) => folder.id !== folderId);
+      state.folderMap.delete(folderId);
+      state.folderStructure.root.children = state.folderStructure.root.children.filter((folder) => folder.id !== folderId);
+    },
+    addNoteToFolder(state, action: PayloadAction<any>) {
+      const { noteId, folderId } = action.payload;
+      const folder = state.folderMap.get(folderId);
+      if (folder) {
+        folder.notes.push(noteId);
+      }
+    },
+    removeNoteFromFolder(state, action: PayloadAction<any>) {
+      const { noteId, folderId } = action.payload;
+      const folder = state.folderMap.get(folderId);
+      if (folder) {
+        folder.notes = folder.notes.filter((id) => id !== noteId);
+      }
+    },
+    addTagToFolder(state, action: PayloadAction<any>) {
+      const { tag, folderId } = action.payload;
+      const folder = state.folderMap.get(folderId);
+      if (folder) {
+        folder.tags.push(tag);
+      }
+    },
+    removeTagFromFolder(state, action: PayloadAction<any>) {
+      const { tag, folderId } = action.payload;
+      const folder = state.folderMap.get(folderId);
+      if (folder) {
+        folder.tags = folder.tags.filter((t) => t !== tag);
+      }
+    },
+  },
 });
 
-// Create the store
 const store = configureStore({
   reducer: {
-    app: appSlice.reducer
+    app: appSlice.reducer,
   },
-  middleware: [thunk]
+  middleware: [thunk],
 });
 
-// Define the AI-powered note summarization function
-const generateNoteSummary = async (noteId: string, noteContent: string) => {
-  try {
-    const response = await client.post('/api/summarize-note', {
-      noteId,
-      noteContent
-    });
-    const summary = response.data.summary;
-    return summary;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
-// Define the component
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, noteSummaries } = useSelector((state: any) => state.app);
-  const [selectedNote, setSelectedNote] = useState(null);
+  const { folders, folderMap, folderStructure } = useSelector((state: AppState) => state);
 
   useEffect(() => {
-    const generateSummaries = async () => {
-      for (const [noteId, note] of notes) {
-        const summary = await generateNoteSummary(noteId, note.content);
-        if (summary) {
-          dispatch(appSlice.actions.generateNoteSummary({ noteId, summary }));
-        }
-      }
-    };
-    generateSummaries();
-  }, [notes]);
+    // Initialize folder structure
+    const rootFolder = folderStructure.root;
+    rootFolder.children = folders.map((folder) => ({
+      id: folder.id,
+      name: folder.name,
+      children: [],
+    }));
+  }, [folders, folderStructure]);
 
-  const handleNoteClick = (noteId: string) => {
-    setSelectedNote(noteId);
+  const handleAddFolder = (folder) => {
+    dispatch(appSlice.actions.addFolder(folder));
+  };
+
+  const handleRemoveFolder = (folderId) => {
+    dispatch(appSlice.actions.removeFolder(folderId));
+  };
+
+  const handleAddNoteToFolder = (noteId, folderId) => {
+    dispatch(appSlice.actions.addNoteToFolder({ noteId, folderId }));
+  };
+
+  const handleRemoveNoteFromFolder = (noteId, folderId) => {
+    dispatch(appSlice.actions.removeNoteFromFolder({ noteId, folderId }));
+  };
+
+  const handleAddTagToFolder = (tag, folderId) => {
+    dispatch(appSlice.actions.addTagToFolder({ tag, folderId }));
+  };
+
+  const handleRemoveTagFromFolder = (tag, folderId) => {
+    dispatch(appSlice.actions.removeTagFromFolder({ tag, folderId }));
   };
 
   return (
     <div>
       <h1>Dashboard</h1>
+      <button onClick={() => handleAddFolder({ id: 'new-folder', name: 'New Folder' })}>
+        Add Folder
+      </button>
       <ul>
-        {Array.from(notes).map(([noteId, note]) => (
-          <li key={noteId}>
-            <Link href={`/notes/${noteId}`}>
-              <a onClick={() => handleNoteClick(noteId)}>{note.title}</a>
-            </Link>
-            {noteSummaries.find((summary) => summary.noteId === noteId) && (
-              <p>Summary: {noteSummaries.find((summary) => summary.noteId === noteId).summary}</p>
-            )}
+        {folders.map((folder) => (
+          <li key={folder.id}>
+            {folder.name}
+            <button onClick={() => handleRemoveFolder(folder.id)}>Remove</button>
+            <ul>
+              {folder.notes.map((noteId) => (
+                <li key={noteId}>{noteId}</li>
+              ))}
+            </ul>
+            <button onClick={() => handleAddNoteToFolder('new-note', folder.id)}>
+              Add Note
+            </button>
+            <button onClick={() => handleRemoveNoteFromFolder('new-note', folder.id)}>
+              Remove Note
+            </button>
+            <ul>
+              {folder.tags.map((tag) => (
+                <li key={tag}>{tag}</li>
+              ))}
+            </ul>
+            <button onClick={() => handleAddTagToFolder('new-tag', folder.id)}>
+              Add Tag
+            </button>
+            <button onClick={() => handleRemoveTagFromFolder('new-tag', folder.id)}>
+              Remove Tag
+            </button>
           </li>
         ))}
       </ul>
@@ -189,4 +246,12 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+const App = () => {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+};
+
+export default App;
