@@ -104,22 +104,28 @@ const Nav = memo(() => {
         <button className="nav-toggle" onClick={toggleNav}>
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
-        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
-          {navigationMenu.map((link) => (
-            <li key={link.id}>
-              <Link href={link.href}>{link.text}</Link>
-            </li>
-          ))}
-        </ul>
-        <Suspense fallback={<div>Loading...</div>}>
-          <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
-        </Suspense>
-        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
-          High Contrast Mode
-        </button>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Menu />
-        </Suspense>
+        {navOpen && (
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="nav-menu"
+          >
+            <ul>
+              {navigationMenu.map((link) => (
+                <li key={link.id}>
+                  <Link href={link.href}>{link.text}</Link>
+                </li>
+              ))}
+            </ul>
+            <Suspense fallback={<div>Loading...</div>}>
+              <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+            </Suspense>
+            <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+              {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+            </button>
+          </motion.div>
+        )}
       </div>
     </nav>
   );
