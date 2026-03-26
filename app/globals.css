@@ -64,7 +64,7 @@
   }
 
   a[role="link"] {
-    aria-label: "Link";
+    aria-label: "Link to AutoNote: AI-Powered Note Taker";
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -113,7 +113,7 @@
   }
 
   button[role="button"] {
-    aria-label: "Button";
+    aria-label: "Button for AutoNote: AI-Powered Note Taker";
   }
 
   input, textarea, select {
@@ -131,7 +131,7 @@
   }
 
   input[role="textbox"] {
-    aria-label: "Input";
+    aria-label: "Input field for AutoNote: AI-Powered Note Taker";
   }
 
   textarea::before {
@@ -144,7 +144,7 @@
   }
 
   textarea[role="textbox"] {
-    aria-label: "Textarea";
+    aria-label: "Textarea for AutoNote: AI-Powered Note Taker";
   }
 
   select::before {
@@ -157,7 +157,7 @@
   }
 
   select[role="listbox"] {
-    aria-label: "Select";
+    aria-label: "Select option for AutoNote: AI-Powered Note Taker";
   }
 
   img {
@@ -177,28 +177,18 @@
     role: img;
     aria-label: attr(alt);
   }
+
+  meta[name="description"] {
+    content: "AutoNote: AI-Powered Note Taker is a revolutionary tool that helps you take notes efficiently and effectively.";
+  }
+
+  meta[name="keywords"] {
+    content: "AutoNote, AI-Powered Note Taker, note taking, productivity, organization";
+  }
 }
 
 @layer components {
   .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-8 xl:px-12;
-  }
-
-  .button {
-    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
-  }
-
-  .button-secondary {
-    @apply bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded;
-  }
-
-  .card {
-    @apply bg-gray-800 rounded-lg shadow-md;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    role: region;
-    aria-label: "Card";
+    @apply max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 xl:px-20;
   }
 }

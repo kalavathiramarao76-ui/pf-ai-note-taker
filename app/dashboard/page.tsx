@@ -13,6 +13,9 @@ import { Provider, useSelector, useDispatch } from 'react-redux';
 import thunk from 'redux-thunk';
 import { Socket } from 'socket.io-client';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DraggableNoteCard } from '../components/DraggableNoteCard';
 
 // Define the initial state
 interface AppState {
@@ -60,6 +63,8 @@ interface AppState {
   folderStructure: any;
   noteSummaries: any[];
   folderMap: Map<string, any>;
+  draggedNote: any;
+  draggedOverFolder: any;
 }
 
 // Define the reducer using createSlice
@@ -94,164 +99,120 @@ const appSlice = createSlice({
     isQuickNoteOpen: false,
     tags: [],
     selectedTags: [],
-    noteTags: {}, 
-    tagInput: '', 
-    tagSuggestions: [], 
+    noteTags: {},
+    tagInput: '',
+    tagSuggestions: [],
     socket: null,
-    collaborators: [], 
-    collaborativeEditorState: {}, 
-    noteVersions: {}, 
-    conflictResolution: {}, 
-    realTimeCollaboration: {}, 
-    folderNotes: {}, 
-    folderTags: {}, 
-    versionHistory: {}, 
-    collaborativeNotes: {}, 
+    collaborators: [],
+    collaborativeEditorState: {},
+    noteVersions: {},
+    conflictResolution: {},
+    realTimeCollaboration: {},
+    folderNotes: {},
+    folderTags: {},
+    versionHistory: {},
+    collaborativeNotes: {},
     folderStructure: {
       root: {
         id: 'root',
         name: 'Root',
-        children: [],
-      },
+        children: []
+      }
     },
     noteSummaries: [],
     folderMap: new Map(),
+    draggedNote: null,
+    draggedOverFolder: null
   },
   reducers: {
-    addFolder(state, action: PayloadAction<any>) {
-      const folder = action.payload;
-      state.folders.push(folder);
-      state.folderMap.set(folder.id, folder);
-      state.folderStructure.root.children.push(folder);
-    },
-    removeFolder(state, action: PayloadAction<any>) {
-      const folderId = action.payload;
-      state.folders = state.folders.filter((folder) => folder.id !== folderId);
-      state.folderMap.delete(folderId);
-      state.folderStructure.root.children = state.folderStructure.root.children.filter((folder) => folder.id !== folderId);
-    },
-    addNoteToFolder(state, action: PayloadAction<any>) {
+    moveNote(state, action: PayloadAction<{ noteId: string, folderId: string }>) {
       const { noteId, folderId } = action.payload;
-      const folder = state.folderMap.get(folderId);
-      if (folder) {
-        folder.notes.push(noteId);
+      const note = state.notes.get(noteId);
+      if (note) {
+        note.folderId = folderId;
+        state.notes.set(noteId, note);
       }
     },
-    removeNoteFromFolder(state, action: PayloadAction<any>) {
-      const { noteId, folderId } = action.payload;
-      const folder = state.folderMap.get(folderId);
-      if (folder) {
-        folder.notes = folder.notes.filter((id) => id !== noteId);
-      }
+    dragNote(state, action: PayloadAction<{ noteId: string }>) {
+      const { noteId } = action.payload;
+      state.draggedNote = state.notes.get(noteId);
     },
-    addTagToFolder(state, action: PayloadAction<any>) {
-      const { tag, folderId } = action.payload;
-      const folder = state.folderMap.get(folderId);
-      if (folder) {
-        folder.tags.push(tag);
-      }
+    dragOverFolder(state, action: PayloadAction<{ folderId: string }>) {
+      const { folderId } = action.payload;
+      state.draggedOverFolder = state.folderMap.get(folderId);
     },
-    removeTagFromFolder(state, action: PayloadAction<any>) {
-      const { tag, folderId } = action.payload;
-      const folder = state.folderMap.get(folderId);
-      if (folder) {
-        folder.tags = folder.tags.filter((t) => t !== tag);
+    dropNote(state) {
+      if (state.draggedNote && state.draggedOverFolder) {
+        state.draggedNote.folderId = state.draggedOverFolder.id;
+        state.notes.set(state.draggedNote.id, state.draggedNote);
+        state.draggedNote = null;
+        state.draggedOverFolder = null;
       }
-    },
-  },
+    }
+  }
 });
 
 const store = configureStore({
   reducer: {
-    app: appSlice.reducer,
+    app: appSlice.reducer
   },
-  middleware: [thunk],
+  middleware: [thunk]
 });
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { folders, folderMap, folderStructure } = useSelector((state: AppState) => state);
+  const { notes, folders, draggedNote, draggedOverFolder } = useSelector((state: AppState) => state);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    // Initialize folder structure
-    const rootFolder = folderStructure.root;
-    rootFolder.children = folders.map((folder) => ({
-      id: folder.id,
-      name: folder.name,
-      children: [],
-    }));
-  }, [folders, folderStructure]);
+    if (draggedNote && draggedOverFolder) {
+      setIsDragging(true);
+    } else {
+      setIsDragging(false);
+    }
+  }, [draggedNote, draggedOverFolder]);
 
-  const handleAddFolder = (folder) => {
-    dispatch(appSlice.actions.addFolder(folder));
+  const handleDragNote = (noteId: string) => {
+    dispatch(appSlice.actions.dragNote({ noteId }));
   };
 
-  const handleRemoveFolder = (folderId) => {
-    dispatch(appSlice.actions.removeFolder(folderId));
+  const handleDragOverFolder = (folderId: string) => {
+    dispatch(appSlice.actions.dragOverFolder({ folderId }));
   };
 
-  const handleAddNoteToFolder = (noteId, folderId) => {
-    dispatch(appSlice.actions.addNoteToFolder({ noteId, folderId }));
-  };
-
-  const handleRemoveNoteFromFolder = (noteId, folderId) => {
-    dispatch(appSlice.actions.removeNoteFromFolder({ noteId, folderId }));
-  };
-
-  const handleAddTagToFolder = (tag, folderId) => {
-    dispatch(appSlice.actions.addTagToFolder({ tag, folderId }));
-  };
-
-  const handleRemoveTagFromFolder = (tag, folderId) => {
-    dispatch(appSlice.actions.removeTagFromFolder({ tag, folderId }));
+  const handleDropNote = () => {
+    dispatch(appSlice.actions.dropNote());
   };
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <button onClick={() => handleAddFolder({ id: 'new-folder', name: 'New Folder' })}>
-        Add Folder
-      </button>
-      <ul>
+    <DndProvider backend={HTML5Backend}>
+      <div>
         {folders.map((folder) => (
-          <li key={folder.id}>
+          <div key={folder.id} onDragOver={() => handleDragOverFolder(folder.id)}>
             {folder.name}
-            <button onClick={() => handleRemoveFolder(folder.id)}>Remove</button>
-            <ul>
-              {folder.notes.map((noteId) => (
-                <li key={noteId}>{noteId}</li>
-              ))}
-            </ul>
-            <button onClick={() => handleAddNoteToFolder('new-note', folder.id)}>
-              Add Note
-            </button>
-            <button onClick={() => handleRemoveNoteFromFolder('new-note', folder.id)}>
-              Remove Note
-            </button>
-            <ul>
-              {folder.tags.map((tag) => (
-                <li key={tag}>{tag}</li>
-              ))}
-            </ul>
-            <button onClick={() => handleAddTagToFolder('new-tag', folder.id)}>
-              Add Tag
-            </button>
-            <button onClick={() => handleRemoveTagFromFolder('new-tag', folder.id)}>
-              Remove Tag
-            </button>
-          </li>
+            {notes.map((note) => (
+              <DraggableNoteCard key={note.id} note={note} onDragStart={() => handleDragNote(note.id)} />
+            ))}
+          </div>
         ))}
-      </ul>
+      </div>
+    </DndProvider>
+  );
+};
+
+const DraggableNoteCard = ({ note, onDragStart }) => {
+  const { title, content } = note;
+
+  return (
+    <div draggable onDragStart={onDragStart}>
+      <h2>{title}</h2>
+      <p>{content}</p>
     </div>
   );
 };
 
-const App = () => {
-  return (
-    <Provider store={store}>
-      <DashboardPage />
-    </Provider>
-  );
-};
-
-export default App;
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);
