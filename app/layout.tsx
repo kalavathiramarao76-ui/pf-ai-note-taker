@@ -80,159 +80,60 @@ const Nav = memo(() => {
     document.body.classList.toggle('high-contrast-mode');
   }, [highContrastMode]);
 
+  useEffect(() => {
+    const handleKeyDownEvent = (event) => {
+      handleKeyDown(event);
+    };
+    document.addEventListener('keydown', handleKeyDownEvent);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDownEvent);
+    };
+  }, [handleKeyDown]);
+
   return (
     <nav
       className={`nav ${highContrastMode ? 'high-contrast-mode' : ''}`}
       aria-label="Main navigation"
+      role="navigation"
     >
-      <div className="nav-container">
-        <button
-          className="nav-toggle"
-          aria-label="Toggle navigation"
-          onClick={toggleNav}
-        >
-          {navOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
-        </button>
-        <div
-          className={`nav-menu ${navOpen ? 'open' : ''}`}
-          aria-hidden={!navOpen}
-        >
-          <ul>
-            {filteredLinks.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href} onClick={toggleNav}>
-                  {link.text}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="nav-search">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search"
-            aria-label="Search"
-          />
-        </div>
-        <button
-          className="nav-contrast"
-          aria-label="Toggle high contrast mode"
-          onClick={handleHighContrastMode}
-        >
-          High Contrast Mode
-        </button>
-      </div>
-      <style jsx>
-        {`
-          .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background-color: #333;
-            color: #fff;
-          }
-          .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-          }
-          .nav-toggle {
-            background-color: transparent;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-          }
-          .nav-menu {
-            display: none;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 1rem;
-            background-color: #333;
-            border: 1px solid #444;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-          }
-          .nav-menu.open {
-            display: flex;
-          }
-          .nav-menu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-          }
-          .nav-menu li {
-            padding: 0.5rem;
-            border-bottom: 1px solid #444;
-          }
-          .nav-menu li:last-child {
-            border-bottom: none;
-          }
-          .nav-menu a {
-            color: #fff;
-            text-decoration: none;
-          }
-          .nav-search {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-          }
-          .nav-search input {
-            padding: 0.5rem;
-            border: none;
-            border-radius: 0.25rem;
-            width: 100%;
-          }
-          .nav-contrast {
-            background-color: transparent;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-          }
-          .high-contrast-mode {
-            background-color: #fff;
-            color: #000;
-          }
-          .high-contrast-mode .nav-menu {
-            background-color: #fff;
-            border-color: #000;
-          }
-          .high-contrast-mode .nav-menu a {
-            color: #000;
-          }
-          @media (min-width: 768px) {
-            .nav-menu {
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              padding: 0;
-              background-color: transparent;
-              border: none;
-              position: static;
-              width: auto;
-            }
-            .nav-menu ul {
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              padding: 0;
-              margin: 0;
-            }
-            .nav-menu li {
-              padding: 0.5rem;
-              border-bottom: none;
-            }
-            .nav-menu li:not(:last-child) {
-              margin-right: 1rem;
-            }
-          }
-        `}
-      </style>
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        onClick={toggleNav}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul className="nav-menu" role="menu">
+        {filteredLinks.map((link, index) => (
+          <li key={index} role="menuitem">
+            <Link href={link.href} aria-label={link.text}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <form
+        className="nav-search"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </form>
+      <button
+        type="button"
+        className="nav-high-contrast-mode"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
     </nav>
   );
 });

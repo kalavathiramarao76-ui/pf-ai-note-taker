@@ -112,72 +112,85 @@ const appSlice = createSlice({
     folderTags: {},
     versionHistory: {},
     collaborativeNotes: {},
-    folderStructure: {
-      root: {
-        id: 'root',
-        name: 'Root',
-        children: []
-      }
-    },
+    folderStructure: {},
     noteSummaries: [],
     folderMap: new Map(),
     draggedNote: null,
-    draggedOverFolder: null
+    draggedOverFolder: null,
   },
   reducers: {
-    moveNote(state, action: PayloadAction<{ noteId: string, folderId: string }>) {
-      const { noteId, folderId } = action.payload;
-      const note = state.notes.get(noteId);
-      if (note) {
-        note.folderId = folderId;
-        state.notes.set(noteId, note);
+    addFolder: (state, action: PayloadAction<string>) => {
+      state.folders.push({ id: action.payload, name: action.payload, notes: [] });
+    },
+    removeFolder: (state, action: PayloadAction<string>) => {
+      state.folders = state.folders.filter((folder) => folder.id !== action.payload);
+    },
+    addNoteToFolder: (state, action: PayloadAction<{ noteId: string; folderId: string }>) => {
+      const folder = state.folders.find((folder) => folder.id === action.payload.folderId);
+      if (folder) {
+        folder.notes.push(action.payload.noteId);
       }
     },
-    dragNote(state, action: PayloadAction<{ noteId: string }>) {
-      const { noteId } = action.payload;
-      state.draggedNote = state.notes.get(noteId);
+    removeNoteFromFolder: (state, action: PayloadAction<{ noteId: string; folderId: string }>) => {
+      const folder = state.folders.find((folder) => folder.id === action.payload.folderId);
+      if (folder) {
+        folder.notes = folder.notes.filter((noteId) => noteId !== action.payload.noteId);
+      }
     },
-    dragOverFolder(state, action: PayloadAction<{ folderId: string }>) {
-      const { folderId } = action.payload;
-      state.draggedOverFolder = state.folderMap.get(folderId);
+    dragNote: (state, action: PayloadAction<string>) => {
+      state.draggedNote = action.payload;
     },
-    dropNote(state) {
+    dragOverFolder: (state, action: PayloadAction<string>) => {
+      state.draggedOverFolder = action.payload;
+    },
+    dropNote: (state) => {
       if (state.draggedNote && state.draggedOverFolder) {
-        state.draggedNote.folderId = state.draggedOverFolder.id;
-        state.notes.set(state.draggedNote.id, state.draggedNote);
+        const noteId = state.draggedNote;
+        const folderId = state.draggedOverFolder;
+        const folder = state.folders.find((folder) => folder.id === folderId);
+        if (folder) {
+          folder.notes.push(noteId);
+        }
         state.draggedNote = null;
         state.draggedOverFolder = null;
       }
-    }
-  }
+    },
+  },
 });
 
 const store = configureStore({
   reducer: {
-    app: appSlice.reducer
+    app: appSlice.reducer,
   },
-  middleware: [thunk]
+  middleware: [thunk],
 });
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notes, folders, draggedNote, draggedOverFolder } = useSelector((state: AppState) => state);
-  const [isDragging, setIsDragging] = useState(false);
+  const { folders, notes, draggedNote, draggedOverFolder } = useSelector((state: AppState) => state);
 
-  useEffect(() => {
-    if (draggedNote && draggedOverFolder) {
-      setIsDragging(true);
-    } else {
-      setIsDragging(false);
-    }
-  }, [draggedNote, draggedOverFolder]);
+  const handleAddFolder = (folderName: string) => {
+    dispatch(appSlice.actions.addFolder(folderName));
+  };
+
+  const handleRemoveFolder = (folderId: string) => {
+    dispatch(appSlice.actions.removeFolder(folderId));
+  };
+
+  const handleAddNoteToFolder = (noteId: string, folderId: string) => {
+    dispatch(appSlice.actions.addNoteToFolder({ noteId, folderId }));
+  };
+
+  const handleRemoveNoteFromFolder = (noteId: string, folderId: string) => {
+    dispatch(appSlice.actions.removeNoteFromFolder({ noteId, folderId }));
+  };
 
   const handleDragNote = (noteId: string) => {
-    dispatch(appSlice.actions.dragNote({ noteId }));
+    dispatch(appSlice.actions.dragNote(noteId));
   };
 
   const handleDragOverFolder = (folderId: string) => {
-    dispatch(appSlice.actions.dragOverFolder({ folderId }));
+    dispatch(appSlice.actions.dragOverFolder(folderId));
   };
 
   const handleDropNote = () => {
@@ -187,27 +200,41 @@ const DashboardPage = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
-        {folders.map((folder) => (
-          <div key={folder.id} onDragOver={() => handleDragOverFolder(folder.id)}>
-            {folder.name}
-            {notes.map((note) => (
-              <DraggableNoteCard key={note.id} note={note} onDragStart={() => handleDragNote(note.id)} />
+        <h1>AutoNote: AI-Powered Note Taker</h1>
+        <button onClick={() => handleAddFolder('New Folder')}>Add Folder</button>
+        <ul>
+          {folders.map((folder) => (
+            <li key={folder.id}>
+              <span>{folder.name}</span>
+              <button onClick={() => handleRemoveFolder(folder.id)}>Remove</button>
+              <ul>
+                {folder.notes.map((noteId) => (
+                  <li key={noteId}>
+                    <DraggableNoteCard noteId={noteId} onDragStart={() => handleDragNote(noteId)} />
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+        {draggedNote && (
+          <div>
+            <span>Dragged Note: {draggedNote}</span>
+            {folders.map((folder) => (
+              <button key={folder.id} onClick={() => handleAddNoteToFolder(draggedNote, folder.id)}>
+                Add to {folder.name}
+              </button>
             ))}
           </div>
-        ))}
+        )}
+        {draggedOverFolder && (
+          <div>
+            <span>Dragged Over Folder: {draggedOverFolder}</span>
+            <button onClick={handleDropNote}>Drop Note</button>
+          </div>
+        )}
       </div>
     </DndProvider>
-  );
-};
-
-const DraggableNoteCard = ({ note, onDragStart }) => {
-  const { title, content } = note;
-
-  return (
-    <div draggable onDragStart={onDragStart}>
-      <h2>{title}</h2>
-      <p>{content}</p>
-    </div>
   );
 };
 
