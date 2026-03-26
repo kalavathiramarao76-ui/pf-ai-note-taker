@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useMemo, useCallback } from 'react';
+import { useState, useEffect, memo, useMemo, useCallback, lazy, Suspense } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -80,6 +80,10 @@ const Nav = memo(() => {
     document.body.classList.toggle('high-contrast-mode');
   }, [highContrastMode]);
 
+  const Menu = lazy(() => import('./Menu'));
+  const SearchBar = lazy(() => import('./SearchBar'));
+  const HighContrastToggle = lazy(() => import('./HighContrastToggle'));
+
   useEffect(() => {
     const handleKeyDownEvent = (event) => {
       handleKeyDown(event);
@@ -91,55 +95,27 @@ const Nav = memo(() => {
   }, [handleKeyDown]);
 
   return (
-    <nav
-      aria-label="Main navigation"
-      className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast-mode' : ''}`}
-    >
-      <button
-        type="button"
-        aria-label="Toggle navigation"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
-        className="nav-toggle"
-        onClick={toggleNav}
-      >
+    <nav>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <button onClick={toggleNav}>
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul
-        id="nav-menu"
-        role="menu"
-        aria-label="Main menu"
-        className={`nav-menu ${navOpen ? 'nav-menu-open' : ''}`}
-      >
-        {filteredLinks.map((link, index) => (
-          <li key={index} role="menuitem">
-            <Link href={link.href} aria-label={link.text}>
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        aria-label="Toggle high contrast mode"
-        className="high-contrast-mode-toggle"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
-      <form
-        aria-label="Search form"
-        className="search-form"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <input
-          type="search"
-          aria-label="Search input"
-          placeholder="Search"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-      </form>
+      {navOpen && (
+        <Suspense fallback={<div>Loading...</div>}>
+          <Menu links={filteredLinks} />
+          <SearchBar
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search"
+          />
+          <HighContrastToggle
+            checked={highContrastMode}
+            onChange={handleHighContrastMode}
+          />
+        </Suspense>
+      )}
     </nav>
   );
 });

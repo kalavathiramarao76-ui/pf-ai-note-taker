@@ -12,11 +12,20 @@
   --high-contrast-text-color: #ffff00;
   --dark-mode-background-color: #1a1d23;
   --dark-mode-text-color: #adb5bd;
+  --dark-mode-primary-color: #66d9ef;
+  --dark-mode-secondary-color: #455a64;
 }
 
 :root.dark-mode {
   --background-color: var(--dark-mode-background-color);
   --text-color: var(--dark-mode-text-color);
+  --primary-color: var(--dark-mode-primary-color);
+  --secondary-color: var(--dark-mode-secondary-color);
+}
+
+:root.high-contrast {
+  --background-color: var(--high-contrast-background-color);
+  --text-color: var(--high-contrast-text-color);
 }
 
 @layer base {
@@ -170,37 +179,41 @@
     border: 0;
   }
 
-  select[role="listbox"] {
-    aria-label: "Select for AutoNote: AI-Powered Note Taker";
-  }
-}
-
-/* Optimizations for better page loading performance and search engine ranking */
-@layer utilities {
-  .lazy-load {
-    @apply opacity-0;
-    transition: opacity 0.3s ease-in-out;
+  .dark-mode-toggle {
+    @apply rounded-lg;
+    cursor: pointer;
+    role: button;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border: none;
   }
 
-  .lazy-load.loaded {
-    @apply opacity-100;
+  .dark-mode-toggle::before {
+    content: "Toggle Dark Mode: ";
+    font-size: 0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
-}
 
-/* Add meta tags for search engine optimization */
-meta[name="description"] {
-  content: "AutoNote: AI-Powered Note Taker";
-}
+  .high-contrast-mode-toggle {
+    @apply rounded-lg;
+    cursor: pointer;
+    role: button;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border: none;
+  }
 
-meta[name="keywords"] {
-  content: "AutoNote, AI-Powered, Note Taker";
-}
-
-meta[name="robots"] {
-  content: "index, follow";
-}
-
-/* Add title tag for search engine optimization */
-title {
-  content: "AutoNote: AI-Powered Note Taker";
+  .high-contrast-mode-toggle::before {
+    content: "Toggle High Contrast Mode: ";
+    font-size: 0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
 }
