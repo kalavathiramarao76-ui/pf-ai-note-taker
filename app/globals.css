@@ -171,39 +171,36 @@
   }
 
   select[role="listbox"] {
-    aria-label: "Select dropdown for AutoNote: AI-Powered Note Taker";
+    aria-label: "Select for AutoNote: AI-Powered Note Taker";
+  }
+}
+
+/* Optimizations for better page loading performance and search engine ranking */
+@layer utilities {
+  .lazy-load {
+    @apply opacity-0;
+    transition: opacity 0.3s ease-in-out;
   }
 
-  img {
-    @apply max-w-full h-auto;
+  .lazy-load.loaded {
+    @apply opacity-100;
   }
+}
 
-  img[alt=""] {
-    aria-label: "Image for AutoNote: AI-Powered Note Taker";
-  }
+/* Add meta tags for search engine optimization */
+meta[name="description"] {
+  content: "AutoNote: AI-Powered Note Taker";
+}
 
-  img[alt] {
-    aria-label: attr(alt);
-  }
+meta[name="keywords"] {
+  content: "AutoNote, AI-Powered, Note Taker";
+}
 
-  .icon {
-    @apply w-6 h-6;
-  }
+meta[name="robots"] {
+  content: "index, follow";
+}
 
-  .icon::before {
-    content: "Icon: ";
-    font-size: 0;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .icon[role="img"] {
-    aria-label: "Icon for AutoNote: AI-Powered Note Taker";
-  }
-
-  .icon[alt] {
-    aria-label: attr(alt);
-  }
+/* Add title tag for search engine optimization */
+title {
+  content: "AutoNote: AI-Powered Note Taker";
 }

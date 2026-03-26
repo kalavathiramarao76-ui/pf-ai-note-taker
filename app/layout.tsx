@@ -91,45 +91,55 @@ const Nav = memo(() => {
   }, [handleKeyDown]);
 
   return (
-    <nav className="nav">
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
-      <div className="nav-header">
-        <Link href="/">
-          <a>AutoNote</a>
-        </Link>
-        <button className="nav-toggle" onClick={toggleNav}>
-          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </button>
-      </div>
-      {navOpen && (
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="nav-menu"
-        >
-          <ul>
-            {filteredLinks.map((link) => (
-              <li key={link.text}>
-                <Link href={link.href}>
-                  <a>{link.text}</a>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
-            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
-          </button>
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search"
-          />
-        </motion.div>
-      )}
+    <nav
+      aria-label="Main navigation"
+      className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast-mode' : ''}`}
+    >
+      <button
+        type="button"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        aria-controls="nav-menu"
+        className="nav-toggle"
+        onClick={toggleNav}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul
+        id="nav-menu"
+        role="menu"
+        aria-label="Main menu"
+        className={`nav-menu ${navOpen ? 'nav-menu-open' : ''}`}
+      >
+        {filteredLinks.map((link, index) => (
+          <li key={index} role="menuitem">
+            <Link href={link.href} aria-label={link.text}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        aria-label="Toggle high contrast mode"
+        className="high-contrast-mode-toggle"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
+      <form
+        aria-label="Search form"
+        className="search-form"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <input
+          type="search"
+          aria-label="Search input"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+      </form>
     </nav>
   );
 });
