@@ -82,40 +82,51 @@ const Nav = memo(() => {
 
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
-  const HighContrastToggle = lazy(() => import('./HighContrastToggle'));
-
-  useEffect(() => {
-    const handleKeyDownEvent = (event) => {
-      handleKeyDown(event);
-    };
-    document.addEventListener('keydown', handleKeyDownEvent);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDownEvent);
-    };
-  }, [handleKeyDown]);
 
   return (
-    <nav>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
-      <button onClick={toggleNav}>
+    <nav
+      aria-label="Main navigation"
+      role="navigation"
+      onKeyDown={handleKeyDown}
+    >
+      <button
+        type="button"
+        aria-label="Toggle navigation menu"
+        aria-expanded={navOpen}
+        aria-controls="nav-menu"
+        onClick={toggleNav}
+      >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      {navOpen && (
-        <Suspense fallback={<div>Loading...</div>}>
-          <Menu links={filteredLinks} />
-          <SearchBar
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search"
-          />
-          <HighContrastToggle
-            checked={highContrastMode}
-            onChange={handleHighContrastMode}
-          />
-        </Suspense>
-      )}
+      <ul
+        id="nav-menu"
+        className="nav-menu"
+        role="menu"
+        aria-hidden={!navOpen}
+      >
+        {filteredLinks.map((link) => (
+          <li key={link.href} role="menuitem">
+            <Link href={link.href} aria-label={link.text}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <SearchBar
+        value={searchQuery}
+        onChange={handleSearch}
+        aria-label="Search"
+      />
+      <button
+        type="button"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
+      <Suspense fallback={<div>Loading...</div>}>
+        {navOpen && <Menu />}
+      </Suspense>
     </nav>
   );
 });
