@@ -16,6 +16,7 @@
   --dark-mode-secondary-color: #455a64;
   --high-contrast-primary-color: #ff69b4;
   --high-contrast-secondary-color: #33cc33;
+  --focus-color: #66d9ef;
 }
 
 :root.dark-mode {
@@ -87,6 +88,11 @@
     aria-label: "Link to AutoNote: AI-Powered Note Taker";
   }
 
+  a:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
     margin: 0;
@@ -143,6 +149,11 @@
     aria-label: "Button for AutoNote: AI-Powered Note Taker";
   }
 
+  button:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
   input, textarea, select {
     @apply rounded-lg border-gray-600;
     outline: none;
@@ -157,27 +168,28 @@
     border: 0;
   }
 
-  input[role="textbox"] {
-    aria-label: "Input field for AutoNote: AI-Powered Note Taker"
+  input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
   }
 
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--primary-color);
   }
 
-  .high-contrast-mode {
-    filter: invert(100%);
+  label {
+    cursor: pointer;
   }
 
-  .high-contrast-mode button, .high-contrast-mode input, .high-contrast-mode textarea, .high-contrast-mode select {
-    filter: invert(100%);
+  img {
+    @apply block;
+  }
+
+  img[alt] {
+    @apply block;
+  }
+
+  img:not([alt]) {
+    filter: blur(2px);
   }
 }

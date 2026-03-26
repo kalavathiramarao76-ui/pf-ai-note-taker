@@ -104,25 +104,22 @@ const Nav = memo(() => {
         <button className="nav-toggle" onClick={toggleNav}>
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
-        <ul className="nav-menu">
-          {navigationMenu.map((link) => (
-            <li key={link.id}>
-              <Link href={link.href}>{link.text}</Link>
-            </li>
-          ))}
-        </ul>
-        <SearchBar
-          searchQuery={searchQuery}
-          handleSearch={handleSearch}
-          filteredLinks={filteredLinks}
-        />
+        {navOpen && (
+          <ul className="nav-menu">
+            {navigationMenu.map((link) => (
+              <li key={link.id}>
+                <Link href={link.href}>{link.text}</Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar onSearch={handleSearch} />
+        </Suspense>
         <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
-          Toggle High Contrast Mode
+          High Contrast Mode
         </button>
       </div>
-      <Suspense fallback={<div>Loading...</div>}>
-        {navOpen && <Menu />}
-      </Suspense>
     </nav>
   );
 });
