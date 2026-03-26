@@ -151,6 +151,7 @@
   input[type="text"], input[type="email"], input[type="password"] {
     @apply rounded-lg;
     padding: 0.5rem;
+    font-size: var(--font-size-base);
   }
 
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
@@ -159,7 +160,7 @@
   }
 
   label {
-    display: block;
+    @apply block;
     margin-bottom: 0.5rem;
   }
 
@@ -167,10 +168,26 @@
     cursor: pointer;
   }
 
+  label:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  select {
+    @apply rounded-lg;
+    padding: 0.5rem;
+    font-size: var(--font-size-base);
+  }
+
+  select:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
   textarea {
     @apply rounded-lg;
     padding: 0.5rem;
-    resize: vertical;
+    font-size: var(--font-size-base);
   }
 
   textarea:focus {
@@ -178,34 +195,21 @@
     outline-offset: 2px;
   }
 
-  [role="alert"] {
-    @apply bg-red-500 text-white;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-  }
-
-  [role="alert"]:focus {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-  }
-
-  [role="dialog"] {
-    @apply bg-white;
-    padding: 1rem;
-    border-radius: 0.25rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  }
-
-  [role="dialog"]:focus {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-  }
-
   [role="button"] {
-    @apply cursor-pointer;
+    cursor: pointer;
   }
 
   [role="button"]:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  [role="link"]:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  [aria-label]:focus {
     outline: 2px solid var(--focus-color);
     outline-offset: 2px;
   }
