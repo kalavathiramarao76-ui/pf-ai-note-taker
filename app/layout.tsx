@@ -80,48 +80,34 @@ const Nav = memo(() => {
   }, [highContrastMode]);
 
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = memo(() => (
-    <form>
-      <input
-        type="search"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Search"
-      />
-    </form>
-  ));
+  const SearchBar = lazy(() => import('./SearchBar'));
 
   return (
     <nav>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <button onClick={toggleNav}>
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      {navOpen && (
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="nav-menu"
-        >
-          <SearchBar />
-          <ul>
-            {filteredLinks.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href}>{link.text}</Link>
-              </li>
-            ))}
-          </ul>
-          <button onClick={handleHighContrastMode}>
-            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
-          </button>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Menu />
-          </Suspense>
-        </motion.div>
-      )}
+      <div className="nav-container">
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
+          {filteredLinks.map((link) => (
+            <li key={link.text}>
+              <Link href={link.href}>{link.text}</Link>
+            </li>
+          ))}
+        </ul>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+        </Suspense>
+        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+          Toggle High Contrast Mode
+        </button>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Menu />
+        </Suspense>
+      </div>
     </nav>
   );
 });
