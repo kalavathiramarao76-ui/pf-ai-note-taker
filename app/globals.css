@@ -121,42 +121,71 @@
   h1 {
     font-size: var(--font-size-h1);
     line-height: 1.2;
+    role: "heading";
+    aria-level: "1";
   }
 
   h2 {
     font-size: var(--font-size-h2);
     line-height: 1.2;
+    role: "heading";
+    aria-level: "2";
   }
 
   h3 {
     font-size: var(--font-size-h3);
     line-height: 1.2;
+    role: "heading";
+    aria-level: "3";
   }
 
   h4 {
     font-size: var(--font-size-h4);
     line-height: 1.2;
+    role: "heading";
+    aria-level: "4";
   }
 
   h5 {
     font-size: var(--font-size-h5);
     line-height: 1.2;
+    role: "heading";
+    aria-level: "5";
   }
 
   h6 {
     font-size: var(--font-size-h6);
     line-height: 1.2;
+    role: "heading";
+    aria-level: "6";
+  }
+
+  nav {
+    role: "navigation";
+  }
+
+  main {
+    role: "main";
+  }
+
+  footer {
+    role: "contentinfo";
   }
 
   button {
-    @apply bg-var(--primary-color) text-var(--text-color) py-2 px-4 rounded;
-    border: none;
-    cursor: pointer;
+    role: "button";
   }
 
-  button:focus {
-    @apply outline-none;
-    box-shadow: 0 0 0 2px var(--focus-color);
+  input[type="text"], input[type="email"], input[type="password"] {
+    role: "textbox";
+  }
+
+  select {
+    role: "listbox";
+  }
+
+  textarea {
+    role: "textbox";
   }
 
   .sr-only {
@@ -175,12 +204,10 @@
     position: static;
     width: auto;
     height: auto;
-    padding: 0.5rem;
+    padding: 0;
     margin: 0;
     overflow: visible;
     clip: auto;
     white-space: normal;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
   }
 }

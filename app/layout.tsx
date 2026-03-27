@@ -83,41 +83,49 @@ const Nav = memo(() => {
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
 
-  const navigationMenu = useMemo(() => {
-    const menu = [];
-    links.forEach((link) => {
-      menu.push({
-        id: link.text.toLowerCase(),
-        href: link.href,
-        text: link.text,
-      });
-    });
-    return menu;
-  }, [links]);
-
   return (
-    <nav>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
-      <div className="nav-container">
-        <button className="nav-toggle" onClick={toggleNav}>
-          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </button>
-        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
-          {navigationMenu.map((link) => (
-            <li key={link.id}>
-              <Link href={link.href}>{link.text}</Link>
-            </li>
-          ))}
-        </ul>
-        <Suspense fallback={<div>Loading...</div>}>
-          <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
-        </Suspense>
-        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
-          Toggle High Contrast Mode
-        </button>
-      </div>
+    <nav
+      className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast-mode' : ''}`}
+      aria-label="Main Navigation"
+      role="navigation"
+    >
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label="Toggle Navigation"
+        aria-expanded={navOpen}
+        aria-controls="nav-menu"
+        onClick={toggleNav}
+        onKeyDown={handleKeyDown}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul
+        id="nav-menu"
+        className="nav-menu"
+        role="menu"
+        aria-label="Navigation Menu"
+        aria-hidden={!navOpen}
+      >
+        {filteredLinks.map((link) => (
+          <li key={link.href} role="menuitem">
+            <Link href={link.href} onClick={toggleNav}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        className="high-contrast-mode-toggle"
+        aria-label="Toggle High Contrast Mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+      </Suspense>
     </nav>
   );
 });
