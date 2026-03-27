@@ -155,32 +155,40 @@ const appSlice = createSlice({
     noteTagSuggestions: [],
   },
   reducers: {
-    addNote(state, action: PayloadAction<any>) {
-      state.notes[action.payload.id] = action.payload;
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags = [...state.tags, action.payload];
+      }
     },
-    addMeeting(state, action: PayloadAction<any>) {
-      state.meetings[action.payload.id] = action.payload;
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter((tag) => tag !== action.payload);
     },
-    addTemplate(state, action: PayloadAction<any>) {
-      state.templates[action.payload.id] = action.payload;
+    updateTagInput(state, action: PayloadAction<string>) {
+      state.tagInput = action.payload;
     },
-    updateNote(state, action: PayloadAction<any>) {
-      state.notes[action.payload.id] = action.payload;
+    updateTagSuggestions(state, action: PayloadAction<string[]>) {
+      state.tagSuggestions = action.payload;
     },
-    updateMeeting(state, action: PayloadAction<any>) {
-      state.meetings[action.payload.id] = action.payload;
+    filterNotesByTags(state, action: PayloadAction<string[]>) {
+      state.filteredNotes = state.notes.filter((note) => {
+        const noteTags = state.noteTagMap[note.id];
+        return action.payload.every((tag) => noteTags.includes(tag));
+      });
     },
-    updateTemplate(state, action: PayloadAction<any>) {
-      state.templates[action.payload.id] = action.payload;
+    updateNoteTags(state, action: PayloadAction<{ noteId: string; tags: string[] }>) {
+      state.noteTagMap[action.payload.noteId] = action.payload.tags;
     },
-    deleteNote(state, action: PayloadAction<string>) {
-      delete state.notes[action.payload];
+    updateAvailableTags(state, action: PayloadAction<string[]>) {
+      state.availableTags = action.payload;
     },
-    deleteMeeting(state, action: PayloadAction<string>) {
-      delete state.meetings[action.payload];
+    updateTagInputValue(state, action: PayloadAction<string>) {
+      state.tagInputValue = action.payload;
     },
-    deleteTemplate(state, action: PayloadAction<string>) {
-      delete state.templates[action.payload];
+    updateTagSuggestionsList(state, action: PayloadAction<string[]>) {
+      state.tagSuggestionsList = action.payload;
+    },
+    updateNoteTagSuggestions(state, action: PayloadAction<string[]>) {
+      state.noteTagSuggestions = action.payload;
     },
   },
 });
@@ -194,95 +202,149 @@ const store = configureStore({
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const router = useRouter();
-  const { notes, meetings, templates } = useSelector((state: AppState) => state);
+  const {
+    notes,
+    tags,
+    tagInput,
+    tagSuggestions,
+    filteredNotes,
+    availableTags,
+    tagInputValue,
+    tagSuggestionsList,
+    noteTagSuggestions,
+  } = useSelector((state: AppState) => state);
 
-  useEffect(() => {
-    client.getNotes().then((notes) => {
-      notes.forEach((note) => {
-        dispatch(appSlice.actions.addNote(note));
-      });
-    });
-    client.getMeetings().then((meetings) => {
-      meetings.forEach((meeting) => {
-        dispatch(appSlice.actions.addMeeting(meeting));
-      });
-    });
-    client.getTemplates().then((templates) => {
-      templates.forEach((template) => {
-        dispatch(appSlice.actions.addTemplate(template));
-      });
-    });
-  }, [dispatch]);
-
-  const handleAddNote = (note: any) => {
-    dispatch(appSlice.actions.addNote(note));
+  const handleAddTag = (tag: string) => {
+    dispatch(appSlice.actions.addTag(tag));
   };
 
-  const handleAddMeeting = (meeting: any) => {
-    dispatch(appSlice.actions.addMeeting(meeting));
+  const handleRemoveTag = (tag: string) => {
+    dispatch(appSlice.actions.removeTag(tag));
   };
 
-  const handleAddTemplate = (template: any) => {
-    dispatch(appSlice.actions.addTemplate(template));
+  const handleUpdateTagInput = (tagInput: string) => {
+    dispatch(appSlice.actions.updateTagInput(tagInput));
   };
 
-  const handleUpdateNote = (note: any) => {
-    dispatch(appSlice.actions.updateNote(note));
+  const handleUpdateTagSuggestions = (tagSuggestions: string[]) => {
+    dispatch(appSlice.actions.updateTagSuggestions(tagSuggestions));
   };
 
-  const handleUpdateMeeting = (meeting: any) => {
-    dispatch(appSlice.actions.updateMeeting(meeting));
+  const handleFilterNotesByTags = (tags: string[]) => {
+    dispatch(appSlice.actions.filterNotesByTags(tags));
   };
 
-  const handleUpdateTemplate = (template: any) => {
-    dispatch(appSlice.actions.updateTemplate(template));
+  const handleUpdateNoteTags = (noteId: string, tags: string[]) => {
+    dispatch(appSlice.actions.updateNoteTags({ noteId, tags }));
   };
 
-  const handleDeleteNote = (noteId: string) => {
-    dispatch(appSlice.actions.deleteNote(noteId));
+  const handleUpdateAvailableTags = (availableTags: string[]) => {
+    dispatch(appSlice.actions.updateAvailableTags(availableTags));
   };
 
-  const handleDeleteMeeting = (meetingId: string) => {
-    dispatch(appSlice.actions.deleteMeeting(meetingId));
+  const handleUpdateTagInputValue = (tagInputValue: string) => {
+    dispatch(appSlice.actions.updateTagInputValue(tagInputValue));
   };
 
-  const handleDeleteTemplate = (templateId: string) => {
-    dispatch(appSlice.actions.deleteTemplate(templateId));
+  const handleUpdateTagSuggestionsList = (tagSuggestionsList: string[]) => {
+    dispatch(appSlice.actions.updateTagSuggestionsList(tagSuggestionsList));
+  };
+
+  const handleUpdateNoteTagSuggestions = (noteTagSuggestions: string[]) => {
+    dispatch(appSlice.actions.updateNoteTagSuggestions(noteTagSuggestions));
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
         <h1>AutoNote: AI-Powered Note Taker</h1>
-        <Link href="/notes">
-          <a>Notes</a>
-        </Link>
-        <Link href="/meetings">
-          <a>Meetings</a>
-        </Link>
-        <Link href="/templates">
-          <a>Templates</a>
-        </Link>
         <div>
-          <NoteCard />
-          <MeetingCard />
-          <TemplateCard />
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => handleUpdateTagInput(e.target.value)}
+            placeholder="Add tag"
+          />
+          <button onClick={() => handleAddTag(tagInput)}>Add Tag</button>
+          <ul>
+            {tags.map((tag) => (
+              <li key={tag}>
+                {tag}
+                <button onClick={() => handleRemoveTag(tag)}>Remove</button>
+              </li>
+            ))}
+          </ul>
         </div>
         <div>
-          <Editor editorState={EditorState.createEmpty()} />
+          <h2>Notes</h2>
+          <ul>
+            {filteredNotes.map((note) => (
+              <li key={note.id}>
+                <NoteCard note={note} />
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2>Tag Suggestions</h2>
+          <ul>
+            {tagSuggestions.map((suggestion) => (
+              <li key={suggestion}>
+                {suggestion}
+                <button onClick={() => handleAddTag(suggestion)}>Add</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2>Available Tags</h2>
+          <ul>
+            {availableTags.map((tag) => (
+              <li key={tag}>
+                {tag}
+                <button onClick={() => handleAddTag(tag)}>Add</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2>Tag Input Value</h2>
+          <input
+            type="text"
+            value={tagInputValue}
+            onChange={(e) => handleUpdateTagInputValue(e.target.value)}
+            placeholder="Tag input value"
+          />
+        </div>
+        <div>
+          <h2>Tag Suggestions List</h2>
+          <ul>
+            {tagSuggestionsList.map((suggestion) => (
+              <li key={suggestion}>
+                {suggestion}
+                <button onClick={() => handleAddTag(suggestion)}>Add</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2>Note Tag Suggestions</h2>
+          <ul>
+            {noteTagSuggestions.map((suggestion) => (
+              <li key={suggestion}>
+                {suggestion}
+                <button onClick={() => handleAddTag(suggestion)}>Add</button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </DndProvider>
   );
 };
 
-const App = () => {
-  return (
-    <Provider store={store}>
-      <DashboardPage />
-    </Provider>
-  );
-};
-
-export default App;
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);
