@@ -85,46 +85,58 @@ const Nav = memo(() => {
 
   return (
     <nav
-      className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast-mode' : ''}`}
-      aria-label="Main Navigation"
+      aria-label="Main navigation"
       role="navigation"
+      className="nav"
     >
       <button
         type="button"
-        className="nav-toggle"
-        aria-label="Toggle Navigation"
+        aria-label="Toggle navigation menu"
         aria-expanded={navOpen}
         aria-controls="nav-menu"
         onClick={toggleNav}
-        onKeyDown={handleKeyDown}
+        className="nav-toggle"
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
         id="nav-menu"
-        className="nav-menu"
         role="menu"
-        aria-label="Navigation Menu"
-        aria-hidden={!navOpen}
+        aria-label="Navigation menu"
+        className={`nav-menu ${navOpen ? 'open' : ''}`}
       >
-        {filteredLinks.map((link) => (
-          <li key={link.href} role="menuitem">
-            <Link href={link.href} onClick={toggleNav}>
+        {filteredLinks.map((link, index) => (
+          <li
+            key={index}
+            role="menuitem"
+            tabIndex={navOpen ? 0 : -1}
+          >
+            <Link
+              href={link.href}
+              aria-label={link.text}
+              onClick={() => setNavOpen(false)}
+            >
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
+      <SearchBar
+        value={searchQuery}
+        onChange={handleSearch}
+        aria-label="Search"
+        role="search"
+      />
       <button
         type="button"
-        className="high-contrast-mode-toggle"
-        aria-label="Toggle High Contrast Mode"
+        aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
+        className="high-contrast-toggle"
       >
         High Contrast Mode
       </button>
       <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+        <Menu />
       </Suspense>
     </nav>
   );
