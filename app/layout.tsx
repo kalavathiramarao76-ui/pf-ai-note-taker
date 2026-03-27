@@ -80,53 +80,52 @@ const Nav = memo(() => {
   }, [highContrastMode]);
 
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = lazy(() => import('./SearchBar'));
-
-  return (
-    <nav
-      aria-label="Main navigation"
-      className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast-mode' : ''}`}
-    >
-      <button
-        type="button"
-        aria-label="Toggle navigation menu"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
-        onClick={toggleNav}
-        className="nav-toggle"
-      >
-        {navOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
-      </button>
-      <ul
-        id="nav-menu"
-        role="menu"
-        aria-label="Navigation menu"
-        className="nav-menu"
-      >
-        {filteredLinks.map((link, index) => (
-          <li key={index} role="menuitem">
-            <Link href={link.href} onClick={toggleNav}>
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
+  const SearchBar = memo(() => {
+    return (
+      <form>
+        <input
+          type="search"
           value={searchQuery}
           onChange={handleSearch}
           placeholder="Search"
-          aria-label="Search"
         />
-      </Suspense>
-      <button
-        type="button"
-        aria-label="Toggle high contrast mode"
-        onClick={handleHighContrastMode}
-        className="nav-high-contrast-toggle"
-      >
-        High Contrast Mode
+      </form>
+    );
+  });
+
+  const NavigationMenu = memo(() => {
+    return (
+      <ul className="nav-menu">
+        {filteredLinks.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href}>{link.text}</Link>
+          </li>
+        ))}
+      </ul>
+    );
+  });
+
+  return (
+    <nav>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <button onClick={toggleNav}>
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
+      {navOpen && (
+        <motion.div
+          initial={{ x: '-100%' }}
+          animate={{ x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <SearchBar />
+          <NavigationMenu />
+          <button onClick={handleHighContrastMode}>
+            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+          </button>
+        </motion.div>
+      )}
     </nav>
   );
 });
