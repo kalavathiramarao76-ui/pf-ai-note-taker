@@ -85,6 +85,34 @@
     font-size: var(--font-size-base);
   }
 
+  header {
+    role: "banner";
+  }
+
+  nav {
+    role: "navigation";
+  }
+
+  main {
+    role: "main";
+  }
+
+  section {
+    role: "region";
+  }
+
+  article {
+    role: "article";
+  }
+
+  aside {
+    role: "complementary";
+  }
+
+  footer {
+    role: "contentinfo";
+  }
+
   a {
     @apply text-blue-500 hover:text-blue-700;
     text-decoration: none;
@@ -139,70 +167,32 @@
     position: static;
     width: auto;
     height: auto;
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
     margin: 0;
     overflow: visible;
     clip: auto;
     white-space: normal;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
-    font-size: var(--screen-reader-font-size);
-  }
-
-  .high-contrast-mode {
-    filter: invert(100%);
-  }
-
-  .high-contrast-mode .sr-only {
-    background-color: var(--high-contrast-screen-reader-background-color);
-    color: var(--high-contrast-screen-reader-text-color);
-  }
-
-  button {
-    cursor: pointer;
-  }
-
-  button:focus {
-    outline: 2px solid var(--focus-color);
-  }
-
-  input[type="text"], input[type="email"], input[type="password"] {
-    @apply p-2 border border-gray-400 rounded;
-  }
-
-  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
-    @apply outline-none border border-blue-500;
+    border: 1px solid var(--focus-color);
     box-shadow: 0 0 0 2px var(--focus-color);
   }
+} 
 
-  label {
-    @apply block mb-2;
-  }
+meta {
+  name: "description";
+  content: "AutoNote: AI-Powered Note Taker is a tool for taking notes with AI assistance";
+}
 
-  label[for] {
-    cursor: pointer;
-  }
+meta {
+  name: "keywords";
+  content: "AutoNote, AI-Powered Note Taker, note taking, AI assistance";
+}
 
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+meta {
+  name: "robots";
+  content: "index, follow";
+}
 
-  .visually-hidden:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0.5rem;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-  }
+meta {
+  name: "viewport";
+  content: "width=device-width, initial-scale=1.0";
 }
