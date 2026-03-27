@@ -83,44 +83,56 @@ const Nav = memo(() => {
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
 
+  const navigationMenu = useMemo(() => {
+    const menu = {};
+    links.forEach((link) => {
+      menu[link.text] = link;
+    });
+    return menu;
+  }, [links]);
+
+  const getLink = useCallback((text) => {
+    return navigationMenu[text];
+  }, [navigationMenu]);
+
   return (
-    <nav className="nav">
+    <nav>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <div className="nav-header">
+      <div className="nav-container">
         <Link href="/">
-          <a>AutoNote</a>
+          <a>
+            <h1>AutoNote</h1>
+          </a>
         </Link>
         <button
           className="nav-toggle"
-          aria-label="Toggle navigation"
           onClick={toggleNav}
+          aria-label="Toggle navigation menu"
         >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
+        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
+          {filteredLinks.map((link) => (
+            <li key={link.text}>
+              <Link href={link.href}>
+                <a>{link.text}</a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+        </Suspense>
+        <button
+          className="high-contrast-mode-toggle"
+          onClick={handleHighContrastMode}
+          aria-label="Toggle high contrast mode"
+        >
+          High Contrast Mode
+        </button>
       </div>
-      <ul className="nav-menu" hidden={!navOpen}>
-        {filteredLinks.map((link) => (
-          <li key={link.href}>
-            <Link href={link.href}>
-              <a>{link.text}</a>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-        />
-        <Menu
-          links={links}
-          highContrastMode={highContrastMode}
-          onHighContrastModeChange={handleHighContrastMode}
-        />
-      </Suspense>
     </nav>
   );
 });
