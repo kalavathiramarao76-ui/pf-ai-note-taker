@@ -91,7 +91,7 @@ const Nav = memo(() => {
     >
       <button
         type="button"
-        aria-label="Toggle navigation menu"
+        aria-label="Toggle navigation"
         aria-expanded={navOpen}
         aria-controls="nav-menu"
         onClick={toggleNav}
@@ -102,12 +102,12 @@ const Nav = memo(() => {
       <ul
         id="nav-menu"
         role="menu"
-        aria-label="Navigation menu"
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
+        aria-hidden={!navOpen}
+        className="nav-menu"
       >
-        {filteredLinks.map((link, index) => (
+        {filteredLinks.map((link) => (
           <li
-            key={index}
+            key={link.href}
             role="menuitem"
             tabIndex={navOpen ? 0 : -1}
           >
@@ -136,7 +136,7 @@ const Nav = memo(() => {
         High Contrast Mode
       </button>
       <Suspense fallback={<div>Loading...</div>}>
-        <Menu />
+        {navOpen && <Menu />}
       </Suspense>
     </nav>
   );

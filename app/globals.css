@@ -169,14 +169,9 @@
   /* Add utility-specific styles here */
 }
 
-/* Optimize CSS for better page load times and search engine ranking */
+/* Optimize CSS for better page load times and search engine rankings */
 /* Minify and compress CSS files */
-/* Use CSS sprites or inline images to reduce HTTP requests */
-/* Leverage browser caching to reduce the number of requests made to the server */
-/* Use a content delivery network (CDN) to distribute static assets */
-/* Optimize images and compress them to reduce file size */
-/* Use lazy loading to load non-critical resources on demand */
-/* Avoid using too many CSS selectors or complex styles that can slow down page rendering */
-/* Use a preprocessor like Sass or Less to write more efficient CSS code */
-/* Avoid using inline styles or style attributes, as they can increase the size of the HTML document */
-/* Use a CSS framework like Tailwind CSS to write more efficient and consistent CSS code */
+/* Use CSS sprites or icon fonts instead of individual images */
+/* Avoid using too many CSS selectors or rules */
+/* Use a preprocessor like Sass or Less to write more efficient CSS */
+/* Use a CSS framework like Tailwind CSS to write more efficient CSS */
