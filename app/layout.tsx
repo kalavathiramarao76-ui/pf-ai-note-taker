@@ -100,29 +100,26 @@ const Nav = memo(() => {
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
       </div>
+      <ul className="nav-menu" hidden={!navOpen}>
+        {filteredLinks.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href}>
+              <a>{link.text}</a>
+            </Link>
+          </li>
+        ))}
+      </ul>
       <Suspense fallback={<div>Loading...</div>}>
-        {navOpen && (
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ duration: 0.3 }}
-            className="nav-menu"
-          >
-            <Menu links={links} />
-            <SearchBar
-              searchQuery={searchQuery}
-              handleSearch={handleSearch}
-            />
-            <button
-              className="high-contrast-mode-toggle"
-              aria-label="Toggle high contrast mode"
-              onClick={handleHighContrastMode}
-            >
-              {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
-            </button>
-          </motion.div>
-        )}
+        <SearchBar
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+        />
+        <Menu
+          links={links}
+          highContrastMode={highContrastMode}
+          onHighContrastModeChange={handleHighContrastMode}
+        />
       </Suspense>
     </nav>
   );

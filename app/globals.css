@@ -189,38 +189,4 @@
     outline: 2px solid var(--focus-color);
     outline-offset: 2px;
   }
-
-  [role="alert"] {
-    font-size: var(--font-size-base);
-    padding: 0.5rem;
-    background-color: var(--primary-color);
-    color: var(--text-color);
-  }
-
-  [role="alert"]:focus {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-  }
-
-  [role="dialog"] {
-    font-size: var(--font-size-base);
-    padding: 0.5rem;
-    background-color: var(--background-color);
-    color: var(--text-color);
-  }
-
-  [role="dialog"]:focus {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-  }
-
-  [role="button"] {
-    @apply rounded-lg;
-    cursor: pointer;
-  }
-
-  [role="button"]:focus {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-  }
 }
