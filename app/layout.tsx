@@ -84,52 +84,48 @@ const Nav = memo(() => {
 
   return (
     <nav
-      aria-label="Main navigation"
       className="nav"
+      aria-label="Main navigation"
       role="navigation"
     >
       <button
-        aria-controls="nav-menu"
-        aria-expanded={navOpen}
-        aria-label="Toggle navigation"
+        type="button"
         className="nav-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        aria-controls="nav-menu"
         onClick={toggleNav}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
-        aria-label="Navigation menu"
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
         id="nav-menu"
+        className="nav-menu"
         role="menu"
+        aria-hidden={!navOpen}
       >
-        {filteredLinks.map((link, index) => (
-          <li
-            key={index}
-            role="menuitem"
-          >
-            <Link
-              aria-label={link.text}
-              href={link.href}
-              onClick={() => setNavOpen(false)}
-            >
-              {link.text}
-            </Link>
+        {filteredLinks.map((link) => (
+          <li key={link.href} role="menuitem">
+            <Link href={link.href}>{link.text}</Link>
           </li>
         ))}
       </ul>
-      <SearchBar
-        aria-label="Search"
-        onChange={handleSearch}
-        value={searchQuery}
-      />
       <button
-        aria-label="Toggle high contrast mode"
+        type="button"
         className="high-contrast-mode-toggle"
+        aria-label="Toggle high contrast mode"
         onClick={handleHighContrastMode}
       >
         High Contrast Mode
       </button>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchBar
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </Suspense>
       <Suspense fallback={<div>Loading...</div>}>
         <Menu />
       </Suspense>

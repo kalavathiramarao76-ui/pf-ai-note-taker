@@ -150,49 +150,4 @@
   h6 {
     font-size: var(--font-size-h6);
   }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .sr-only:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0.5rem 1rem;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-    border: 1px solid var(--focus-color);
-    box-shadow: 0 0 0 2px var(--focus-color);
-  }
-} 
-
-meta {
-  name: "description";
-  content: "AutoNote: AI-Powered Note Taker is a tool for taking notes with AI assistance";
-}
-
-meta {
-  name: "keywords";
-  content: "AutoNote, AI-Powered Note Taker, note taking, AI assistance";
-}
-
-meta {
-  name: "robots";
-  content: "index, follow";
-}
-
-meta {
-  name: "viewport";
-  content: "width=device-width, initial-scale=1.0";
 }
