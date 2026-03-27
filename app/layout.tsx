@@ -80,30 +80,16 @@ const Nav = memo(() => {
   }, [highContrastMode]);
 
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = memo(() => {
-    return (
-      <form>
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-        />
-      </form>
-    );
-  });
-
-  const NavigationMenu = memo(() => {
-    return (
-      <ul className="nav-menu">
-        {filteredLinks.map((link) => (
-          <li key={link.href}>
-            <Link href={link.href}>{link.text}</Link>
-          </li>
-        ))}
-      </ul>
-    );
-  });
+  const SearchBar = memo(() => (
+    <form>
+      <input
+        type="search"
+        value={searchQuery}
+        onChange={handleSearch}
+        placeholder="Search"
+      />
+    </form>
+  ));
 
   return (
     <nav>
@@ -118,12 +104,22 @@ const Nav = memo(() => {
           initial={{ x: '-100%' }}
           animate={{ x: 0 }}
           transition={{ duration: 0.5 }}
+          className="nav-menu"
         >
           <SearchBar />
-          <NavigationMenu />
+          <ul>
+            {filteredLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href}>{link.text}</Link>
+              </li>
+            ))}
+          </ul>
           <button onClick={handleHighContrastMode}>
             {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
           </button>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Menu />
+          </Suspense>
         </motion.div>
       )}
     </nav>

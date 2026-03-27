@@ -83,6 +83,8 @@ interface AppState {
   tagInputValue: string;
   tagSuggestionsList: string[];
   noteTagSuggestions: string[];
+  aiModel: any;
+  noteCompletion: string;
 }
 
 // Define the reducer using createSlice
@@ -153,49 +155,52 @@ const appSlice = createSlice({
     tagInputValue: '',
     tagSuggestionsList: [],
     noteTagSuggestions: [],
+    aiModel: null,
+    noteCompletion: '',
   },
   reducers: {
-    addTag(state, action: PayloadAction<string>) {
-      if (!state.tags.includes(action.payload)) {
-        state.tags = [...state.tags, action.payload];
+    generateNote(state, action: PayloadAction<string>) {
+      state.isGeneratingNote = true;
+      state.noteContent = action.payload;
+      // Call AI model to generate note
+      const aiModel = state.aiModel;
+      if (aiModel) {
+        const generatedNote = aiModel.generateNote(state.noteContent);
+        state.generatedNotes.push(generatedNote);
+        state.isGeneratingNote = false;
       }
     },
-    removeTag(state, action: PayloadAction<string>) {
-      state.tags = state.tags.filter((tag) => tag !== action.payload);
-    },
-    updateTagInput(state, action: PayloadAction<string>) {
-      state.tagInput = action.payload;
-      state.tagSuggestions = state.availableTags.filter((tag) =>
-        tag.includes(action.payload)
-      );
-    },
-    addNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      if (!state.noteTagMap[action.payload.noteId]) {
-        state.noteTagMap[action.payload.noteId] = [action.payload.tag];
-      } else {
-        if (!state.noteTagMap[action.payload.noteId].includes(action.payload.tag)) {
-          state.noteTagMap[action.payload.noteId] = [
-            ...state.noteTagMap[action.payload.noteId],
-            action.payload.tag,
-          ];
-        }
+    getAiSuggestions(state, action: PayloadAction<string>) {
+      state.aiSuggestions = [];
+      // Call AI model to get suggestions
+      const aiModel = state.aiModel;
+      if (aiModel) {
+        const suggestions = aiModel.getSuggestions(action.payload);
+        state.aiSuggestions = suggestions;
       }
     },
-    removeNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      if (state.noteTagMap[action.payload.noteId]) {
-        state.noteTagMap[action.payload.noteId] = state.noteTagMap[
-          action.payload.noteId
-        ].filter((tag) => tag !== action.payload.tag);
+    getAutocompleteSuggestions(state, action: PayloadAction<string>) {
+      state.autocompleteSuggestions = [];
+      // Call AI model to get autocomplete suggestions
+      const aiModel = state.aiModel;
+      if (aiModel) {
+        const suggestions = aiModel.getAutocompleteSuggestions(action.payload);
+        state.autocompleteSuggestions = suggestions;
       }
     },
-    updateNoteTagSuggestions(state, action: PayloadAction<{ noteId: string; tagInput: string }>) {
-      state.noteTagSuggestions = state.availableTags.filter((tag) =>
-        tag.includes(action.payload.tagInput)
-      );
+    completeNote(state, action: PayloadAction<string>) {
+      state.noteCompletion = '';
+      // Call AI model to complete note
+      const aiModel = state.aiModel;
+      if (aiModel) {
+        const completion = aiModel.completeNote(action.payload);
+        state.noteCompletion = completion;
+      }
     },
   },
 });
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appSlice.reducer,
@@ -203,92 +208,88 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-function DashboardPage() {
+// Initialize the AI model
+const initializeAiModel = async () => {
+  // Load the AI model
+  const aiModel = await import('../ai-model');
+  return aiModel.default;
+};
+
+// Load the AI model on mount
+useEffect(() => {
+  initializeAiModel().then((aiModel) => {
+    store.dispatch({ type: 'app/setAiModel', payload: aiModel });
+  });
+}, []);
+
+// Define the page component
+const Page = () => {
   const dispatch = useDispatch();
-  const {
-    notes,
-    tags,
-    tagInput,
-    tagSuggestions,
-    noteTagMap,
-    noteTagSuggestions,
-  } = useSelector((state: AppState) => state);
+  const state = useSelector((state: any) => state.app);
+  const router = useRouter();
 
-  const handleAddTag = (tag: string) => {
-    dispatch(appSlice.actions.addTag(tag));
+  // Handle note generation
+  const handleGenerateNote = (noteContent: string) => {
+    dispatch({ type: 'app/generateNote', payload: noteContent });
   };
 
-  const handleRemoveTag = (tag: string) => {
-    dispatch(appSlice.actions.removeTag(tag));
+  // Handle AI suggestions
+  const handleGetAiSuggestions = (query: string) => {
+    dispatch({ type: 'app/getAiSuggestions', payload: query });
   };
 
-  const handleUpdateTagInput = (tagInput: string) => {
-    dispatch(appSlice.actions.updateTagInput(tagInput));
+  // Handle autocomplete suggestions
+  const handleGetAutocompleteSuggestions = (query: string) => {
+    dispatch({ type: 'app/getAutocompleteSuggestions', payload: query });
   };
 
-  const handleAddNoteTag = (noteId: string, tag: string) => {
-    dispatch(appSlice.actions.addNoteTag({ noteId, tag }));
-  };
-
-  const handleRemoveNoteTag = (noteId: string, tag: string) => {
-    dispatch(appSlice.actions.removeNoteTag({ noteId, tag }));
-  };
-
-  const handleUpdateNoteTagSuggestions = (noteId: string, tagInput: string) => {
-    dispatch(appSlice.actions.updateNoteTagSuggestions({ noteId, tagInput }));
+  // Handle note completion
+  const handleCompleteNote = (noteContent: string) => {
+    dispatch({ type: 'app/completeNote', payload: noteContent });
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
         <h1>AutoNote: AI-Powered Note Taker</h1>
+        <Editor
+          editorState={state.editorState}
+          onChange={(editorState) => dispatch({ type: 'app/setEditorState', payload: editorState })}
+        />
+        <button onClick={() => handleGenerateNote(state.noteContent)}>Generate Note</button>
+        <button onClick={() => handleGetAiSuggestions(state.noteContent)}>Get AI Suggestions</button>
+        <button onClick={() => handleGetAutocompleteSuggestions(state.noteContent)}>Get Autocomplete Suggestions</button>
+        <button onClick={() => handleCompleteNote(state.noteContent)}>Complete Note</button>
         <div>
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => handleUpdateTagInput(e.target.value)}
-            placeholder="Enter a tag"
-          />
-          <ul>
-            {tagSuggestions.map((tag) => (
-              <li key={tag}>
-                <button onClick={() => handleAddTag(tag)}>{tag}</button>
-              </li>
-            ))}
-          </ul>
+          {state.generatedNotes.map((note, index) => (
+            <NoteCard key={index} note={note} />
+          ))}
         </div>
         <div>
-          {notes.map((note) => (
-            <div key={note.id}>
-              <h2>{note.title}</h2>
-              <p>{note.content}</p>
-              <div>
-                <input
-                  type="text"
-                  value={noteTagSuggestions}
-                  onChange={(e) => handleUpdateNoteTagSuggestions(note.id, e.target.value)}
-                  placeholder="Enter a tag for this note"
-                />
-                <ul>
-                  {noteTagMap[note.id] && noteTagMap[note.id].map((tag) => (
-                    <li key={tag}>
-                      <button onClick={() => handleRemoveNoteTag(note.id, tag)}>{tag}</button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          {state.aiSuggestions.map((suggestion, index) => (
+            <div key={index}>{suggestion}</div>
           ))}
+        </div>
+        <div>
+          {state.autocompleteSuggestions.map((suggestion, index) => (
+            <div key={index}>{suggestion}</div>
+          ))}
+        </div>
+        <div>
+          {state.noteCompletion}
         </div>
       </div>
     </DndProvider>
   );
-}
+};
 
-export default function App() {
+// Render the page
+const App = () => {
   return (
     <Provider store={store}>
-      <DashboardPage />
+      <Page />
     </Provider>
   );
-}
+};
+
+export default App;

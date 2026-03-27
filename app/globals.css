@@ -28,6 +28,7 @@
   --screen-reader-background-color: #000;
   --high-contrast-screen-reader-text-color: #000;
   --high-contrast-screen-reader-background-color: #fff;
+  --screen-reader-font-size: 1.2rem;
 }
 
 :root.dark-mode {
@@ -132,83 +133,24 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
   }
 
-  .sr-only-focusable {
-    clip: auto;
-    height: auto;
-    margin: 0;
-    overflow: visible;
+  .sr-only:focus {
     position: static;
-    white-space: normal;
-    display: block;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
-  }
-
-  .sr-only-focusable:active,
-  .sr-only-focusable:focus {
-    clip: auto;
+    width: auto;
     height: auto;
-    margin: 0;
-    overflow: visible;
-    position: static;
-    white-space: normal;
-    display: block;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
-  }
-
-  button {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-  }
-
-  button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-color);
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"] {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    border: 1px solid var(--primary-color);
-  }
-
-  input[type="text"]:focus,
-  input[type="email"]:focus,
-  input[type="password"]:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-color);
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-
-  label[for] {
-    cursor: pointer;
-  }
-
-  label[for]:before {
-    content: "Label: ";
-    font-weight: bold;
-  }
-
-  textarea {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    border: 1px solid var(--primary-color);
     padding: 0.5rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    font-size: var(--screen-reader-font-size);
+    background-color: var(--screen-reader-background-color);
+    color: var(--screen-reader-text-color);
   }
 
-  textarea:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-color);
+  .high-contrast .sr-only:focus {
+    background-color: var(--high-contrast-screen-reader-background-color);
+    color: var(--high-contrast-screen-reader-text-color);
   }
 }
