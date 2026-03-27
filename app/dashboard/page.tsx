@@ -19,9 +19,9 @@ import { DraggableNoteCard } from '../components/DraggableNoteCard';
 
 // Define the initial state
 interface AppState {
-  notes: Map<string, any>;
-  meetings: Map<string, any>;
-  templates: Map<string, any>;
+  notes: { [key: string]: any };
+  meetings: { [key: string]: any };
+  templates: { [key: string]: any };
   searchQuery: string;
   generatedNotes: any[];
   folders: any[];
@@ -62,15 +62,15 @@ interface AppState {
   collaborativeNotes: any;
   folderStructure: any;
   noteSummaries: any[];
-  folderMap: Map<string, any>;
+  folderMap: { [key: string]: any };
   draggedNote: any;
   draggedOverFolder: any;
   folderTree: any[];
-  noteTagMap: Map<string, string[]>;
+  noteTagMap: { [key: string]: string[] };
   suggestedTags: any[];
   filteredNotes: any[];
-  folderNotesMap: Map<string, any[]>;
-  noteFolderMap: Map<string, string>;
+  folderNotesMap: { [key: string]: any[] };
+  noteFolderMap: { [key: string]: string };
   tagFilter: string;
   folderName: string;
   newFolderName: string;
@@ -78,7 +78,7 @@ interface AppState {
   folderId: string;
   folderTags: any[];
   subfolders: any[];
-  folderTagsMap: Map<string, string[]>;
+  folderTagsMap: { [key: string]: string[] };
   availableTags: string[];
   tagInputValue: string;
   tagSuggestionsList: string[];
@@ -89,9 +89,9 @@ interface AppState {
 const appSlice = createSlice({
   name: 'app',
   initialState: {
-    notes: new Map(),
-    meetings: new Map(),
-    templates: new Map(),
+    notes: {},
+    meetings: {},
+    templates: {},
     searchQuery: '',
     generatedNotes: [],
     folders: [],
@@ -132,15 +132,15 @@ const appSlice = createSlice({
     collaborativeNotes: null,
     folderStructure: null,
     noteSummaries: [],
-    folderMap: new Map(),
+    folderMap: {},
     draggedNote: null,
     draggedOverFolder: null,
     folderTree: [],
-    noteTagMap: new Map(),
+    noteTagMap: {},
     suggestedTags: [],
     filteredNotes: [],
-    folderNotesMap: new Map(),
-    noteFolderMap: new Map(),
+    folderNotesMap: {},
+    noteFolderMap: {},
     tagFilter: '',
     folderName: '',
     newFolderName: '',
@@ -148,68 +148,43 @@ const appSlice = createSlice({
     folderId: '',
     folderTags: [],
     subfolders: [],
-    folderTagsMap: new Map(),
+    folderTagsMap: {},
     availableTags: [],
     tagInputValue: '',
     tagSuggestionsList: [],
     noteTagSuggestions: [],
   },
   reducers: {
-    addTag: (state, action: PayloadAction<string>) => {
-      if (!state.tags.includes(action.payload)) {
-        state.tags.push(action.payload);
-      }
+    addNote(state, action: PayloadAction<any>) {
+      state.notes[action.payload.id] = action.payload;
     },
-    removeTag: (state, action: PayloadAction<string>) => {
-      state.tags = state.tags.filter((tag) => tag !== action.payload);
+    addMeeting(state, action: PayloadAction<any>) {
+      state.meetings[action.payload.id] = action.payload;
     },
-    updateTagInput: (state, action: PayloadAction<string>) => {
-      state.tagInput = action.payload;
+    addTemplate(state, action: PayloadAction<any>) {
+      state.templates[action.payload.id] = action.payload;
     },
-    updateTagSuggestions: (state, action: PayloadAction<string[]>) => {
-      state.tagSuggestions = action.payload;
+    updateNote(state, action: PayloadAction<any>) {
+      state.notes[action.payload.id] = action.payload;
     },
-    addNoteTag: (state, action: PayloadAction<{ noteId: string; tag: string }>) => {
-      if (!state.noteTagMap.has(action.payload.noteId)) {
-        state.noteTagMap.set(action.payload.noteId, [action.payload.tag]);
-      } else {
-        const existingTags = state.noteTagMap.get(action.payload.noteId);
-        if (!existingTags.includes(action.payload.tag)) {
-          existingTags.push(action.payload.tag);
-        }
-      }
+    updateMeeting(state, action: PayloadAction<any>) {
+      state.meetings[action.payload.id] = action.payload;
     },
-    removeNoteTag: (state, action: PayloadAction<{ noteId: string; tag: string }>) => {
-      if (state.noteTagMap.has(action.payload.noteId)) {
-        const existingTags = state.noteTagMap.get(action.payload.noteId);
-        state.noteTagMap.set(
-          action.payload.noteId,
-          existingTags.filter((tag) => tag !== action.payload.tag)
-        );
-      }
+    updateTemplate(state, action: PayloadAction<any>) {
+      state.templates[action.payload.id] = action.payload;
     },
-    updateNoteTagSuggestions: (state, action: PayloadAction<string[]>) => {
-      state.noteTagSuggestions = action.payload;
+    deleteNote(state, action: PayloadAction<string>) {
+      delete state.notes[action.payload];
     },
-    dragNoteOverFolder: (state, action: PayloadAction<{ noteId: string; folderId: string }>) => {
-      state.draggedNote = action.payload.noteId;
-      state.draggedOverFolder = action.payload.folderId;
+    deleteMeeting(state, action: PayloadAction<string>) {
+      delete state.meetings[action.payload];
     },
-    dropNoteIntoFolder: (state, action: PayloadAction<{ noteId: string; folderId: string }>) => {
-      if (state.folderNotesMap.has(action.payload.folderId)) {
-        const existingNotes = state.folderNotesMap.get(action.payload.folderId);
-        if (!existingNotes.includes(action.payload.noteId)) {
-          existingNotes.push(action.payload.noteId);
-        }
-      } else {
-        state.folderNotesMap.set(action.payload.folderId, [action.payload.noteId]);
-      }
-      state.noteFolderMap.set(action.payload.noteId, action.payload.folderId);
+    deleteTemplate(state, action: PayloadAction<string>) {
+      delete state.templates[action.payload];
     },
   },
 });
 
-// Create the store
 const store = configureStore({
   reducer: {
     app: appSlice.reducer,
@@ -217,197 +192,97 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the component
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const {
-    notes,
-    meetings,
-    templates,
-    searchQuery,
-    generatedNotes,
-    folders,
-    selectedFolder,
-    editingNote,
-    sortedNotes,
-    sortedMeetings,
-    sortedTemplates,
-    filterType,
-    sortBy,
-    sortOrder,
-    filterByTags,
-    filterByDate,
-    aiSuggestions,
-    autocompleteSuggestions,
-    priority,
-    deadline,
-    noteTitle,
-    noteContent,
-    isGeneratingNote,
-    editorState,
-    quickNote,
-    isQuickNoteOpen,
-    tags,
-    selectedTags,
-    noteTags,
-    tagInput,
-    tagSuggestions,
-    socket,
-    collaborators,
-    collaborativeEditorState,
-    noteVersions,
-    conflictResolution,
-    realTimeCollaboration,
-    folderNotes,
-    folderTags,
-    versionHistory,
-    collaborativeNotes,
-    folderStructure,
-    noteSummaries,
-    folderMap,
-    draggedNote,
-    draggedOverFolder,
-    folderTree,
-    noteTagMap,
-    suggestedTags,
-    filteredNotes,
-    folderNotesMap,
-    noteFolderMap,
-    tagFilter,
-    folderName,
-    newFolderName,
-    isFolderOpen,
-    folderId,
-    folderTags,
-    subfolders,
-    folderTagsMap,
-    availableTags,
-    tagInputValue,
-    tagSuggestionsList,
-    noteTagSuggestions,
-  } = useSelector((state: any) => state.app);
+  const router = useRouter();
+  const { notes, meetings, templates } = useSelector((state: AppState) => state);
 
-  // Handle tag input changes
-  const handleTagInputChange = (event: any) => {
-    dispatch(updateTagInput(event.target.value));
-    const suggestions = availableTags.filter((tag) => tag.includes(event.target.value));
-    dispatch(updateTagSuggestions(suggestions));
+  useEffect(() => {
+    client.getNotes().then((notes) => {
+      notes.forEach((note) => {
+        dispatch(appSlice.actions.addNote(note));
+      });
+    });
+    client.getMeetings().then((meetings) => {
+      meetings.forEach((meeting) => {
+        dispatch(appSlice.actions.addMeeting(meeting));
+      });
+    });
+    client.getTemplates().then((templates) => {
+      templates.forEach((template) => {
+        dispatch(appSlice.actions.addTemplate(template));
+      });
+    });
+  }, [dispatch]);
+
+  const handleAddNote = (note: any) => {
+    dispatch(appSlice.actions.addNote(note));
   };
 
-  // Handle note tag input changes
-  const handleNoteTagInputChange = (event: any, noteId: string) => {
-    const noteTagInput = event.target.value;
-    const noteTagSuggestions = availableTags.filter((tag) => tag.includes(noteTagInput));
-    dispatch(updateNoteTagSuggestions(noteTagSuggestions));
+  const handleAddMeeting = (meeting: any) => {
+    dispatch(appSlice.actions.addMeeting(meeting));
   };
 
-  // Handle tag addition
-  const handleAddTag = (tag: string) => {
-    dispatch(addTag(tag));
+  const handleAddTemplate = (template: any) => {
+    dispatch(appSlice.actions.addTemplate(template));
   };
 
-  // Handle note tag addition
-  const handleAddNoteTag = (noteId: string, tag: string) => {
-    dispatch(addNoteTag({ noteId, tag }));
+  const handleUpdateNote = (note: any) => {
+    dispatch(appSlice.actions.updateNote(note));
   };
 
-  // Handle tag removal
-  const handleRemoveTag = (tag: string) => {
-    dispatch(removeTag(tag));
+  const handleUpdateMeeting = (meeting: any) => {
+    dispatch(appSlice.actions.updateMeeting(meeting));
   };
 
-  // Handle note tag removal
-  const handleRemoveNoteTag = (noteId: string, tag: string) => {
-    dispatch(removeNoteTag({ noteId, tag }));
+  const handleUpdateTemplate = (template: any) => {
+    dispatch(appSlice.actions.updateTemplate(template));
   };
 
-  // Handle note drag over folder
-  const handleDragNoteOverFolder = (noteId: string, folderId: string) => {
-    dispatch(dragNoteOverFolder({ noteId, folderId }));
+  const handleDeleteNote = (noteId: string) => {
+    dispatch(appSlice.actions.deleteNote(noteId));
   };
 
-  // Handle note drop into folder
-  const handleDropNoteIntoFolder = (noteId: string, folderId: string) => {
-    dispatch(dropNoteIntoFolder({ noteId, folderId }));
+  const handleDeleteMeeting = (meetingId: string) => {
+    dispatch(appSlice.actions.deleteMeeting(meetingId));
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    dispatch(appSlice.actions.deleteTemplate(templateId));
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div>
         <h1>AutoNote: AI-Powered Note Taker</h1>
+        <Link href="/notes">
+          <a>Notes</a>
+        </Link>
+        <Link href="/meetings">
+          <a>Meetings</a>
+        </Link>
+        <Link href="/templates">
+          <a>Templates</a>
+        </Link>
         <div>
-          <input
-            type="text"
-            value={tagInput}
-            onChange={handleTagInputChange}
-            placeholder="Add tag"
-          />
-          <ul>
-            {tagSuggestions.map((suggestion) => (
-              <li key={suggestion}>
-                <button onClick={() => handleAddTag(suggestion)}>{suggestion}</button>
-              </li>
-            ))}
-          </ul>
+          <NoteCard />
+          <MeetingCard />
+          <TemplateCard />
         </div>
         <div>
-          {notes.map((note) => (
-            <div key={note.id}>
-              <h2>{note.title}</h2>
-              <p>{note.content}</p>
-              <input
-                type="text"
-                value={noteTagInput}
-                onChange={(event) => handleNoteTagInputChange(event, note.id)}
-                placeholder="Add note tag"
-              />
-              <ul>
-                {noteTagSuggestions.map((suggestion) => (
-                  <li key={suggestion}>
-                    <button onClick={() => handleAddNoteTag(note.id, suggestion)}>
-                      {suggestion}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <ul>
-                {noteTagMap.get(note.id).map((tag) => (
-                  <li key={tag}>
-                    <button onClick={() => handleRemoveNoteTag(note.id, tag)}>{tag}</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div>
-          {folders.map((folder) => (
-            <div key={folder.id}>
-              <h2>{folder.name}</h2>
-              <ul>
-                {folderNotesMap.get(folder.id).map((noteId) => (
-                  <li key={noteId}>
-                    <DraggableNoteCard
-                      noteId={noteId}
-                      folderId={folder.id}
-                      onDragOver={(noteId, folderId) => handleDragNoteOverFolder(noteId, folderId)}
-                      onDrop={(noteId, folderId) => handleDropNoteIntoFolder(noteId, folderId)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <Editor editorState={EditorState.createEmpty()} />
         </div>
       </div>
     </DndProvider>
   );
 };
 
-export default () => {
+const App = () => {
   return (
     <Provider store={store}>
       <DashboardPage />
     </Provider>
   );
 };
+
+export default App;

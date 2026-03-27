@@ -31,33 +31,32 @@ const Nav = memo(() => {
     if (event.key === 'Escape') {
       setNavOpen(false);
     }
-    if (event.key === 'ArrowDown' && navOpen) {
-      const menuItems = document.querySelectorAll('.nav-menu li');
-      const currentActive = document.activeElement;
-      const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
-      const nextIndex = (currentIndex + 1) % menuItems.length;
-      menuItems[nextIndex].focus();
-    }
-    if (event.key === 'ArrowUp' && navOpen) {
-      const menuItems = document.querySelectorAll('.nav-menu li');
-      const currentActive = document.activeElement;
-      const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
-      const nextIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
-      menuItems[nextIndex].focus();
-    }
-    if (event.key === 'Enter' && navOpen) {
-      const currentActive = document.activeElement;
-      if (currentActive.tagName === 'A') {
-        currentActive.click();
+    if (navOpen) {
+      if (event.key === 'ArrowDown') {
+        const menuItems = document.querySelectorAll('.nav-menu li');
+        const currentActive = document.activeElement;
+        const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
+        const nextIndex = (currentIndex + 1) % menuItems.length;
+        menuItems[nextIndex].focus();
+      } else if (event.key === 'ArrowUp') {
+        const menuItems = document.querySelectorAll('.nav-menu li');
+        const currentActive = document.activeElement;
+        const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
+        const nextIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
+        menuItems[nextIndex].focus();
+      } else if (event.key === 'Enter') {
+        const currentActive = document.activeElement;
+        if (currentActive.tagName === 'A') {
+          currentActive.click();
+        }
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        const menuItems = document.querySelectorAll('.nav-menu li');
+        const currentActive = document.activeElement;
+        const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
+        const nextIndex = (currentIndex + 1) % menuItems.length;
+        menuItems[nextIndex].focus();
       }
-    }
-    if (event.key === 'Tab' && navOpen) {
-      event.preventDefault();
-      const menuItems = document.querySelectorAll('.nav-menu li');
-      const currentActive = document.activeElement;
-      const currentIndex = Array.prototype.indexOf.call(menuItems, currentActive);
-      const nextIndex = (currentIndex + 1) % menuItems.length;
-      menuItems[nextIndex].focus();
     }
   }, [navOpen]);
 
@@ -83,42 +82,44 @@ const Nav = memo(() => {
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
 
+  useEffect(() => {
+    const handleKeyDownEvent = (event) => {
+      handleKeyDown(event);
+    };
+    document.addEventListener('keydown', handleKeyDownEvent);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDownEvent);
+    };
+  }, [handleKeyDown]);
+
   return (
     <nav>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
       <div className="nav-container">
-        <button
-          className="nav-toggle"
-          onClick={toggleNav}
-          aria-label="Toggle navigation"
-        >
+        <button className="nav-toggle" onClick={toggleNav}>
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
-        <ul className="nav-menu" hidden={!navOpen}>
-          {filteredLinks.map((link) => (
-            <li key={link.href}>
-              <Link href={link.href}>{link.text}</Link>
-            </li>
-          ))}
-        </ul>
-        <Suspense fallback={<div>Loading...</div>}>
-          <SearchBar
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search"
-          />
-        </Suspense>
-        <button
-          className="high-contrast-mode-toggle"
-          onClick={handleHighContrastMode}
-          aria-label="Toggle high contrast mode"
+        <motion.div
+          initial={{ x: '-100%' }}
+          animate={navOpen ? { x: 0 } : { x: '-100%' }}
+          transition={{ duration: 0.5 }}
+          className="nav-menu"
         >
-          High Contrast Mode
-        </button>
+          <ul>
+            {filteredLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href}>{link.text}</Link>
+              </li>
+            ))}
+          </ul>
+          <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+          </button>
+        </motion.div>
         <Suspense fallback={<div>Loading...</div>}>
-          <Menu />
+          <SearchBar onSearch={handleSearch} />
         </Suspense>
       </div>
     </nav>
