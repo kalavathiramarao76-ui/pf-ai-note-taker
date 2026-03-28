@@ -83,55 +83,30 @@ const Nav = memo(() => {
   const SearchBar = lazy(() => import('./SearchBar'));
 
   return (
-    <nav
-      aria-label="Main navigation"
-      className="nav"
-      role="navigation"
-    >
-      <button
-        aria-controls="nav-menu"
-        aria-expanded={navOpen}
-        aria-label="Toggle navigation menu"
-        className="nav-toggle"
-        onClick={toggleNav}
-      >
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <ul
-        aria-hidden={!navOpen}
-        className="nav-menu"
-        id="nav-menu"
-        role="menu"
-      >
-        {filteredLinks.map((link) => (
-          <li key={link.href}>
-            <Link
-              aria-label={link.text}
-              href={link.href}
-              role="menuitem"
-            >
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
-          aria-label="Search"
-          handleSearch={handleSearch}
-          searchQuery={searchQuery}
-        />
-      </Suspense>
-      <button
-        aria-label="Toggle high contrast mode"
-        className="high-contrast-mode-toggle"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Menu />
-      </Suspense>
+    <nav>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <div className="nav-container">
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+        {navOpen && (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Menu links={filteredLinks} />
+          </Suspense>
+        )}
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search notes"
+          />
+        </Suspense>
+        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+          {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+        </button>
+      </div>
     </nav>
   );
 });

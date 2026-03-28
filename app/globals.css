@@ -49,6 +49,13 @@
   --secondary-color: var(--high-contrast-secondary-color);
 }
 
+:root.dark-mode.high-contrast {
+  --background-color: #000;
+  --text-color: #ffff00;
+  --primary-color: #ff69b4;
+  --secondary-color: #33cc33;
+}
+
 @layer base {
   @font-face {
     font-family: 'Inter';
@@ -137,96 +144,35 @@
     border-radius: var(--border-radius-lg);
   }
 
-  a {
-    text-decoration: none;
-    color: var(--primary-color);
-  }
-
-  a:hover {
-    color: var(--primary-color);
-    text-decoration: underline;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 768px) {
-    html {
-      font-size: 0.875rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    html {
-      font-size: 0.75rem;
-    }
-  }
-}
-
-@layer components {
-  .btn {
-    display: inline-block;
-    padding: var(--padding-sm);
-    border: none;
-    border-radius: var(--border-radius-md);
-    cursor: pointer;
-    font-size: var(--font-size-base);
-    font-weight: 600;
+  .dark-mode-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: var(--primary-color);
     color: var(--text-color);
+    border: none;
+    padding: var(--padding-sm);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+  }
+
+  .dark-mode-toggle:hover {
+    background-color: var(--dark-mode-primary-color);
+  }
+
+  .high-contrast-toggle {
+    position: absolute;
+    top: 4rem;
+    right: 1rem;
     background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: var(--padding-sm);
+    font-size: var(--font-size-base);
+    cursor: pointer;
   }
 
-  .btn:hover {
-    background-color: var(--primary-color);
-    opacity: 0.8;
-  }
-
-  .btn:active {
-    transform: translateY(2px);
-  }
-}
-
-@layer utilities {
-  .flex {
-    display: flex;
-  }
-
-  .justify-center {
-    justify-content: center;
-  }
-
-  .items-center {
-    align-items: center;
-  }
-
-  .text-center {
-    text-align: center;
-  }
-
-  .mt-4 {
-    margin-top: 1rem;
-  }
-
-  .mb-4 {
-    margin-bottom: 1rem;
-  }
-
-  .mx-4 {
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
-
-  .px-4 {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .py-4 {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+  .high-contrast-toggle:hover {
+    background-color: var(--high-contrast-primary-color);
   }
 }
