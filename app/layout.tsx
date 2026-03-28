@@ -91,7 +91,7 @@ const Nav = memo(() => {
       <button
         aria-controls="nav-menu"
         aria-expanded={navOpen}
-        aria-label="Toggle navigation menu"
+        aria-label="Toggle navigation"
         className="nav-toggle"
         onClick={toggleNav}
       >
@@ -118,8 +118,8 @@ const Nav = memo(() => {
       <Suspense fallback={<div>Loading...</div>}>
         <SearchBar
           aria-label="Search"
-          onChange={handleSearch}
-          value={searchQuery}
+          handleSearch={handleSearch}
+          searchQuery={searchQuery}
         />
       </Suspense>
       <button
