@@ -82,39 +82,53 @@ const Nav = memo(() => {
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
 
-  const navLinks = useMemo(() => {
-    const navLinksMap = new Map();
-    links.forEach((link) => {
-      navLinksMap.set(link.href, link);
-    });
-    return navLinksMap;
-  }, [links]);
-
-  const renderNavLinks = useCallback(() => {
-    return Array.from(navLinks.values()).map((link) => (
-      <li key={link.href}>
-        <Link href={link.href}>{link.text}</Link>
-      </li>
-    ));
-  }, [navLinks]);
-
   return (
-    <nav>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
-      <div className="nav-container">
-        <button className="nav-toggle" onClick={toggleNav}>
-          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </button>
-        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
-          {renderNavLinks()}
-        </ul>
-        <SearchBar onSearch={handleSearch} />
-        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
-          High Contrast Mode
-        </button>
-      </div>
+    <nav
+      aria-label="Main navigation"
+      role="navigation"
+      className="nav"
+      onKeyDown={handleKeyDown}
+    >
+      <button
+        type="button"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        aria-controls="nav-menu"
+        className="nav-toggle"
+        onClick={toggleNav}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul
+        id="nav-menu"
+        role="menu"
+        aria-hidden={!navOpen}
+        className={`nav-menu ${navOpen ? 'open' : ''}`}
+      >
+        {filteredLinks.map((link, index) => (
+          <li key={index} role="menuitem">
+            <Link href={link.href} onClick={toggleNav}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchBar
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </Suspense>
+      <button
+        type="button"
+        aria-label="Toggle high contrast mode"
+        className="high-contrast-mode-toggle"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
     </nav>
   );
 });

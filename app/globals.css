@@ -151,39 +151,31 @@
     font-size: var(--font-size-h6);
   }
 
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  meta[name="description"] {
+    content: "AutoNote: AI-Powered Note Taker is a tool for taking notes with AI assistance";
   }
 
-  .sr-only:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0.5rem;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
-    font-size: var(--screen-reader-font-size);
+  meta[name="keywords"] {
+    content: "AutoNote, AI-Powered Note Taker, note taking, AI assistance";
   }
 
-  .high-contrast-mode {
-    background-color: var(--high-contrast-background-color);
-    color: var(--high-contrast-text-color);
+  meta[name="robots"] {
+    content: "index, follow";
   }
 
-  .high-contrast-mode .sr-only:focus {
-    background-color: var(--high-contrast-screen-reader-background-color);
-    color: var(--high-contrast-screen-reader-text-color);
+  meta[name="viewport"] {
+    content: "width=device-width, initial-scale=1.0";
+  }
+
+  meta[name="theme-color"] {
+    content: var(--primary-color);
+  }
+
+  link[rel="icon"] {
+    href: "/favicon.ico";
+  }
+
+  link[rel="apple-touch-icon"] {
+    href: "/apple-touch-icon.png";
   }
 }
