@@ -83,51 +83,50 @@ const Nav = memo(() => {
   const SearchBar = lazy(() => import('./SearchBar'));
 
   return (
-    <nav
-      className="nav"
-      aria-label="Main navigation"
-      role="navigation"
-    >
+    <nav className="nav">
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
       <button
-        type="button"
         className="nav-toggle"
         aria-label="Toggle navigation"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
         onClick={toggleNav}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul
-        id="nav-menu"
-        className="nav-menu"
-        role="menu"
-        aria-hidden={!navOpen}
-      >
-        {filteredLinks.map((link) => (
-          <li key={link.href} role="menuitem">
-            <Link href={link.href}>{link.text}</Link>
-          </li>
-        ))}
+      <ul className="nav-menu">
+        {navOpen && (
+          <>
+            <li>
+              <Link href="/">
+                <a>Home</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/about">
+                <a>About</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/contact">
+                <a>Contact</a>
+              </Link>
+            </li>
+            <li>
+              <button
+                className="nav-button"
+                aria-label="Toggle high contrast mode"
+                onClick={handleHighContrastMode}
+              >
+                {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+              </button>
+            </li>
+          </>
+        )}
       </ul>
-      <button
-        type="button"
-        className="high-contrast-mode-toggle"
-        aria-label="Toggle high contrast mode"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
       <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-          aria-label="Search"
-        />
-      </Suspense>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Menu />
+        <SearchBar onSearch={handleSearch} />
+        <Menu links={filteredLinks} />
       </Suspense>
     </nav>
   );

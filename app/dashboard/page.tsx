@@ -85,6 +85,9 @@ interface AppState {
   noteTagSuggestions: string[];
   aiModel: any;
   noteCompletion: string;
+  notePriorities: { [key: string]: string };
+  noteDueDates: { [key: string]: string };
+  noteReminders: { [key: string]: string };
 }
 
 // Define the reducer using createSlice
@@ -157,88 +160,24 @@ const appSlice = createSlice({
     noteTagSuggestions: [],
     aiModel: null,
     noteCompletion: '',
+    notePriorities: {},
+    noteDueDates: {},
+    noteReminders: {},
   },
   reducers: {
-    addFolder(state, action: PayloadAction<{ folderName: string }>) {
-      const newFolder = {
-        id: Date.now().toString(),
-        name: action.payload.folderName,
-        notes: [],
-        tags: [],
-      };
-      state.folders.push(newFolder);
-      state.folderMap[newFolder.id] = newFolder;
-      state.folderNotesMap[newFolder.id] = [];
+    setNotePriority: (state, action: PayloadAction<{ noteId: string; priority: string }>) => {
+      state.notePriorities[action.payload.noteId] = action.payload.priority;
     },
-    addNoteToFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      const noteId = action.payload.noteId;
-      const folderId = action.payload.folderId;
-      const note = state.notes[noteId];
-      const folder = state.folderMap[folderId];
-      if (note && folder) {
-        folder.notes.push(noteId);
-        state.folderNotesMap[folderId].push(noteId);
-        state.noteFolderMap[noteId] = folderId;
-      }
+    setNoteDueDate: (state, action: PayloadAction<{ noteId: string; dueDate: string }>) => {
+      state.noteDueDates[action.payload.noteId] = action.payload.dueDate;
     },
-    addTagToFolder(state, action: PayloadAction<{ folderId: string; tag: string }>) {
-      const folderId = action.payload.folderId;
-      const tag = action.payload.tag;
-      const folder = state.folderMap[folderId];
-      if (folder) {
-        folder.tags.push(tag);
-        state.folderTagsMap[folderId].push(tag);
-      }
-    },
-    addTagToNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      const noteId = action.payload.noteId;
-      const tag = action.payload.tag;
-      const note = state.notes[noteId];
-      if (note) {
-        note.tags.push(tag);
-        state.noteTagMap[noteId].push(tag);
-      }
-    },
-    removeNoteFromFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      const noteId = action.payload.noteId;
-      const folderId = action.payload.folderId;
-      const folder = state.folderMap[folderId];
-      if (folder) {
-        const index = folder.notes.indexOf(noteId);
-        if (index !== -1) {
-          folder.notes.splice(index, 1);
-          state.folderNotesMap[folderId] = state.folderNotesMap[folderId].filter((id) => id !== noteId);
-          delete state.noteFolderMap[noteId];
-        }
-      }
-    },
-    removeTagFromFolder(state, action: PayloadAction<{ folderId: string; tag: string }>) {
-      const folderId = action.payload.folderId;
-      const tag = action.payload.tag;
-      const folder = state.folderMap[folderId];
-      if (folder) {
-        const index = folder.tags.indexOf(tag);
-        if (index !== -1) {
-          folder.tags.splice(index, 1);
-          state.folderTagsMap[folderId] = state.folderTagsMap[folderId].filter((t) => t !== tag);
-        }
-      }
-    },
-    removeTagFromNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      const noteId = action.payload.noteId;
-      const tag = action.payload.tag;
-      const note = state.notes[noteId];
-      if (note) {
-        const index = note.tags.indexOf(tag);
-        if (index !== -1) {
-          note.tags.splice(index, 1);
-          state.noteTagMap[noteId] = state.noteTagMap[noteId].filter((t) => t !== tag);
-        }
-      }
+    setNoteReminder: (state, action: PayloadAction<{ noteId: string; reminder: string }>) => {
+      state.noteReminders[action.payload.noteId] = action.payload.reminder;
     },
   },
 });
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appSlice.reducer,
@@ -246,86 +185,79 @@ const store = configureStore({
   middleware: [thunk],
 });
 
+// Define the component
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { folders, notes, selectedFolder, editingNote } = useSelector((state: AppState) => state);
+  const router = useRouter();
+  const [noteId, setNoteId] = useState('');
+  const [priority, setPriority] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [reminder, setReminder] = useState('');
 
-  const handleAddFolder = (folderName: string) => {
-    dispatch(appSlice.actions.addFolder({ folderName }));
+  const handleSetNotePriority = () => {
+    dispatch(appSlice.actions.setNotePriority({ noteId, priority }));
   };
 
-  const handleAddNoteToFolder = (noteId: string, folderId: string) => {
-    dispatch(appSlice.actions.addNoteToFolder({ noteId, folderId }));
+  const handleSetNoteDueDate = () => {
+    dispatch(appSlice.actions.setNoteDueDate({ noteId, dueDate }));
   };
 
-  const handleAddTagToFolder = (folderId: string, tag: string) => {
-    dispatch(appSlice.actions.addTagToFolder({ folderId, tag }));
-  };
-
-  const handleAddTagToNote = (noteId: string, tag: string) => {
-    dispatch(appSlice.actions.addTagToNote({ noteId, tag }));
-  };
-
-  const handleRemoveNoteFromFolder = (noteId: string, folderId: string) => {
-    dispatch(appSlice.actions.removeNoteFromFolder({ noteId, folderId }));
-  };
-
-  const handleRemoveTagFromFolder = (folderId: string, tag: string) => {
-    dispatch(appSlice.actions.removeTagFromFolder({ folderId, tag }));
-  };
-
-  const handleRemoveTagFromNote = (noteId: string, tag: string) => {
-    dispatch(appSlice.actions.removeTagFromNote({ noteId, tag }));
+  const handleSetNoteReminder = () => {
+    dispatch(appSlice.actions.setNoteReminder({ noteId, reminder }));
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div>
-        <h1>AutoNote: AI-Powered Note Taker</h1>
-        <button onClick={() => handleAddFolder('New Folder')}>Add Folder</button>
-        {folders.map((folder) => (
-          <div key={folder.id}>
-            <h2>{folder.name}</h2>
-            <ul>
-              {folder.notes.map((noteId) => (
-                <li key={noteId}>
-                  <NoteCard noteId={noteId} />
-                  <button onClick={() => handleRemoveNoteFromFolder(noteId, folder.id)}>Remove from Folder</button>
-                </li>
-              ))}
-            </ul>
-            <button onClick={() => handleAddTagToFolder(folder.id, 'New Tag')}>Add Tag to Folder</button>
-            <ul>
-              {folder.tags.map((tag) => (
-                <li key={tag}>
-                  {tag}
-                  <button onClick={() => handleRemoveTagFromFolder(folder.id, tag)}>Remove Tag from Folder</button>
-                </li>
-              ))}
-            </ul>
+    <Provider store={store}>
+      <DndProvider backend={HTML5Backend}>
+        <div>
+          <h1>AutoNote: AI-Powered Note Taker</h1>
+          <Link href="/notes">
+            <a>Notes</a>
+          </Link>
+          <Link href="/meetings">
+            <a>Meetings</a>
+          </Link>
+          <Link href="/templates">
+            <a>Templates</a>
+          </Link>
+          <div>
+            <input
+              type="text"
+              value={noteId}
+              onChange={(e) => setNoteId(e.target.value)}
+              placeholder="Note ID"
+            />
+            <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+              <option value="">Select Priority</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              placeholder="Due Date"
+            />
+            <input
+              type="time"
+              value={reminder}
+              onChange={(e) => setReminder(e.target.value)}
+              placeholder="Reminder"
+            />
+            <button onClick={handleSetNotePriority}>Set Priority</button>
+            <button onClick={handleSetNoteDueDate}>Set Due Date</button>
+            <button onClick={handleSetNoteReminder}>Set Reminder</button>
           </div>
-        ))}
-        {notes.map((note) => (
-          <div key={note.id}>
-            <NoteCard noteId={note.id} />
-            <button onClick={() => handleAddTagToNote(note.id, 'New Tag')}>Add Tag to Note</button>
-            <ul>
-              {note.tags.map((tag) => (
-                <li key={tag}>
-                  {tag}
-                  <button onClick={() => handleRemoveTagFromNote(note.id, tag)}>Remove Tag from Note</button>
-                </li>
-              ))}
-            </ul>
+          <div>
+            <NoteCard />
+            <MeetingCard />
+            <TemplateCard />
           </div>
-        ))}
-      </div>
-    </DndProvider>
+        </div>
+      </DndProvider>
+    </Provider>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export default DashboardPage;
