@@ -144,35 +144,100 @@
     border-radius: var(--border-radius-lg);
   }
 
-  .dark-mode-toggle {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background-color: var(--primary-color);
-    color: var(--text-color);
+  img {
+    max-width: 100%;
+    height: auto;
+    border: 0;
+  }
+
+  img[alt=""] {
+    filter: grayscale(100%);
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--primary-color);
+  }
+
+  a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+
+  button {
+    cursor: pointer;
     border: none;
     padding: var(--padding-sm);
     font-size: var(--font-size-base);
-    cursor: pointer;
-  }
-
-  .dark-mode-toggle:hover {
-    background-color: var(--dark-mode-primary-color);
-  }
-
-  .high-contrast-toggle {
-    position: absolute;
-    top: 4rem;
-    right: 1rem;
+    font-family: var(--font-family);
     background-color: var(--primary-color);
-    color: var(--text-color);
-    border: none;
+    color: var(--background-color);
+    border-radius: var(--border-radius-sm);
+  }
+
+  button:hover {
+    background-color: var(--primary-color);
+    opacity: 0.8;
+  }
+
+  input[type="text"], input[type="email"], input[type="password"] {
     padding: var(--padding-sm);
     font-size: var(--font-size-base);
-    cursor: pointer;
+    font-family: var(--font-family);
+    border: 1px solid var(--secondary-color);
+    border-radius: var(--border-radius-sm);
   }
 
-  .high-contrast-toggle:hover {
-    background-color: var(--high-contrast-primary-color);
+  label {
+    display: block;
+    margin-bottom: var(--padding-sm);
+  }
+
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  legend {
+    font-size: var(--font-size-h2);
+    font-weight: bold;
+    margin-bottom: var(--padding-md);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .skip-nav {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    padding: var(--padding-sm);
+    z-index: 1000;
+  }
+
+  .skip-nav a {
+    text-decoration: none;
+    color: var(--background-color);
+  }
+
+  .skip-nav a:hover {
+    text-decoration: underline;
+  }
+
+  .skip-nav a:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
   }
 }
