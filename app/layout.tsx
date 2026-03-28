@@ -80,54 +80,52 @@ const Nav = memo(() => {
   }, [highContrastMode]);
 
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = lazy(() => import('./SearchBar'));
+  const SearchBar = memo(() => {
+    return (
+      <form>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+        />
+      </form>
+    );
+  });
+
+  const NavigationMenu = memo(() => {
+    return (
+      <ul className="nav-menu">
+        {filteredLinks.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href}>{link.text}</Link>
+          </li>
+        ))}
+      </ul>
+    );
+  });
 
   return (
-    <nav className="nav">
+    <nav>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <button
-        className="nav-toggle"
-        aria-label="Toggle navigation"
-        onClick={toggleNav}
-      >
+      <button onClick={toggleNav}>
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul className="nav-menu">
-        {navOpen && (
-          <>
-            <li>
-              <Link href="/">
-                <a>Home</a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/about">
-                <a>About</a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact">
-                <a>Contact</a>
-              </Link>
-            </li>
-            <li>
-              <button
-                className="nav-button"
-                aria-label="Toggle high contrast mode"
-                onClick={handleHighContrastMode}
-              >
-                {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
-              </button>
-            </li>
-          </>
-        )}
-      </ul>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar onSearch={handleSearch} />
-        <Menu links={filteredLinks} />
-      </Suspense>
+      {navOpen && (
+        <motion.div
+          initial={{ x: '-100%' }}
+          animate={{ x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <SearchBar />
+          <NavigationMenu />
+          <button onClick={handleHighContrastMode}>
+            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
+          </button>
+        </motion.div>
+      )}
     </nav>
   );
 });

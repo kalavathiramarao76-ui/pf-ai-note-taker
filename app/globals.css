@@ -163,35 +163,35 @@
     border: 0;
   }
 
-  .sr-only.focusable:active,
-  .sr-only.focusable:focus {
-    clip: auto;
+  .sr-only:focus {
+    position: static;
+    width: auto;
     height: auto;
+    padding: 0.5rem;
     margin: 0;
     overflow: visible;
-    position: static;
+    clip: auto;
     white-space: normal;
-    width: auto;
-    z-index: 1000;
-  }
-
-  .high-contrast-mode {
-    filter: invert(100%);
-  }
-
-  .high-contrast-mode * {
-    background-color: var(--high-contrast-background-color);
-    color: var(--high-contrast-text-color);
-  }
-
-  .screen-reader-only {
-    font-size: var(--screen-reader-font-size);
-    color: var(--screen-reader-text-color);
     background-color: var(--screen-reader-background-color);
+    color: var(--screen-reader-text-color);
+    font-size: var(--screen-reader-font-size);
   }
 
-  .screen-reader-only.high-contrast {
-    color: var(--high-contrast-screen-reader-text-color);
-    background-color: var(--high-contrast-screen-reader-background-color);
+  @media (prefers-contrast: high) {
+    :root {
+      --background-color: var(--high-contrast-background-color);
+      --text-color: var(--high-contrast-text-color);
+      --primary-color: var(--high-contrast-primary-color);
+      --secondary-color: var(--high-contrast-secondary-color);
+      --screen-reader-text-color: var(--high-contrast-screen-reader-text-color);
+      --screen-reader-background-color: var(--high-contrast-screen-reader-background-color);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none;
+      transition: none;
+    }
   }
 }

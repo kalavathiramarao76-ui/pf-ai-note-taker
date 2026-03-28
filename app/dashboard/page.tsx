@@ -19,9 +19,9 @@ import { DraggableNoteCard } from '../components/DraggableNoteCard';
 
 // Define the initial state
 interface AppState {
-  notes: { [key: string]: any };
-  meetings: { [key: string]: any };
-  templates: { [key: string]: any };
+  notes: Map<string, any>;
+  meetings: Map<string, any>;
+  templates: Map<string, any>;
   searchQuery: string;
   generatedNotes: any[];
   folders: any[];
@@ -94,9 +94,9 @@ interface AppState {
 const appSlice = createSlice({
   name: 'app',
   initialState: {
-    notes: {},
-    meetings: {},
-    templates: {},
+    notes: new Map(),
+    meetings: new Map(),
+    templates: new Map(),
     searchQuery: '',
     generatedNotes: [],
     folders: [],
@@ -105,9 +105,9 @@ const appSlice = createSlice({
     sortedNotes: [],
     sortedMeetings: [],
     sortedTemplates: [],
-    filterType: 'all',
-    sortBy: 'title',
-    sortOrder: 'asc',
+    filterType: '',
+    sortBy: '',
+    sortOrder: '',
     filterByTags: [],
     filterByDate: '',
     aiSuggestions: [],
@@ -122,7 +122,7 @@ const appSlice = createSlice({
     isQuickNoteOpen: false,
     tags: [],
     selectedTags: [],
-    noteTags: {},
+    noteTags: null,
     tagInput: '',
     tagSuggestions: [],
     socket: null,
@@ -131,8 +131,8 @@ const appSlice = createSlice({
     noteVersions: null,
     conflictResolution: null,
     realTimeCollaboration: null,
-    folderNotes: {},
-    folderTags: {},
+    folderNotes: null,
+    folderTags: null,
     versionHistory: null,
     collaborativeNotes: null,
     folderStructure: null,
@@ -165,19 +165,28 @@ const appSlice = createSlice({
     noteReminders: {},
   },
   reducers: {
-    setNotePriority: (state, action: PayloadAction<{ noteId: string; priority: string }>) => {
-      state.notePriorities[action.payload.noteId] = action.payload.priority;
+    addNote(state, action: PayloadAction<any>) {
+      state.notes.set(action.payload.id, action.payload);
     },
-    setNoteDueDate: (state, action: PayloadAction<{ noteId: string; dueDate: string }>) => {
-      state.noteDueDates[action.payload.noteId] = action.payload.dueDate;
+    removeNote(state, action: PayloadAction<string>) {
+      state.notes.delete(action.payload);
     },
-    setNoteReminder: (state, action: PayloadAction<{ noteId: string; reminder: string }>) => {
-      state.noteReminders[action.payload.noteId] = action.payload.reminder;
+    addMeeting(state, action: PayloadAction<any>) {
+      state.meetings.set(action.payload.id, action.payload);
     },
+    removeMeeting(state, action: PayloadAction<string>) {
+      state.meetings.delete(action.payload);
+    },
+    addTemplate(state, action: PayloadAction<any>) {
+      state.templates.set(action.payload.id, action.payload);
+    },
+    removeTemplate(state, action: PayloadAction<string>) {
+      state.templates.delete(action.payload);
+    },
+    // Add other reducers as needed
   },
 });
 
-// Create the store
 const store = configureStore({
   reducer: {
     app: appSlice.reducer,
@@ -185,79 +194,73 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the component
-const DashboardPage = () => {
+function DashboardPage() {
   const dispatch = useDispatch();
-  const router = useRouter();
-  const [noteId, setNoteId] = useState('');
-  const [priority, setPriority] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [reminder, setReminder] = useState('');
+  const state = useSelector((state: any) => state.app);
 
-  const handleSetNotePriority = () => {
-    dispatch(appSlice.actions.setNotePriority({ noteId, priority }));
-  };
+  useEffect(() => {
+    // Initialize the notes, meetings, and templates maps
+    const notes = new Map();
+    const meetings = new Map();
+    const templates = new Map();
 
-  const handleSetNoteDueDate = () => {
-    dispatch(appSlice.actions.setNoteDueDate({ noteId, dueDate }));
-  };
+    // Fetch data from the API and populate the maps
+    client.get('/notes').then((response) => {
+      response.data.forEach((note: any) => {
+        notes.set(note.id, note);
+      });
+      dispatch(appSlice.actions.addNote({ id: 'initial', notes }));
+    });
 
-  const handleSetNoteReminder = () => {
-    dispatch(appSlice.actions.setNoteReminder({ noteId, reminder }));
-  };
+    client.get('/meetings').then((response) => {
+      response.data.forEach((meeting: any) => {
+        meetings.set(meeting.id, meeting);
+      });
+      dispatch(appSlice.actions.addMeeting({ id: 'initial', meetings }));
+    });
+
+    client.get('/templates').then((response) => {
+      response.data.forEach((template: any) => {
+        templates.set(template.id, template);
+      });
+      dispatch(appSlice.actions.addTemplate({ id: 'initial', templates }));
+    });
+  }, []);
 
   return (
-    <Provider store={store}>
-      <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend}>
+      <div>
+        <h1>AutoNote: AI-Powered Note Taker</h1>
+        <Link href="/notes">
+          <a>
+            <AiOutlinePlus size={24} />
+            Create a new note
+          </a>
+        </Link>
         <div>
-          <h1>AutoNote: AI-Powered Note Taker</h1>
-          <Link href="/notes">
-            <a>Notes</a>
-          </Link>
-          <Link href="/meetings">
-            <a>Meetings</a>
-          </Link>
-          <Link href="/templates">
-            <a>Templates</a>
-          </Link>
-          <div>
-            <input
-              type="text"
-              value={noteId}
-              onChange={(e) => setNoteId(e.target.value)}
-              placeholder="Note ID"
-            />
-            <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-              <option value="">Select Priority</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              placeholder="Due Date"
-            />
-            <input
-              type="time"
-              value={reminder}
-              onChange={(e) => setReminder(e.target.value)}
-              placeholder="Reminder"
-            />
-            <button onClick={handleSetNotePriority}>Set Priority</button>
-            <button onClick={handleSetNoteDueDate}>Set Due Date</button>
-            <button onClick={handleSetNoteReminder}>Set Reminder</button>
-          </div>
-          <div>
-            <NoteCard />
-            <MeetingCard />
-            <TemplateCard />
-          </div>
+          {Array.from(state.notes.values()).map((note: any) => (
+            <NoteCard key={note.id} note={note} />
+          ))}
         </div>
-      </DndProvider>
+        <div>
+          {Array.from(state.meetings.values()).map((meeting: any) => (
+            <MeetingCard key={meeting.id} meeting={meeting} />
+          ))}
+        </div>
+        <div>
+          {Array.from(state.templates.values()).map((template: any) => (
+            <TemplateCard key={template.id} template={template} />
+          ))}
+        </div>
+      </div>
+    </DndProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
     </Provider>
   );
-};
-
-export default DashboardPage;
+}
