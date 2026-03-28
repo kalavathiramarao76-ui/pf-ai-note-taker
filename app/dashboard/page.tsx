@@ -90,6 +90,9 @@ interface AppState {
   noteReminders: { [key: string]: string };
   notePriorityLevels: { [key: string]: string[] };
   noteTagSuggestionsMap: { [key: string]: string[] };
+  collaborativeNoteId: string;
+  collaborativeNoteContent: string;
+  collaborativeNoteVersion: number;
 }
 
 // Define the reducer using createSlice
@@ -124,20 +127,20 @@ const appSlice = createSlice({
     isQuickNoteOpen: false,
     tags: [],
     selectedTags: [],
-    noteTags: null,
+    noteTags: {},
     tagInput: '',
     tagSuggestions: [],
     socket: null,
     collaborators: [],
     collaborativeEditorState: null,
-    noteVersions: null,
+    noteVersions: {},
     conflictResolution: null,
     realTimeCollaboration: null,
-    folderNotes: null,
-    folderTags: null,
-    versionHistory: null,
-    collaborativeNotes: null,
-    folderStructure: null,
+    folderNotes: {},
+    folderTags: {},
+    versionHistory: {},
+    collaborativeNotes: {},
+    folderStructure: {},
     noteSummaries: [],
     folderMap: {},
     draggedNote: null,
@@ -167,38 +170,30 @@ const appSlice = createSlice({
     noteReminders: {},
     notePriorityLevels: {},
     noteTagSuggestionsMap: {},
+    collaborativeNoteId: '',
+    collaborativeNoteContent: '',
+    collaborativeNoteVersion: 0,
   },
   reducers: {
-    addNote(state, action: PayloadAction<any>) {
-      state.notes[action.payload.id] = action.payload;
+    setCollaborativeNoteId(state, action: PayloadAction<string>) {
+      state.collaborativeNoteId = action.payload;
     },
-    addMeeting(state, action: PayloadAction<any>) {
-      state.meetings[action.payload.id] = action.payload;
+    setCollaborativeNoteContent(state, action: PayloadAction<string>) {
+      state.collaborativeNoteContent = action.payload;
     },
-    addTemplate(state, action: PayloadAction<any>) {
-      state.templates[action.payload.id] = action.payload;
+    setCollaborativeNoteVersion(state, action: PayloadAction<number>) {
+      state.collaborativeNoteVersion = action.payload;
     },
-    updateNote(state, action: PayloadAction<any>) {
-      state.notes[action.payload.id] = action.payload;
-    },
-    updateMeeting(state, action: PayloadAction<any>) {
-      state.meetings[action.payload.id] = action.payload;
-    },
-    updateTemplate(state, action: PayloadAction<any>) {
-      state.templates[action.payload.id] = action.payload;
-    },
-    deleteNote(state, action: PayloadAction<string>) {
-      delete state.notes[action.payload];
-    },
-    deleteMeeting(state, action: PayloadAction<string>) {
-      delete state.meetings[action.payload];
-    },
-    deleteTemplate(state, action: PayloadAction<string>) {
-      delete state.templates[action.payload];
+    updateCollaborativeNote(state, action: PayloadAction<{ content: string; version: number }>) {
+      if (action.payload.version > state.collaborativeNoteVersion) {
+        state.collaborativeNoteContent = action.payload.content;
+        state.collaborativeNoteVersion = action.payload.version;
+      }
     },
   },
 });
 
+// Create the store
 const store = configureStore({
   reducer: {
     app: appSlice.reducer,
@@ -206,116 +201,87 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-const DashboardPage = () => {
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const { notes, meetings, templates } = useSelector((state: any) => state.app);
+// Initialize the socket
+const socket = io();
+
+// Establish real-time collaboration connection
+socket.on('connect', () => {
+  console.log('Connected to the server');
+});
+
+socket.on('collaborative-note-update', (data: { noteId: string; content: string; version: number }) => {
+  store.dispatch(appSlice.actions.updateCollaborativeNote(data));
+});
+
+// Send updates to the server
+const sendCollaborativeNoteUpdate = (noteId: string, content: string, version: number) => {
+  socket.emit('collaborative-note-update', { noteId, content, version });
+};
+
+// Conflict resolution
+const resolveConflict = (localVersion: number, remoteVersion: number, localContent: string, remoteContent: string) => {
+  if (localVersion > remoteVersion) {
+    return localContent;
+  } else if (localVersion < remoteVersion) {
+    return remoteContent;
+  } else {
+    // Merge the changes
+    return mergeChanges(localContent, remoteContent);
+  }
+};
+
+const mergeChanges = (localContent: string, remoteContent: string) => {
+  // Implement a merge strategy (e.g., three-way merge)
+  // For simplicity, we'll just concatenate the changes
+  return localContent + remoteContent;
+};
+
+// Real-time collaboration
+const CollaborativeEditor = () => {
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [collaborativeNoteId, setCollaborativeNoteId] = useState('');
+  const [collaborativeNoteContent, setCollaborativeNoteContent] = useState('');
+  const [collaborativeNoteVersion, setCollaborativeNoteVersion] = useState(0);
 
   useEffect(() => {
-    client.getNotes().then((notes) => {
-      notes.forEach((note) => {
-        dispatch(appSlice.actions.addNote(note));
-      });
+    socket.on('collaborative-note-update', (data: { noteId: string; content: string; version: number }) => {
+      if (data.noteId === collaborativeNoteId) {
+        const updatedContent = resolveConflict(collaborativeNoteVersion, data.version, collaborativeNoteContent, data.content);
+        setCollaborativeNoteContent(updatedContent);
+        setCollaborativeNoteVersion(data.version);
+      }
     });
-    client.getMeetings().then((meetings) => {
-      meetings.forEach((meeting) => {
-        dispatch(appSlice.actions.addMeeting(meeting));
-      });
-    });
-    client.getTemplates().then((templates) => {
-      templates.forEach((template) => {
-        dispatch(appSlice.actions.addTemplate(template));
-      });
-    });
-  }, []);
+  }, [collaborativeNoteId, collaborativeNoteContent, collaborativeNoteVersion]);
 
-  const handleAddNote = (note: any) => {
-    dispatch(appSlice.actions.addNote(note));
-  };
-
-  const handleAddMeeting = (meeting: any) => {
-    dispatch(appSlice.actions.addMeeting(meeting));
-  };
-
-  const handleAddTemplate = (template: any) => {
-    dispatch(appSlice.actions.addTemplate(template));
-  };
-
-  const handleUpdateNote = (note: any) => {
-    dispatch(appSlice.actions.updateNote(note));
-  };
-
-  const handleUpdateMeeting = (meeting: any) => {
-    dispatch(appSlice.actions.updateMeeting(meeting));
-  };
-
-  const handleUpdateTemplate = (template: any) => {
-    dispatch(appSlice.actions.updateTemplate(template));
-  };
-
-  const handleDeleteNote = (noteId: string) => {
-    dispatch(appSlice.actions.deleteNote(noteId));
-  };
-
-  const handleDeleteMeeting = (meetingId: string) => {
-    dispatch(appSlice.actions.deleteMeeting(meetingId));
-  };
-
-  const handleDeleteTemplate = (templateId: string) => {
-    dispatch(appSlice.actions.deleteTemplate(templateId));
+  const handleEditorChange = (newState: EditorState) => {
+    setEditorState(newState);
+    const content = newState.getCurrentContent().getPlainText();
+    sendCollaborativeNoteUpdate(collaborativeNoteId, content, collaborativeNoteVersion + 1);
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div>
-        <h1>AutoNote: AI-Powered Note Taker</h1>
-        <Link href="/notes">
-          <a>Notes</a>
-        </Link>
-        <Link href="/meetings">
-          <a>Meetings</a>
-        </Link>
-        <Link href="/templates">
-          <a>Templates</a>
-        </Link>
-        <div>
-          <h2>Notes</h2>
-          {Object.values(notes).map((note) => (
-            <NoteCard key={note.id} note={note} />
-          ))}
-          <button onClick={() => handleAddNote({ id: 'new-note', title: 'New Note' })}>
-            Add Note
-          </button>
-        </div>
-        <div>
-          <h2>Meetings</h2>
-          {Object.values(meetings).map((meeting) => (
-            <MeetingCard key={meeting.id} meeting={meeting} />
-          ))}
-          <button onClick={() => handleAddMeeting({ id: 'new-meeting', title: 'New Meeting' })}>
-            Add Meeting
-          </button>
-        </div>
-        <div>
-          <h2>Templates</h2>
-          {Object.values(templates).map((template) => (
-            <TemplateCard key={template.id} template={template} />
-          ))}
-          <button onClick={() => handleAddTemplate({ id: 'new-template', title: 'New Template' })}>
-            Add Template
-          </button>
-        </div>
-      </div>
-    </DndProvider>
+    <Editor
+      editorState={editorState}
+      onChange={handleEditorChange}
+      placeholder="Type here..."
+    />
   );
 };
 
-const App = () => {
+const DashboardPage = () => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { notes, meetings, templates, searchQuery, generatedNotes, folders, selectedFolder, editingNote, sortedNotes, sortedMeetings, sortedTemplates, filterType, sortBy, sortOrder, filterByTags, filterByDate, aiSuggestions, autocompleteSuggestions, priority, deadline, noteTitle, noteContent, isGeneratingNote, editorState, quickNote, isQuickNoteOpen, tags, selectedTags, noteTags, tagInput, tagSuggestions, socket, collaborators, collaborativeEditorState, noteVersions, conflictResolution, realTimeCollaboration, folderNotes, folderTags, versionHistory, collaborativeNotes, folderStructure, noteSummaries, folderMap, draggedNote, draggedOverFolder, folderTree, noteTagMap, suggestedTags, filteredNotes, folderNotesMap, noteFolderMap, tagFilter, folderName, newFolderName, isFolderOpen, folderId, folderTags, subfolders, folderTagsMap, availableTags, tagInputValue, tagSuggestionsList, noteTagSuggestions, aiModel, noteCompletion, notePriorities, noteDueDates, noteReminders, notePriorityLevels, noteTagSuggestionsMap, collaborativeNoteId, collaborativeNoteContent, collaborativeNoteVersion } = useSelector((state: AppState) => state);
+
   return (
-    <Provider store={store}>
-      <DashboardPage />
-    </Provider>
+    <div>
+      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <CollaborativeEditor />
+      <NoteCard />
+      <MeetingCard />
+      <TemplateCard />
+    </div>
   );
 };
 
-export default App;
+export default DashboardPage;

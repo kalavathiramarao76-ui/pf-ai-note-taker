@@ -23,6 +23,16 @@
   --font-size-h5: 1.25rem;
   --font-size-h6: 1rem;
   --font-size-base: 1.125rem;
+  --max-width: 1200px;
+  --max-width-sm: 900px;
+  --max-width-md: 700px;
+  --max-width-lg: 500px;
+  --padding-sm: 1rem;
+  --padding-md: 2rem;
+  --padding-lg: 3rem;
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 1rem;
 }
 
 :root.dark-mode {
@@ -62,6 +72,9 @@
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--background-color);
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--padding-md);
   }
 
   h1 {
@@ -86,5 +99,41 @@
 
   h6 {
     font-size: var(--font-size-h6);
+  }
+
+  .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--padding-md);
+  }
+
+  .container-sm {
+    max-width: var(--max-width-sm);
+    margin: 0 auto;
+    padding: var(--padding-sm);
+  }
+
+  .container-md {
+    max-width: var(--max-width-md);
+    margin: 0 auto;
+    padding: var(--padding-md);
+  }
+
+  .container-lg {
+    max-width: var(--max-width-lg);
+    margin: 0 auto;
+    padding: var(--padding-lg);
+  }
+
+  .rounded-sm {
+    border-radius: var(--border-radius-sm);
+  }
+
+  .rounded-md {
+    border-radius: var(--border-radius-md);
+  }
+
+  .rounded-lg {
+    border-radius: var(--border-radius-lg);
   }
 }
