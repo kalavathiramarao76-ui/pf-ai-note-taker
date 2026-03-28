@@ -151,20 +151,39 @@
     font-size: var(--font-size-h6);
   }
 
-  img {
-    max-width: 100%;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sr-only:focus {
+    position: static;
+    width: auto;
     height: auto;
+    padding: 0.5rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background-color: var(--screen-reader-background-color);
+    color: var(--screen-reader-text-color);
+    font-size: var(--screen-reader-font-size);
   }
 
-  @media (max-width: 768px) {
-    body {
-      font-size: 0.9rem;
-    }
+  .high-contrast-mode {
+    background-color: var(--high-contrast-background-color);
+    color: var(--high-contrast-text-color);
   }
 
-  @media (max-width: 480px) {
-    body {
-      font-size: 0.8rem;
-    }
+  .high-contrast-mode .sr-only:focus {
+    background-color: var(--high-contrast-screen-reader-background-color);
+    color: var(--high-contrast-screen-reader-text-color);
   }
 }

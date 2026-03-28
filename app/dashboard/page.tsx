@@ -128,15 +128,15 @@ const appSlice = createSlice({
     tagSuggestions: [],
     socket: null,
     collaborators: [],
-    collaborativeEditorState: {},
-    noteVersions: {},
-    conflictResolution: {},
-    realTimeCollaboration: {},
-    folderNotes: {},
-    folderTags: {},
-    versionHistory: {},
-    collaborativeNotes: {},
-    folderStructure: {},
+    collaborativeEditorState: null,
+    noteVersions: null,
+    conflictResolution: null,
+    realTimeCollaboration: null,
+    folderNotes: null,
+    folderTags: null,
+    versionHistory: null,
+    collaborativeNotes: null,
+    folderStructure: null,
     noteSummaries: [],
     folderMap: {},
     draggedNote: null,
@@ -159,26 +159,50 @@ const appSlice = createSlice({
     tagInputValue: '',
     tagSuggestionsList: [],
     noteTagSuggestions: [],
-    aiModel: {},
+    aiModel: null,
     noteCompletion: '',
     notePriorities: {},
     noteDueDates: {},
     noteReminders: {},
-    notePriorityLevels: {
-      low: ['Low', 'Not Urgent'],
-      medium: ['Medium', 'Urgent'],
-      high: ['High', 'Very Urgent'],
-    },
+    notePriorityLevels: {},
   },
   reducers: {
-    setNotePriority: (state, action: PayloadAction<{ noteId: string; priority: string }>) => {
-      state.notePriorities[action.payload.noteId] = action.payload.priority;
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags = [...state.tags, action.payload];
+      }
     },
-    setNoteDueDate: (state, action: PayloadAction<{ noteId: string; dueDate: string }>) => {
-      state.noteDueDates[action.payload.noteId] = action.payload.dueDate;
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter((tag) => tag !== action.payload);
     },
-    setNoteReminder: (state, action: PayloadAction<{ noteId: string; reminder: string }>) => {
-      state.noteReminders[action.payload.noteId] = action.payload.reminder;
+    updateTagInput(state, action: PayloadAction<string>) {
+      state.tagInput = action.payload;
+    },
+    updateTagSuggestions(state, action: PayloadAction<string[]>) {
+      state.tagSuggestions = action.payload;
+    },
+    filterNotesByTags(state, action: PayloadAction<string[]>) {
+      state.filteredNotes = state.notes.filter((note) => {
+        const noteTags = state.noteTagMap[note.id];
+        return action.payload.every((tag) => noteTags.includes(tag));
+      });
+    },
+    clearTagFilter(state) {
+      state.filteredNotes = [];
+    },
+    updateNoteTags(state, action: PayloadAction<{ noteId: string; tags: string[] }>) {
+      state.noteTagMap[action.payload.noteId] = action.payload.tags;
+    },
+    addNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
+      if (!state.noteTagMap[action.payload.noteId]) {
+        state.noteTagMap[action.payload.noteId] = [];
+      }
+      state.noteTagMap[action.payload.noteId].push(action.payload.tag);
+    },
+    removeNoteTag(state, action: PayloadAction<{ noteId: string; tag: string }>) {
+      if (state.noteTagMap[action.payload.noteId]) {
+        state.noteTagMap[action.payload.noteId] = state.noteTagMap[action.payload.noteId].filter((tag) => tag !== action.payload.tag);
+      }
     },
   },
 });
@@ -191,31 +215,92 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Use the store in the component
-function App() {
+// Define the component
+const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { notePriorities, noteDueDates, noteReminders } = useSelector((state: AppState) => state);
+  const { notes, tags, tagInput, tagSuggestions, filteredNotes, noteTagMap } = useSelector((state: AppState) => state);
+  const [isTagInputFocused, setIsTagInputFocused] = useState(false);
 
-  // Set note priority
-  const handleSetNotePriority = (noteId: string, priority: string) => {
-    dispatch(appSlice.actions.setNotePriority({ noteId, priority }));
+  useEffect(() => {
+    const handleTagInputFocus = () => {
+      setIsTagInputFocused(true);
+    };
+    const handleTagInputBlur = () => {
+      setIsTagInputFocused(false);
+    };
+    document.addEventListener('focus', handleTagInputFocus, true);
+    document.addEventListener('blur', handleTagInputBlur, true);
+    return () => {
+      document.removeEventListener('focus', handleTagInputFocus, true);
+      document.removeEventListener('blur', handleTagInputBlur, true);
+    };
+  }, []);
+
+  const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateTagInput(e.target.value));
+    const suggestions = tags.filter((tag) => tag.includes(e.target.value));
+    dispatch(updateTagSuggestions(suggestions));
   };
 
-  // Set note due date
-  const handleSetNoteDueDate = (noteId: string, dueDate: string) => {
-    dispatch(appSlice.actions.setNoteDueDate({ noteId, dueDate }));
+  const handleTagSelect = (tag: string) => {
+    dispatch(addTag(tag));
+    dispatch(updateTagInput(''));
+    dispatch(updateTagSuggestions([]));
   };
 
-  // Set note reminder
-  const handleSetNoteReminder = (noteId: string, reminder: string) => {
-    dispatch(appSlice.actions.setNoteReminder({ noteId, reminder }));
+  const handleNoteTagSelect = (noteId: string, tag: string) => {
+    dispatch(addNoteTag({ noteId, tag }));
+  };
+
+  const handleNoteTagRemove = (noteId: string, tag: string) => {
+    dispatch(removeNoteTag({ noteId, tag }));
+  };
+
+  const handleFilterNotesByTags = (tags: string[]) => {
+    dispatch(filterNotesByTags(tags));
+  };
+
+  const handleClearTagFilter = () => {
+    dispatch(clearTagFilter());
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      {/* Rest of the component code */}
-    </DndProvider>
+    <Provider store={store}>
+      <DndProvider backend={HTML5Backend}>
+        <div>
+          <h1>AutoNote: AI-Powered Note Taker</h1>
+          <input
+            type="text"
+            value={tagInput}
+            onChange={handleTagInput}
+            placeholder="Add tag"
+            onFocus={() => setIsTagInputFocused(true)}
+            onBlur={() => setIsTagInputFocused(false)}
+          />
+          {isTagInputFocused && tagSuggestions.length > 0 && (
+            <ul>
+              {tagSuggestions.map((suggestion) => (
+                <li key={suggestion} onClick={() => handleTagSelect(suggestion)}>
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          )}
+          <button onClick={() => handleFilterNotesByTags(tags)}>Filter notes by tags</button>
+          <button onClick={handleClearTagFilter}>Clear tag filter</button>
+          <div>
+            {filteredNotes.length > 0 ? (
+              filteredNotes.map((note) => (
+                <NoteCard key={note.id} note={note} tags={noteTagMap[note.id]} onTagSelect={handleNoteTagSelect} onTagRemove={handleNoteTagRemove} />
+              ))
+            ) : (
+              <p>No notes found</p>
+            )}
+          </div>
+        </div>
+      </DndProvider>
+    </Provider>
   );
-}
+};
 
-export default App;
+export default DashboardPage;
