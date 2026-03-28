@@ -150,32 +150,21 @@
   h6 {
     font-size: var(--font-size-h6);
   }
-}
 
-@layer components {
-  .screen-reader-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  img {
+    max-width: 100%;
+    height: auto;
   }
 
-  .screen-reader-text:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0.5rem;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-    background-color: var(--screen-reader-background-color);
-    color: var(--screen-reader-text-color);
-    font-size: var(--screen-reader-font-size);
+  @media (max-width: 768px) {
+    body {
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    body {
+      font-size: 0.8rem;
+    }
   }
 }

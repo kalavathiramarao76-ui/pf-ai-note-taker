@@ -88,6 +88,7 @@ interface AppState {
   notePriorities: { [key: string]: string };
   noteDueDates: { [key: string]: string };
   noteReminders: { [key: string]: string };
+  notePriorityLevels: { [key: string]: string[] };
 }
 
 // Define the reducer using createSlice
@@ -127,15 +128,15 @@ const appSlice = createSlice({
     tagSuggestions: [],
     socket: null,
     collaborators: [],
-    collaborativeEditorState: null,
-    noteVersions: null,
-    conflictResolution: null,
-    realTimeCollaboration: null,
-    folderNotes: null,
-    folderTags: null,
-    versionHistory: null,
-    collaborativeNotes: null,
-    folderStructure: null,
+    collaborativeEditorState: {},
+    noteVersions: {},
+    conflictResolution: {},
+    realTimeCollaboration: {},
+    folderNotes: {},
+    folderTags: {},
+    versionHistory: {},
+    collaborativeNotes: {},
+    folderStructure: {},
     noteSummaries: [],
     folderMap: {},
     draggedNote: null,
@@ -158,50 +159,26 @@ const appSlice = createSlice({
     tagInputValue: '',
     tagSuggestionsList: [],
     noteTagSuggestions: [],
-    aiModel: null,
+    aiModel: {},
     noteCompletion: '',
     notePriorities: {},
     noteDueDates: {},
     noteReminders: {},
+    notePriorityLevels: {
+      low: ['Low', 'Not Urgent'],
+      medium: ['Medium', 'Urgent'],
+      high: ['High', 'Very Urgent'],
+    },
   },
   reducers: {
-    addTag(state, action: PayloadAction<string>) {
-      if (!state.tags.includes(action.payload)) {
-        state.tags = [...state.tags, action.payload];
-      }
+    setNotePriority: (state, action: PayloadAction<{ noteId: string; priority: string }>) => {
+      state.notePriorities[action.payload.noteId] = action.payload.priority;
     },
-    removeTag(state, action: PayloadAction<string>) {
-      state.tags = state.tags.filter((tag) => tag !== action.payload);
+    setNoteDueDate: (state, action: PayloadAction<{ noteId: string; dueDate: string }>) => {
+      state.noteDueDates[action.payload.noteId] = action.payload.dueDate;
     },
-    updateTagInput(state, action: PayloadAction<string>) {
-      state.tagInput = action.payload;
-    },
-    updateTagSuggestions(state, action: PayloadAction<string[]>) {
-      state.tagSuggestions = action.payload;
-    },
-    filterNotesByTags(state, action: PayloadAction<string[]>) {
-      state.filteredNotes = state.notes.filter((note) => {
-        const noteTags = state.noteTagMap[note.id];
-        return action.payload.every((tag) => noteTags.includes(tag));
-      });
-    },
-    clearTagFilter(state) {
-      state.filteredNotes = [];
-    },
-    updateNoteTags(state, action: PayloadAction<{ noteId: string; tags: string[] }>) {
-      state.noteTagMap[action.payload.noteId] = action.payload.tags;
-    },
-    updateAvailableTags(state, action: PayloadAction<string[]>) {
-      state.availableTags = action.payload;
-    },
-    updateTagInputValue(state, action: PayloadAction<string>) {
-      state.tagInputValue = action.payload;
-    },
-    updateTagSuggestionsList(state, action: PayloadAction<string[]>) {
-      state.tagSuggestionsList = action.payload;
-    },
-    updateNoteTagSuggestions(state, action: PayloadAction<string[]>) {
-      state.noteTagSuggestions = action.payload;
+    setNoteReminder: (state, action: PayloadAction<{ noteId: string; reminder: string }>) => {
+      state.noteReminders[action.payload.noteId] = action.payload.reminder;
     },
   },
 });
@@ -214,184 +191,31 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Define the dashboard page
-const DashboardPage = () => {
+// Use the store in the component
+function App() {
   const dispatch = useDispatch();
-  const router = useRouter();
-  const {
-    notes,
-    meetings,
-    templates,
-    searchQuery,
-    generatedNotes,
-    folders,
-    selectedFolder,
-    editingNote,
-    sortedNotes,
-    sortedMeetings,
-    sortedTemplates,
-    filterType,
-    sortBy,
-    sortOrder,
-    filterByTags,
-    filterByDate,
-    aiSuggestions,
-    autocompleteSuggestions,
-    priority,
-    deadline,
-    noteTitle,
-    noteContent,
-    isGeneratingNote,
-    editorState,
-    quickNote,
-    isQuickNoteOpen,
-    tags,
-    selectedTags,
-    noteTags,
-    tagInput,
-    tagSuggestions,
-    socket,
-    collaborators,
-    collaborativeEditorState,
-    noteVersions,
-    conflictResolution,
-    realTimeCollaboration,
-    folderNotes,
-    folderTags,
-    versionHistory,
-    collaborativeNotes,
-    folderStructure,
-    noteSummaries,
-    folderMap,
-    draggedNote,
-    draggedOverFolder,
-    folderTree,
-    noteTagMap,
-    suggestedTags,
-    filteredNotes,
-    folderNotesMap,
-    noteFolderMap,
-    tagFilter,
-    folderName,
-    newFolderName,
-    isFolderOpen,
-    folderId,
-    folderTags,
-    subfolders,
-    folderTagsMap,
-    availableTags,
-    tagInputValue,
-    tagSuggestionsList,
-    noteTagSuggestions,
-    aiModel,
-    noteCompletion,
-    notePriorities,
-    noteDueDates,
-    noteReminders,
-  } = useSelector((state: any) => state.app);
+  const { notePriorities, noteDueDates, noteReminders } = useSelector((state: AppState) => state);
 
-  useEffect(() => {
-    // Initialize the available tags
-    dispatch(updateAvailableTags(['tag1', 'tag2', 'tag3']));
-  }, []);
-
-  const handleAddTag = (tag: string) => {
-    dispatch(addTag(tag));
+  // Set note priority
+  const handleSetNotePriority = (noteId: string, priority: string) => {
+    dispatch(appSlice.actions.setNotePriority({ noteId, priority }));
   };
 
-  const handleRemoveTag = (tag: string) => {
-    dispatch(removeTag(tag));
+  // Set note due date
+  const handleSetNoteDueDate = (noteId: string, dueDate: string) => {
+    dispatch(appSlice.actions.setNoteDueDate({ noteId, dueDate }));
   };
 
-  const handleUpdateTagInput = (tagInput: string) => {
-    dispatch(updateTagInput(tagInput));
-  };
-
-  const handleUpdateTagSuggestions = (tagSuggestions: string[]) => {
-    dispatch(updateTagSuggestions(tagSuggestions));
-  };
-
-  const handleFilterNotesByTags = (tags: string[]) => {
-    dispatch(filterNotesByTags(tags));
-  };
-
-  const handleClearTagFilter = () => {
-    dispatch(clearTagFilter());
-  };
-
-  const handleUpdateNoteTags = (noteId: string, tags: string[]) => {
-    dispatch(updateNoteTags({ noteId, tags }));
-  };
-
-  const handleUpdateTagInputValue = (tagInputValue: string) => {
-    dispatch(updateTagInputValue(tagInputValue));
-  };
-
-  const handleUpdateTagSuggestionsList = (tagSuggestionsList: string[]) => {
-    dispatch(updateTagSuggestionsList(tagSuggestionsList));
-  };
-
-  const handleUpdateNoteTagSuggestions = (noteTagSuggestions: string[]) => {
-    dispatch(updateNoteTagSuggestions(noteTagSuggestions));
+  // Set note reminder
+  const handleSetNoteReminder = (noteId: string, reminder: string) => {
+    dispatch(appSlice.actions.setNoteReminder({ noteId, reminder }));
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div>
-        <h1>AutoNote: AI-Powered Note Taker</h1>
-        <div>
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => handleUpdateTagInput(e.target.value)}
-            placeholder="Enter a tag"
-          />
-          <button onClick={() => handleAddTag(tagInput)}>Add Tag</button>
-          <ul>
-            {tags.map((tag) => (
-              <li key={tag}>
-                {tag}
-                <button onClick={() => handleRemoveTag(tag)}>Remove</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <input
-            type="text"
-            value={tagInputValue}
-            onChange={(e) => handleUpdateTagInputValue(e.target.value)}
-            placeholder="Enter a tag"
-          />
-          <ul>
-            {tagSuggestionsList.map((tag) => (
-              <li key={tag}>{tag}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <button onClick={() => handleFilterNotesByTags(selectedTags)}>Filter Notes</button>
-          <button onClick={handleClearTagFilter}>Clear Filter</button>
-          <ul>
-            {filteredNotes.map((note) => (
-              <li key={note.id}>
-                {note.title}
-                <ul>
-                  {noteTagMap[note.id].map((tag) => (
-                    <li key={tag}>{tag}</li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      {/* Rest of the component code */}
     </DndProvider>
   );
-};
+}
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+export default App;
