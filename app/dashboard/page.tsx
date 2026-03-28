@@ -93,6 +93,8 @@ interface AppState {
   collaborativeNoteId: string;
   collaborativeNoteContent: string;
   collaborativeNoteVersion: number;
+  tagAutoSuggestions: string[];
+  selectedNoteTags: string[];
 }
 
 // Define the reducer using createSlice
@@ -133,14 +135,14 @@ const appSlice = createSlice({
     socket: null,
     collaborators: [],
     collaborativeEditorState: null,
-    noteVersions: {},
+    noteVersions: null,
     conflictResolution: null,
     realTimeCollaboration: null,
-    folderNotes: {},
-    folderTags: {},
-    versionHistory: {},
-    collaborativeNotes: {},
-    folderStructure: {},
+    folderNotes: null,
+    folderTags: null,
+    versionHistory: null,
+    collaborativeNotes: null,
+    folderStructure: null,
     noteSummaries: [],
     folderMap: {},
     draggedNote: null,
@@ -173,243 +175,34 @@ const appSlice = createSlice({
     collaborativeNoteId: '',
     collaborativeNoteContent: '',
     collaborativeNoteVersion: 0,
-  },
+    tagAutoSuggestions: [],
+    selectedNoteTags: [],
+  } as AppState,
   reducers: {
-    setNotes(state, action: PayloadAction<{ [key: string]: any }>) {
-      state.notes = action.payload;
+    addTag(state, action: PayloadAction<string>) {
+      if (!state.tags.includes(action.payload)) {
+        state.tags = [...state.tags, action.payload];
+      }
     },
-    setMeetings(state, action: PayloadAction<{ [key: string]: any }>) {
-      state.meetings = action.payload;
+    removeTag(state, action: PayloadAction<string>) {
+      state.tags = state.tags.filter((tag) => tag !== action.payload);
     },
-    setTemplates(state, action: PayloadAction<{ [key: string]: any }>) {
-      state.templates = action.payload;
-    },
-    setSearchQuery(state, action: PayloadAction<string>) {
-      state.searchQuery = action.payload;
-    },
-    setGeneratedNotes(state, action: PayloadAction<any[]>) {
-      state.generatedNotes = action.payload;
-    },
-    setFolders(state, action: PayloadAction<any[]>) {
-      state.folders = action.payload;
-    },
-    setSelectedFolder(state, action: PayloadAction<any>) {
-      state.selectedFolder = action.payload;
-    },
-    setEditingNote(state, action: PayloadAction<any>) {
-      state.editingNote = action.payload;
-    },
-    setSortedNotes(state, action: PayloadAction<any[]>) {
-      state.sortedNotes = action.payload;
-    },
-    setSortedMeetings(state, action: PayloadAction<any[]>) {
-      state.sortedMeetings = action.payload;
-    },
-    setSortedTemplates(state, action: PayloadAction<any[]>) {
-      state.sortedTemplates = action.payload;
-    },
-    setFilterType(state, action: PayloadAction<string>) {
-      state.filterType = action.payload;
-    },
-    setSortBy(state, action: PayloadAction<string>) {
-      state.sortBy = action.payload;
-    },
-    setSortOrder(state, action: PayloadAction<string>) {
-      state.sortOrder = action.payload;
-    },
-    setFilterByTags(state, action: PayloadAction<any[]>) {
-      state.filterByTags = action.payload;
-    },
-    setFilterByDate(state, action: PayloadAction<string>) {
-      state.filterByDate = action.payload;
-    },
-    setAiSuggestions(state, action: PayloadAction<any[]>) {
-      state.aiSuggestions = action.payload;
-    },
-    setAutocompleteSuggestions(state, action: PayloadAction<any[]>) {
-      state.autocompleteSuggestions = action.payload;
-    },
-    setPriority(state, action: PayloadAction<string>) {
-      state.priority = action.payload;
-    },
-    setDeadline(state, action: PayloadAction<string>) {
-      state.deadline = action.payload;
-    },
-    setNoteTitle(state, action: PayloadAction<string>) {
-      state.noteTitle = action.payload;
-    },
-    setNoteContent(state, action: PayloadAction<string>) {
-      state.noteContent = action.payload;
-    },
-    setIsGeneratingNote(state, action: PayloadAction<boolean>) {
-      state.isGeneratingNote = action.payload;
-    },
-    setEditorState(state, action: PayloadAction<EditorState>) {
-      state.editorState = action.payload;
-    },
-    setQuickNote(state, action: PayloadAction<string>) {
-      state.quickNote = action.payload;
-    },
-    setIsQuickNoteOpen(state, action: PayloadAction<boolean>) {
-      state.isQuickNoteOpen = action.payload;
-    },
-    setTags(state, action: PayloadAction<any[]>) {
-      state.tags = action.payload;
-    },
-    setSelectedTags(state, action: PayloadAction<any[]>) {
-      state.selectedTags = action.payload;
-    },
-    setNoteTags(state, action: PayloadAction<any>) {
-      state.noteTags = action.payload;
-    },
-    setTagInput(state, action: PayloadAction<string>) {
+    updateTagInput(state, action: PayloadAction<string>) {
       state.tagInput = action.payload;
     },
-    setTagSuggestions(state, action: PayloadAction<any[]>) {
+    updateTagSuggestions(state, action: PayloadAction<string[]>) {
       state.tagSuggestions = action.payload;
     },
-    setSocket(state, action: PayloadAction<Socket | null>) {
-      state.socket = action.payload;
+    updateTagAutoSuggestions(state, action: PayloadAction<string[]>) {
+      state.tagAutoSuggestions = action.payload;
     },
-    setCollaborators(state, action: PayloadAction<any[]>) {
-      state.collaborators = action.payload;
+    updateSelectedNoteTags(state, action: PayloadAction<string[]>) {
+      state.selectedNoteTags = action.payload;
     },
-    setCollaborativeEditorState(state, action: PayloadAction<any>) {
-      state.collaborativeEditorState = action.payload;
-    },
-    setNoteVersions(state, action: PayloadAction<any>) {
-      state.noteVersions = action.payload;
-    },
-    setConflictResolution(state, action: PayloadAction<any>) {
-      state.conflictResolution = action.payload;
-    },
-    setRealTimeCollaboration(state, action: PayloadAction<any>) {
-      state.realTimeCollaboration = action.payload;
-    },
-    setFolderNotes(state, action: PayloadAction<any>) {
-      state.folderNotes = action.payload;
-    },
-    setFolderTags(state, action: PayloadAction<any>) {
-      state.folderTags = action.payload;
-    },
-    setVersionHistory(state, action: PayloadAction<any>) {
-      state.versionHistory = action.payload;
-    },
-    setCollaborativeNotes(state, action: PayloadAction<any>) {
-      state.collaborativeNotes = action.payload;
-    },
-    setFolderStructure(state, action: PayloadAction<any>) {
-      state.folderStructure = action.payload;
-    },
-    setNoteSummaries(state, action: PayloadAction<any[]>) {
-      state.noteSummaries = action.payload;
-    },
-    setFolderMap(state, action: PayloadAction<{ [key: string]: any }>) {
-      state.folderMap = action.payload;
-    },
-    setDraggedNote(state, action: PayloadAction<any>) {
-      state.draggedNote = action.payload;
-    },
-    setDraggedOverFolder(state, action: PayloadAction<any>) {
-      state.draggedOverFolder = action.payload;
-    },
-    setFolderTree(state, action: PayloadAction<any[]>) {
-      state.folderTree = action.payload;
-    },
-    setNoteTagMap(state, action: PayloadAction<{ [key: string]: string[] }>) {
-      state.noteTagMap = action.payload;
-    },
-    setSuggestedTags(state, action: PayloadAction<any[]>) {
-      state.suggestedTags = action.payload;
-    },
-    setFilteredNotes(state, action: PayloadAction<any[]>) {
-      state.filteredNotes = action.payload;
-    },
-    setFolderNotesMap(state, action: PayloadAction<{ [key: string]: any[] }>) {
-      state.folderNotesMap = action.payload;
-    },
-    setNoteFolderMap(state, action: PayloadAction<{ [key: string]: string }>) {
-      state.noteFolderMap = action.payload;
-    },
-    setTagFilter(state, action: PayloadAction<string>) {
-      state.tagFilter = action.payload;
-    },
-    setFolderName(state, action: PayloadAction<string>) {
-      state.folderName = action.payload;
-    },
-    setNewFolderName(state, action: PayloadAction<string>) {
-      state.newFolderName = action.payload;
-    },
-    setIsFolderOpen(state, action: PayloadAction<boolean>) {
-      state.isFolderOpen = action.payload;
-    },
-    setFolderId(state, action: PayloadAction<string>) {
-      state.folderId = action.payload;
-    },
-    setFolderTags(state, action: PayloadAction<any[]>) {
-      state.folderTags = action.payload;
-    },
-    setSubfolders(state, action: PayloadAction<any[]>) {
-      state.subfolders = action.payload;
-    },
-    setFolderTagsMap(state, action: PayloadAction<{ [key: string]: string[] }>) {
-      state.folderTagsMap = action.payload;
-    },
-    setAvailableTags(state, action: PayloadAction<string[]>) {
-      state.availableTags = action.payload;
-    },
-    setTagInputValue(state, action: PayloadAction<string>) {
-      state.tagInputValue = action.payload;
-    },
-    setTagSuggestionsList(state, action: PayloadAction<string[]>) {
-      state.tagSuggestionsList = action.payload;
-    },
-    setNoteTagSuggestions(state, action: PayloadAction<string[]>) {
-      state.noteTagSuggestions = action.payload;
-    },
-    setAiModel(state, action: PayloadAction<any>) {
-      state.aiModel = action.payload;
-    },
-    setNoteCompletion(state, action: PayloadAction<string>) {
-      state.noteCompletion = action.payload;
-    },
-    setNotePriorities(state, action: PayloadAction<{ [key: string]: string }>) {
-      state.notePriorities = action.payload;
-    },
-    setNoteDueDates(state, action: PayloadAction<{ [key: string]: string }>) {
-      state.noteDueDates = action.payload;
-    },
-    setNoteReminders(state, action: PayloadAction<{ [key: string]: string }>) {
-      state.noteReminders = action.payload;
-    },
-    setNotePriorityLevels(state, action: PayloadAction<{ [key: string]: string[] }>) {
-      state.notePriorityLevels = action.payload;
-    },
-    setNoteTagSuggestionsMap(state, action: PayloadAction<{ [key: string]: string[] }>) {
-      state.noteTagSuggestionsMap = action.payload;
-    },
-    setCollaborativeNoteId(state, action: PayloadAction<string>) {
-      state.collaborativeNoteId = action.payload;
-    },
-    setCollaborativeNoteContent(state, action: PayloadAction<string>) {
-      state.collaborativeNoteContent = action.payload;
-    },
-    setCollaborativeNoteVersion(state, action: PayloadAction<number>) {
-      state.collaborativeNoteVersion = action.payload;
-    },
-    // New reducer for real-time collaboration
-    updateCollaborativeNote(state, action: PayloadAction<{ noteId: string, content: string, version: number }>) {
-      const { noteId, content, version } = action.payload;
-      if (state.collaborativeNotes[noteId]) {
-        if (version > state.collaborativeNotes[noteId].version) {
-          state.collaborativeNotes[noteId] = { content, version };
-        } else {
-          // Handle conflict resolution
-          state.conflictResolution = { noteId, content, version };
-        }
-      } else {
-        state.collaborativeNotes[noteId] = { content, version };
-      }
+    filterNotesByTags(state, action: PayloadAction<string[]>) {
+      state.filteredNotes = state.notes.filter((note) => {
+        return action.payload.every((tag) => note.tags.includes(tag));
+      });
     },
   },
 });
@@ -422,78 +215,109 @@ const store = configureStore({
   middleware: [thunk],
 });
 
-// Create a socket connection for real-time collaboration
-const socket = new Socket('https://example.com');
-
-// Establish a connection to the server
-socket.on('connect', () => {
-  console.log('Connected to the server');
-});
-
-// Handle incoming messages from the server
-socket.on('message', (message) => {
-  console.log('Received message from the server:', message);
-  if (message.type === 'updateCollaborativeNote') {
-    store.dispatch(appSlice.actions.updateCollaborativeNote(message.data));
-  }
-});
-
-// Send messages to the server
-const sendMessage = (message) => {
-  socket.emit('message', message);
-};
-
-// Use the store and socket in the component
+// Define the component
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { collaborativeNotes, conflictResolution } = useSelector((state: AppState) => state);
+  const {
+    notes,
+    tags,
+    tagInput,
+    tagSuggestions,
+    tagAutoSuggestions,
+    selectedNoteTags,
+    filteredNotes,
+  } = useSelector((state: { app: AppState }) => state.app);
 
-  useEffect(() => {
-    // Initialize the collaborative notes
-    dispatch(appSlice.actions.setCollaborativeNotes({}));
+  const handleAddTag = (tag: string) => {
+    dispatch(appSlice.actions.addTag(tag));
+  };
 
-    // Establish a connection to the server
-    socket.on('connect', () => {
-      console.log('Connected to the server');
-    });
+  const handleRemoveTag = (tag: string) => {
+    dispatch(appSlice.actions.removeTag(tag));
+  };
 
-    // Handle incoming messages from the server
-    socket.on('message', (message) => {
-      console.log('Received message from the server:', message);
-      if (message.type === 'updateCollaborativeNote') {
-        dispatch(appSlice.actions.updateCollaborativeNote(message.data));
-      }
-    });
-  }, []);
+  const handleUpdateTagInput = (tagInput: string) => {
+    dispatch(appSlice.actions.updateTagInput(tagInput));
+  };
 
-  const handleNoteChange = (noteId, content, version) => {
-    // Send the updated note to the server
-    sendMessage({ type: 'updateCollaborativeNote', data: { noteId, content, version } });
+  const handleUpdateTagSuggestions = (tagSuggestions: string[]) => {
+    dispatch(appSlice.actions.updateTagSuggestions(tagSuggestions));
+  };
+
+  const handleUpdateTagAutoSuggestions = (tagAutoSuggestions: string[]) => {
+    dispatch(appSlice.actions.updateTagAutoSuggestions(tagAutoSuggestions));
+  };
+
+  const handleUpdateSelectedNoteTags = (selectedNoteTags: string[]) => {
+    dispatch(appSlice.actions.updateSelectedNoteTags(selectedNoteTags));
+  };
+
+  const handleFilterNotesByTags = (tags: string[]) => {
+    dispatch(appSlice.actions.filterNotesByTags(tags));
   };
 
   return (
     <div>
-      <h1>Dashboard Page</h1>
-      <NoteCard
-        noteId="example-note"
-        content="This is an example note"
-        version={1}
-        onChange={handleNoteChange}
+      <h1>AutoNote: AI-Powered Note Taker</h1>
+      <input
+        type="text"
+        value={tagInput}
+        onChange={(e) => handleUpdateTagInput(e.target.value)}
+        placeholder="Add a tag"
       />
-      {conflictResolution && (
-        <div>
-          <h2>Conflict Resolution</h2>
-          <p>
-            There is a conflict with note {conflictResolution.noteId}. Please resolve the conflict by
-            selecting one of the versions.
-          </p>
-          <button onClick={() => dispatch(appSlice.actions.setConflictResolution(null))}>
-            Resolve Conflict
-          </button>
-        </div>
-      )}
+      <ul>
+        {tags.map((tag) => (
+          <li key={tag}>
+            {tag}
+            <button onClick={() => handleRemoveTag(tag)}>Remove</button>
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {tagSuggestions.map((suggestion) => (
+          <li key={suggestion}>
+            {suggestion}
+            <button onClick={() => handleAddTag(suggestion)}>Add</button>
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {tagAutoSuggestions.map((suggestion) => (
+          <li key={suggestion}>
+            {suggestion}
+            <button onClick={() => handleAddTag(suggestion)}>Add</button>
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {selectedNoteTags.map((tag) => (
+          <li key={tag}>
+            {tag}
+            <button onClick={() => handleRemoveTag(tag)}>Remove</button>
+          </li>
+        ))}
+      </ul>
+      <button onClick={() => handleFilterNotesByTags(selectedNoteTags)}>
+        Filter Notes
+      </button>
+      <ul>
+        {filteredNotes.map((note) => (
+          <li key={note.id}>
+            {note.title}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default DashboardPage;
+// Render the component
+const App = () => {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
+    </Provider>
+  );
+};
+
+export default App;

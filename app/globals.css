@@ -136,48 +136,97 @@
   .rounded-lg {
     border-radius: var(--border-radius-lg);
   }
+
+  a {
+    text-decoration: none;
+    color: var(--primary-color);
+  }
+
+  a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    html {
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    html {
+      font-size: 0.75rem;
+    }
+  }
 }
 
-/* Optimize images and fonts */
-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+@layer components {
+  .btn {
+    display: inline-block;
+    padding: var(--padding-sm);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-color);
+    background-color: var(--primary-color);
+  }
+
+  .btn:hover {
+    background-color: var(--primary-color);
+    opacity: 0.8;
+  }
+
+  .btn:active {
+    transform: translateY(2px);
+  }
 }
 
-/* Minify and compress CSS */
-/* Use a preprocessor like Sass or Less to minify and compress CSS */
+@layer utilities {
+  .flex {
+    display: flex;
+  }
 
-/* Leverage browser caching */
-/* Add a cache-control header to the server response */
+  .justify-center {
+    justify-content: center;
+  }
 
-/* Optimize server response time */
-/* Use a fast server and optimize database queries */
+  .items-center {
+    align-items: center;
+  }
 
-/* Use a content delivery network (CDN) */
-/* Serve static assets from a CDN */
+  .text-center {
+    text-align: center;
+  }
 
-/* Avoid inline styles and JavaScript */
-/* Use external stylesheets and scripts */
+  .mt-4 {
+    margin-top: 1rem;
+  }
 
-/* Use semantic HTML */
-/* Use header, nav, main, section, article, aside, footer, etc. */
+  .mb-4 {
+    margin-bottom: 1rem;
+  }
 
-/* Optimize images */
-/* Use image compression tools like TinyPNG or ImageOptim */
+  .mx-4 {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
 
-/* Use lazy loading */
-/* Load images and scripts only when needed */
+  .px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 
-/* Avoid too many HTTP requests */
-/* Use CSS sprites or combine scripts and stylesheets */
-
-/* Use a fast and efficient font */
-/* Use a font like Inter or Open Sans */
-
-/* Optimize for mobile devices */
-/* Use a mobile-first approach and optimize for small screens */
-
-/* Use accessibility features */
-/* Use ARIA attributes and semantic HTML to improve accessibility */
+  .py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
