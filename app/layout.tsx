@@ -80,52 +80,35 @@ const Nav = memo(() => {
   }, [highContrastMode]);
 
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = memo(() => {
-    return (
-      <form>
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-        />
-      </form>
-    );
-  });
+  const SearchBar = lazy(() => import('./SearchBar'));
 
-  const NavigationMenu = memo(() => {
-    return (
-      <ul className="nav-menu">
+  return (
+    <nav className="nav" aria-label="Main navigation">
+      <button
+        className="nav-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        onClick={toggleNav}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul className="nav-menu" role="menu">
         {filteredLinks.map((link) => (
-          <li key={link.href}>
+          <li key={link.href} role="menuitem">
             <Link href={link.href}>{link.text}</Link>
           </li>
         ))}
       </ul>
-    );
-  });
-
-  return (
-    <nav>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
-      <button onClick={toggleNav}>
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchBar handleSearch={handleSearch} searchQuery={searchQuery} />
+      </Suspense>
+      <button
+        className="nav-high-contrast-mode"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
       </button>
-      {navOpen && (
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <SearchBar />
-          <NavigationMenu />
-          <button onClick={handleHighContrastMode}>
-            {highContrastMode ? 'Disable High Contrast Mode' : 'Enable High Contrast Mode'}
-          </button>
-        </motion.div>
-      )}
     </nav>
   );
 });

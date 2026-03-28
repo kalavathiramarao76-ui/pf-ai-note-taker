@@ -150,8 +150,10 @@
   h6 {
     font-size: var(--font-size-h6);
   }
+}
 
-  .sr-only {
+@layer components {
+  .screen-reader-text {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -163,7 +165,7 @@
     border: 0;
   }
 
-  .sr-only:focus {
+  .screen-reader-text:focus {
     position: static;
     width: auto;
     height: auto;
@@ -175,23 +177,5 @@
     background-color: var(--screen-reader-background-color);
     color: var(--screen-reader-text-color);
     font-size: var(--screen-reader-font-size);
-  }
-
-  @media (prefers-contrast: high) {
-    :root {
-      --background-color: var(--high-contrast-background-color);
-      --text-color: var(--high-contrast-text-color);
-      --primary-color: var(--high-contrast-primary-color);
-      --secondary-color: var(--high-contrast-secondary-color);
-      --screen-reader-text-color: var(--high-contrast-screen-reader-text-color);
-      --screen-reader-background-color: var(--high-contrast-screen-reader-background-color);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation: none;
-      transition: none;
-    }
   }
 }
