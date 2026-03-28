@@ -81,54 +81,37 @@ const Nav = memo(() => {
 
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
+  const HighContrastToggle = lazy(() => import('./HighContrastToggle'));
 
   return (
-    <nav
-      aria-label="Main navigation"
-      role="navigation"
-      className="nav"
-      onKeyDown={handleKeyDown}
-    >
-      <button
-        type="button"
-        aria-label="Toggle navigation"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
-        className="nav-toggle"
-        onClick={toggleNav}
-      >
+    <nav>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <button onClick={toggleNav}>
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul
-        id="nav-menu"
-        role="menu"
-        aria-hidden={!navOpen}
-        className={`nav-menu ${navOpen ? 'open' : ''}`}
-      >
-        {filteredLinks.map((link, index) => (
-          <li key={index} role="menuitem">
-            <Link href={link.href} onClick={toggleNav}>
-              {link.text}
-            </Link>
-          </li>
-        ))}
-      </ul>
       <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-          aria-label="Search"
-        />
+        {navOpen && (
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="nav-menu"
+          >
+            <Menu links={filteredLinks} />
+            <SearchBar
+              value={searchQuery}
+              onChange={handleSearch}
+              onKeyDown={handleKeyDown}
+            />
+            <HighContrastToggle
+              checked={highContrastMode}
+              onChange={handleHighContrastMode}
+            />
+          </motion.div>
+        )}
       </Suspense>
-      <button
-        type="button"
-        aria-label="Toggle high contrast mode"
-        className="high-contrast-mode-toggle"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
     </nav>
   );
 });

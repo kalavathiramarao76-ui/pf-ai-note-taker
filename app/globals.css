@@ -29,6 +29,14 @@
   --high-contrast-screen-reader-text-color: #000;
   --high-contrast-screen-reader-background-color: #fff;
   --screen-reader-font-size: 1.2rem;
+  --dark-mode-font-family: 'Inter', sans-serif;
+  --high-contrast-font-family: 'Inter', sans-serif;
+  --dark-mode-font-size: 1rem;
+  --high-contrast-font-size: 1rem;
+  --dark-mode-line-height: 1.8;
+  --high-contrast-line-height: 1.8;
+  --dark-mode-heading-color: #66d9ef;
+  --high-contrast-heading-color: #ff69b4;
 }
 
 :root.dark-mode {
@@ -36,6 +44,9 @@
   --text-color: var(--dark-mode-text-color);
   --primary-color: var(--dark-mode-primary-color);
   --secondary-color: var(--dark-mode-secondary-color);
+  --font-family: var(--dark-mode-font-family);
+  --font-size-base: var(--dark-mode-font-size);
+  --line-height: var(--dark-mode-line-height);
 }
 
 :root.high-contrast {
@@ -45,6 +56,9 @@
   --secondary-color: var(--high-contrast-secondary-color);
   --screen-reader-text-color: var(--high-contrast-screen-reader-text-color);
   --screen-reader-background-color: var(--high-contrast-screen-reader-background-color);
+  --font-family: var(--high-contrast-font-family);
+  --font-size-base: var(--high-contrast-font-size);
+  --line-height: var(--high-contrast-line-height);
 }
 
 @layer base {
@@ -79,7 +93,7 @@
   body {
     @apply bg-var(--background-color) text-var(--text-color);
     font-family: var(--font-family);
-    line-height: 1.8;
+    line-height: var(--line-height, 1.8);
     margin: 0;
     padding: 0;
     font-size: var(--font-size-base);
@@ -129,53 +143,31 @@
 
   h1 {
     font-size: var(--font-size-h1);
+    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
   }
 
   h2 {
     font-size: var(--font-size-h2);
+    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
   }
 
   h3 {
     font-size: var(--font-size-h3);
+    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
   }
 
   h4 {
     font-size: var(--font-size-h4);
+    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
   }
 
   h5 {
     font-size: var(--font-size-h5);
+    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
   }
 
   h6 {
     font-size: var(--font-size-h6);
-  }
-
-  meta[name="description"] {
-    content: "AutoNote: AI-Powered Note Taker is a tool for taking notes with AI assistance";
-  }
-
-  meta[name="keywords"] {
-    content: "AutoNote, AI-Powered Note Taker, note taking, AI assistance";
-  }
-
-  meta[name="robots"] {
-    content: "index, follow";
-  }
-
-  meta[name="viewport"] {
-    content: "width=device-width, initial-scale=1.0";
-  }
-
-  meta[name="theme-color"] {
-    content: var(--primary-color);
-  }
-
-  link[rel="icon"] {
-    href: "/favicon.ico";
-  }
-
-  link[rel="apple-touch-icon"] {
-    href: "/apple-touch-icon.png";
+    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
   }
 }
