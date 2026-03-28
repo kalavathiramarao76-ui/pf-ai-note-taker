@@ -81,37 +81,37 @@ const Nav = memo(() => {
 
   const Menu = lazy(() => import('./Menu'));
   const SearchBar = lazy(() => import('./SearchBar'));
-  const HighContrastToggle = lazy(() => import('./HighContrastToggle'));
 
   return (
     <nav>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <button onClick={toggleNav}>
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <Suspense fallback={<div>Loading...</div>}>
-        {navOpen && (
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="nav-menu"
-          >
+      <div className="nav-container">
+        <Link href="/">
+          <a>
+            <h1>AutoNote</h1>
+          </a>
+        </Link>
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+        <Suspense fallback={<div>Loading...</div>}>
+          {navOpen && (
             <Menu links={filteredLinks} />
-            <SearchBar
-              value={searchQuery}
-              onChange={handleSearch}
-              onKeyDown={handleKeyDown}
-            />
-            <HighContrastToggle
-              checked={highContrastMode}
-              onChange={handleHighContrastMode}
-            />
-          </motion.div>
-        )}
-      </Suspense>
+          )}
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search"
+          />
+        </Suspense>
+        <button className="high-contrast-mode-toggle" onClick={handleHighContrastMode}>
+          High Contrast Mode
+        </button>
+      </div>
     </nav>
   );
 });

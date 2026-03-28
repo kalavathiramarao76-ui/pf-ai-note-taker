@@ -37,6 +37,10 @@
   --high-contrast-line-height: 1.8;
   --dark-mode-heading-color: #66d9ef;
   --high-contrast-heading-color: #ff69b4;
+  --dark-mode-code-color: #8bc34a;
+  --high-contrast-code-color: #33cc33;
+  --dark-mode-blockquote-color: #455a64;
+  --high-contrast-blockquote-color: #ff69b4;
 }
 
 :root.dark-mode {
@@ -47,6 +51,9 @@
   --font-family: var(--dark-mode-font-family);
   --font-size-base: var(--dark-mode-font-size);
   --line-height: var(--dark-mode-line-height);
+  --heading-color: var(--dark-mode-heading-color);
+  --code-color: var(--dark-mode-code-color);
+  --blockquote-color: var(--dark-mode-blockquote-color);
 }
 
 :root.high-contrast {
@@ -59,6 +66,9 @@
   --font-family: var(--high-contrast-font-family);
   --font-size-base: var(--high-contrast-font-size);
   --line-height: var(--high-contrast-line-height);
+  --heading-color: var(--high-contrast-heading-color);
+  --code-color: var(--high-contrast-code-color);
+  --blockquote-color: var(--high-contrast-blockquote-color);
 }
 
 @layer base {
@@ -99,75 +109,15 @@
     font-size: var(--font-size-base);
   }
 
-  header {
-    role: "banner";
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--heading-color);
   }
 
-  nav {
-    role: "navigation";
+  code {
+    color: var(--code-color);
   }
 
-  main {
-    role: "main";
-  }
-
-  section {
-    role: "region";
-  }
-
-  article {
-    role: "article";
-  }
-
-  aside {
-    role: "complementary";
-  }
-
-  footer {
-    role: "contentinfo";
-  }
-
-  a {
-    @apply text-blue-500 hover:text-blue-700;
-    text-decoration: none;
-  }
-
-  a[role="link"] {
-    aria-label: "Link to AutoNote: AI-Powered Note Taker, a tool for taking notes with AI assistance";
-  }
-
-  a:focus {
-    @apply outline-none;
-    box-shadow: 0 0 0 2px var(--focus-color);
-  }
-
-  h1 {
-    font-size: var(--font-size-h1);
-    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
-  }
-
-  h2 {
-    font-size: var(--font-size-h2);
-    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
-  }
-
-  h3 {
-    font-size: var(--font-size-h3);
-    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
-  }
-
-  h4 {
-    font-size: var(--font-size-h4);
-    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
-  }
-
-  h5 {
-    font-size: var(--font-size-h5);
-    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
-  }
-
-  h6 {
-    font-size: var(--font-size-h6);
-    color: var(--dark-mode-heading-color, var(--high-contrast-heading-color, var(--primary-color)));
+  blockquote {
+    color: var(--blockquote-color);
   }
 }
