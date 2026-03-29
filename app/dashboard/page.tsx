@@ -128,8 +128,8 @@ const noteSlice = createSlice({
     noteTagSuggestionsMap: {},
     noteTags: [],
     noteVersions: {},
-    conflictResolution: {},
-    realTimeCollaboration: {},
+    conflictResolution: null,
+    realTimeCollaboration: null,
     collaborativeNotes: {},
     noteSummaries: [],
   } as NoteState,
@@ -143,55 +143,48 @@ const noteSlice = createSlice({
     deleteNote(state, action: PayloadAction<string>) {
       delete state.notes[action.payload];
     },
-    addTagToNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      if (!state.noteTagMap[action.payload.noteId]) {
-        state.noteTagMap[action.payload.noteId] = [];
-      }
-      state.noteTagMap[action.payload.noteId].push(action.payload.tag);
+    addFolder(state, action: PayloadAction<string>) {
+      state.folderNotesMap[action.payload] = [];
     },
-    removeTagFromNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      if (state.noteTagMap[action.payload.noteId]) {
-        state.noteTagMap[action.payload.noteId] = state.noteTagMap[action.payload.noteId].filter((tag) => tag !== action.payload.tag);
-      }
+    addNoteToFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
+      state.folderNotesMap[action.payload.folderId].push(action.payload.noteId);
+      state.noteFolderMap[action.payload.noteId] = action.payload.folderId;
+    },
+    removeNoteFromFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
+      state.folderNotesMap[action.payload.folderId] = state.folderNotesMap[action.payload.folderId].filter((id) => id !== action.payload.noteId);
+      delete state.noteFolderMap[action.payload.noteId];
     },
   },
 });
 
-const tagSlice = createSlice({
-  name: 'tags',
+const folderSlice = createSlice({
+  name: 'folders',
   initialState: {
-    tags: [],
-    selectedTags: [],
-    tagInput: '',
-    tagSuggestions: [],
-    suggestedTags: [],
-    availableTags: [],
-    tagInputValue: '',
-    tagSuggestionsList: [],
-    noteTagSuggestions: [],
-    tagAutoSuggestions: [],
-    selectedNoteTags: {},
-  } as TagState,
+    folders: [],
+    selectedFolder: null,
+    folderTags: {},
+    folderTagsMap: {},
+    subfolders: [],
+    folderName: '',
+    newFolderName: '',
+    isFolderOpen: false,
+    folderId: '',
+    folderTree: [],
+  } as FolderState,
   reducers: {
-    addTag(state, action: PayloadAction<string>) {
-      if (!state.tags.includes(action.payload)) {
-        state.tags.push(action.payload);
-      }
+    addFolder(state, action: PayloadAction<string>) {
+      state.folders.push(action.payload);
     },
-    removeTag(state, action: PayloadAction<string>) {
-      state.tags = state.tags.filter((tag) => tag !== action.payload);
+    selectFolder(state, action: PayloadAction<string>) {
+      state.selectedFolder = action.payload;
     },
-    updateTagInput(state, action: PayloadAction<string>) {
-      state.tagInput = action.payload;
+    addSubfolder(state, action: PayloadAction<{ folderId: string; subfolderId: string }>) {
+      state.subfolders.push(action.payload.subfolderId);
+      state.folderTree.push({ id: action.payload.subfolderId, parentId: action.payload.folderId });
     },
-    updateTagSuggestions(state, action: PayloadAction<string[]>) {
-      state.tagSuggestions = action.payload;
-    },
-    updateSelectedTags(state, action: PayloadAction<string[]>) {
-      state.selectedTags = action.payload;
-    },
-    updateNoteTagSuggestions(state, action: PayloadAction<{ noteId: string; suggestions: string[] }>) {
-      state.noteTagSuggestions[action.payload.noteId] = action.payload.suggestions;
+    removeSubfolder(state, action: PayloadAction<{ folderId: string; subfolderId: string }>) {
+      state.subfolders = state.subfolders.filter((id) => id !== action.payload.subfolderId);
+      state.folderTree = state.folderTree.filter((folder) => folder.id !== action.payload.subfolderId);
     },
   },
 });
@@ -199,7 +192,7 @@ const tagSlice = createSlice({
 const store = configureStore({
   reducer: {
     notes: noteSlice.reducer,
-    tags: tagSlice.reducer,
+    folders: folderSlice.reducer,
   },
   middleware: [thunk],
 });
@@ -207,42 +200,40 @@ const store = configureStore({
 const DashboardPage = () => {
   const dispatch = useDispatch();
   const notes = useSelector((state: any) => state.notes);
-  const tags = useSelector((state: any) => state.tags);
+  const folders = useSelector((state: any) => state.folders);
   const [draggingNote, setDraggingNote] = useState(null);
-  const [droppedNote, setDroppedNote] = useState(null);
+  const [draggingFolder, setDraggingFolder] = useState(null);
 
   useEffect(() => {
-    client.get('/notes').then((response) => {
-      dispatch(noteSlice.actions.addNote(response.data));
-    });
+    // Initialize notes and folders
   }, []);
 
-  const handleDragStart = (note: any) => {
-    setDraggingNote(note);
+  const handleDragStart = (noteId: string) => {
+    setDraggingNote(noteId);
   };
 
   const handleDragEnd = () => {
     setDraggingNote(null);
   };
 
-  const handleDrop = (note: any) => {
-    setDroppedNote(note);
-    if (draggingNote && droppedNote) {
-      // Update note tags
-      dispatch(noteSlice.actions.addTagToNote({ noteId: draggingNote.id, tag: droppedNote.tag }));
+  const handleDrop = (folderId: string) => {
+    if (draggingNote) {
+      dispatch(noteSlice.actions.addNoteToFolder({ noteId: draggingNote, folderId }));
     }
   };
 
-  const handleTagInput = (event: any) => {
-    dispatch(tagSlice.actions.updateTagInput(event.target.value));
-    // Get tag suggestions
-    client.get('/tags/suggestions', { params: { query: event.target.value } }).then((response) => {
-      dispatch(tagSlice.actions.updateTagSuggestions(response.data));
-    });
+  const handleFolderDragStart = (folderId: string) => {
+    setDraggingFolder(folderId);
   };
 
-  const handleTagSelect = (event: any, value: any) => {
-    dispatch(tagSlice.actions.updateSelectedTags(value));
+  const handleFolderDragEnd = () => {
+    setDraggingFolder(null);
+  };
+
+  const handleFolderDrop = (folderId: string) => {
+    if (draggingFolder) {
+      dispatch(folderSlice.actions.addSubfolder({ folderId, subfolderId: draggingFolder }));
+    }
   };
 
   return (
@@ -250,23 +241,21 @@ const DashboardPage = () => {
       <div>
         <h1>Notes</h1>
         <ul>
-          {Object.values(notes.notes).map((note: any) => (
-            <DraggableNoteCard key={note.id} note={note} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+          {Object.keys(notes.notes).map((noteId) => (
+            <DraggableNoteCard key={noteId} noteId={noteId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
           ))}
         </ul>
-        <h1>Tags</h1>
-        <Autocomplete
-          options={tags.tags}
-          value={tags.selectedTags}
-          onChange={handleTagSelect}
-          renderInput={(params) => (
-            <TextField {...params} label="Tags" onChange={handleTagInput} />
-          )}
-        />
-        <h1>Tag Suggestions</h1>
+        <h1>Folders</h1>
         <ul>
-          {tags.tagSuggestions.map((suggestion: any) => (
-            <li key={suggestion}>{suggestion}</li>
+          {folders.folders.map((folderId) => (
+            <div key={folderId} onDragStart={() => handleFolderDragStart(folderId)} onDragEnd={handleFolderDragEnd} onDrop={() => handleFolderDrop(folderId)}>
+              <span>{folderId}</span>
+              <ul>
+                {folders.subfolders.map((subfolderId) => (
+                  <li key={subfolderId}>{subfolderId}</li>
+                ))}
+              </ul>
+            </div>
           ))}
         </ul>
       </div>
@@ -274,12 +263,8 @@ const DashboardPage = () => {
   );
 };
 
-const App = () => {
-  return (
-    <Provider store={store}>
-      <DashboardPage />
-    </Provider>
-  );
-};
-
-export default App;
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);
