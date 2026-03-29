@@ -112,37 +112,50 @@
     color: var(--text-color);
     padding: var(--padding-md);
     border-bottom: 1px solid var(--secondary-color);
-    box-shadow: var(--box-shadow-sm);
   }
 
-  main {
-    role: "main";
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: var(--padding-md);
+  header, nav, main, section, article, aside, footer {
+    role: "navigation", "main", "region", "article", "complementary", "contentinfo";
   }
 
-  nav {
-    role: "navigation";
+  a {
+    text-decoration: none;
+    color: var(--primary-color);
+  }
+
+  a:hover {
+    color: var(--dark-mode-primary-color);
+  }
+
+  button {
+    cursor: pointer;
     background-color: var(--primary-color);
     color: var(--text-color);
+    border: none;
     padding: var(--padding-sm);
-    border-bottom: 1px solid var(--secondary-color);
-    box-shadow: var(--box-shadow-sm);
+    font-size: var(--font-size-base);
+    border-radius: var(--border-radius-sm);
   }
 
-  footer {
-    role: "contentinfo";
-    background-color: var(--primary-color);
-    color: var(--text-color);
+  button:hover {
+    background-color: var(--dark-mode-primary-color);
+  }
+
+  input[type="text"], input[type="email"], input[type="password"] {
     padding: var(--padding-sm);
-    border-top: 1px solid var(--secondary-color);
-    box-shadow: var(--box-shadow-sm);
+    font-size: var(--font-size-base);
+    border: 1px solid var(--secondary-color);
+    border-radius: var(--border-radius-sm);
+  }
+
+  label {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--padding-sm);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
+    font-family: var(--font-family);
+    color: var(--text-color);
     margin-bottom: var(--padding-sm);
   }
 
@@ -170,85 +183,64 @@
     font-size: var(--font-size-h6);
   }
 
-  a {
-    text-decoration: none;
-    color: var(--primary-color);
-  }
-
-  a:hover {
-    color: var(--secondary-color);
-  }
-
-  button {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    border: none;
-    padding: var(--padding-sm);
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-  }
-
-  button:hover {
-    background-color: var(--secondary-color);
-  }
-
-  input, textarea {
-    padding: var(--padding-sm);
-    border: 1px solid var(--secondary-color);
-    border-radius: var(--border-radius-sm);
-  }
-
-  input:focus, textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: var(--box-shadow-sm);
-  }
-
-  label {
+  p {
+    font-size: var(--font-size-base);
     margin-bottom: var(--padding-sm);
   }
 
-  .container {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    padding: var(--padding-md);
+  img {
+    max-width: 100%;
+    height: auto;
+    margin: var(--padding-sm) auto;
+    display: block;
   }
 
-  .flex {
-    display: flex;
+  table {
+    border-collapse: collapse;
+    width: 100%;
   }
 
-  .justify-center {
-    justify-content: center;
+  th, td {
+    border: 1px solid var(--secondary-color);
+    padding: var(--padding-sm);
+    text-align: left;
   }
 
-  .items-center {
-    align-items: center;
+  th {
+    background-color: var(--primary-color);
+    color: var(--text-color);
   }
 
-  .text-center {
-    text-align: center;
+  ul, ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
 
-  .mt-0 {
-    margin-top: 0;
+  li {
+    padding: var(--padding-sm);
+    border-bottom: 1px solid var(--secondary-color);
   }
 
-  .mb-0 {
-    margin-bottom: 0;
+  li:last-child {
+    border-bottom: none;
   }
 
-  .mx-0 {
-    margin-left: 0;
-    margin-right: 0;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: var(--dark-mode-background-color);
+      --text-color: var(--dark-mode-text-color);
+      --primary-color: var(--dark-mode-primary-color);
+      --secondary-color: var(--dark-mode-secondary-color);
+    }
   }
 
-  .px-0 {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .py-0 {
-    padding-top: 0;
-    padding-bottom: 0;
+  @media (prefers-contrast: high) {
+    :root {
+      --background-color: var(--high-contrast-background-color);
+      --text-color: var(--high-contrast-text-color);
+      --primary-color: var(--high-contrast-primary-color);
+      --secondary-color: var(--high-contrast-secondary-color);
+    }
   }
 }

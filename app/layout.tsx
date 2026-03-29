@@ -84,51 +84,44 @@ const Nav = memo(() => {
 
   const handleDarkMode = useCallback(() => {
     setDarkMode(!darkMode);
-    localStorage.setItem('darkMode', darkMode ? 'false' : 'true');
+    localStorage.setItem('darkMode', !darkMode);
   }, [darkMode]);
 
   return (
-    <nav className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast' : ''} ${darkMode ? 'dark-mode' : ''}`}>
-      <button className="nav-toggle" onClick={toggleNav}>
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <ul className="nav-menu">
-        {filteredLinks.map((link) => (
-          <li key={link.href}>
-            <Link href={link.href}>{link.text}</Link>
-          </li>
-        ))}
-      </ul>
-      <form className="nav-search" onSubmit={(event) => event.preventDefault()}>
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleSearch}
-          placeholder="Search"
-          aria-label="Search"
-        />
-      </form>
-      <button className="nav-high-contrast" onClick={handleHighContrastMode}>
-        High Contrast Mode
-      </button>
-      <button className="nav-dark-mode" onClick={handleDarkMode}>
-        {darkMode ? 'Light Mode' : 'Dark Mode'}
-      </button>
+    <nav>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <div className="nav-container">
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
+          {filteredLinks.map((link) => (
+            <li key={link.href}>
+              <Link href={link.href}>{link.text}</Link>
+            </li>
+          ))}
+        </ul>
+        <form className="nav-search" onSubmit={handleSearch}>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search"
+          />
+        </form>
+        <div className="nav-settings">
+          <button onClick={handleHighContrastMode}>
+            High Contrast Mode: {highContrastMode ? 'On' : 'Off'}
+          </button>
+          <button onClick={handleDarkMode}>
+            Dark Mode: {darkMode ? 'On' : 'Off'}
+          </button>
+        </div>
+      </div>
     </nav>
   );
 });
 
-const Layout = ({ children }) => {
-  return (
-    <>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-        <meta name="description" content="AutoNote: AI-Powered Note Taker" />
-      </Head>
-      <Nav />
-      <main className="main-content">{children}</main>
-    </>
-  );
-};
-
-export default Layout;
+export default Nav;
