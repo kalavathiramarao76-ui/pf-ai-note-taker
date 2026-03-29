@@ -88,39 +88,55 @@ const Nav = memo(() => {
   }, [darkMode]);
 
   return (
-    <nav>
+    <div>
       <Head>
         <title>AutoNote: AI-Powered Note Taker</title>
       </Head>
-      <div className="nav-container">
-        <button className="nav-toggle" onClick={toggleNav}>
+      <nav className="nav">
+        <div className="nav-brand">
+          <Link href="/">
+            AutoNote
+          </Link>
+        </div>
+        <button
+          className="nav-toggle"
+          onClick={toggleNav}
+        >
           {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
         </button>
-        <ul className="nav-menu" style={{ display: navOpen ? 'block' : 'none' }}>
+        <ul className="nav-menu">
           {filteredLinks.map((link) => (
             <li key={link.href}>
-              <Link href={link.href}>{link.text}</Link>
+              <Link href={link.href}>
+                {link.text}
+              </Link>
             </li>
           ))}
         </ul>
-        <form className="nav-search" onSubmit={handleSearch}>
+        <form className="nav-search">
           <input
             type="search"
             value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
+            onChange={handleSearch}
             placeholder="Search"
           />
         </form>
         <div className="nav-settings">
-          <button onClick={handleHighContrastMode}>
-            High Contrast Mode: {highContrastMode ? 'On' : 'Off'}
+          <button
+            className="nav-setting"
+            onClick={handleHighContrastMode}
+          >
+            High Contrast Mode
           </button>
-          <button onClick={handleDarkMode}>
-            Dark Mode: {darkMode ? 'On' : 'Off'}
+          <button
+            className="nav-setting"
+            onClick={handleDarkMode}
+          >
+            {darkMode ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 });
 

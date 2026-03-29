@@ -16,6 +16,8 @@
   --high-contrast-text-color: #ffff00;
   --high-contrast-primary-color: #ff69b4;
   --high-contrast-secondary-color: #33cc33;
+  --high-contrast-hover-color: #ff9900;
+  --dark-mode-hover-color: #88d8f3;
   --font-size-h1: 2.5rem;
   --font-size-h2: 2rem;
   --font-size-h3: 1.75rem;
@@ -36,6 +38,8 @@
   --box-shadow-sm: 0 0 10px rgba(0, 0, 0, 0.1);
   --box-shadow-md: 0 0 20px rgba(0, 0, 0, 0.2);
   --box-shadow-lg: 0 0 30px rgba(0, 0, 0, 0.3);
+  --dark-mode-box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  --high-contrast-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 :root.dark-mode {
@@ -43,6 +47,7 @@
   --text-color: var(--dark-mode-text-color);
   --primary-color: var(--dark-mode-primary-color);
   --secondary-color: var(--dark-mode-secondary-color);
+  --box-shadow-sm: var(--dark-mode-box-shadow);
 }
 
 :root.high-contrast {
@@ -50,6 +55,7 @@
   --text-color: var(--high-contrast-text-color);
   --primary-color: var(--high-contrast-primary-color);
   --secondary-color: var(--high-contrast-secondary-color);
+  --box-shadow-sm: var(--high-contrast-box-shadow);
 }
 
 :root.dark-mode.high-contrast {
@@ -57,6 +63,7 @@
   --text-color: #ffff00;
   --primary-color: #ff69b4;
   --secondary-color: #33cc33;
+  --box-shadow-sm: var(--high-contrast-box-shadow);
 }
 
 @layer base {
@@ -114,133 +121,41 @@
     border-bottom: 1px solid var(--secondary-color);
   }
 
-  header, nav, main, section, article, aside, footer {
-    role: "navigation", "main", "region", "article", "complementary", "contentinfo";
-  }
-
   a {
     text-decoration: none;
     color: var(--primary-color);
   }
 
   a:hover {
-    color: var(--dark-mode-primary-color);
+    color: var(--dark-mode-hover-color);
+  }
+
+  :root.dark-mode a:hover {
+    color: var(--dark-mode-hover-color);
+  }
+
+  :root.high-contrast a:hover {
+    color: var(--high-contrast-hover-color);
   }
 
   button {
-    cursor: pointer;
     background-color: var(--primary-color);
     color: var(--text-color);
     border: none;
     padding: var(--padding-sm);
-    font-size: var(--font-size-base);
     border-radius: var(--border-radius-sm);
+    cursor: pointer;
   }
 
   button:hover {
-    background-color: var(--dark-mode-primary-color);
+    background-color: var(--dark-mode-hover-color);
   }
 
-  input[type="text"], input[type="email"], input[type="password"] {
-    padding: var(--padding-sm);
-    font-size: var(--font-size-base);
-    border: 1px solid var(--secondary-color);
-    border-radius: var(--border-radius-sm);
+  :root.dark-mode button:hover {
+    background-color: var(--dark-mode-hover-color);
   }
 
-  label {
-    font-size: var(--font-size-base);
-    margin-bottom: var(--padding-sm);
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-family);
-    color: var(--text-color);
-    margin-bottom: var(--padding-sm);
-  }
-
-  h1 {
-    font-size: var(--font-size-h1);
-  }
-
-  h2 {
-    font-size: var(--font-size-h2);
-  }
-
-  h3 {
-    font-size: var(--font-size-h3);
-  }
-
-  h4 {
-    font-size: var(--font-size-h4);
-  }
-
-  h5 {
-    font-size: var(--font-size-h5);
-  }
-
-  h6 {
-    font-size: var(--font-size-h6);
-  }
-
-  p {
-    font-size: var(--font-size-base);
-    margin-bottom: var(--padding-sm);
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    margin: var(--padding-sm) auto;
-    display: block;
-  }
-
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  th, td {
-    border: 1px solid var(--secondary-color);
-    padding: var(--padding-sm);
-    text-align: left;
-  }
-
-  th {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-  }
-
-  ul, ol {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  li {
-    padding: var(--padding-sm);
-    border-bottom: 1px solid var(--secondary-color);
-  }
-
-  li:last-child {
-    border-bottom: none;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background-color: var(--dark-mode-background-color);
-      --text-color: var(--dark-mode-text-color);
-      --primary-color: var(--dark-mode-primary-color);
-      --secondary-color: var(--dark-mode-secondary-color);
-    }
-  }
-
-  @media (prefers-contrast: high) {
-    :root {
-      --background-color: var(--high-contrast-background-color);
-      --text-color: var(--high-contrast-text-color);
-      --primary-color: var(--high-contrast-primary-color);
-      --secondary-color: var(--high-contrast-secondary-color);
-    }
+  :root.high-contrast button:hover {
+    background-color: var(--high-contrast-hover-color);
   }
 }

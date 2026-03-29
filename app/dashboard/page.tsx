@@ -16,6 +16,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DraggableNoteCard } from '../components/DraggableNoteCard';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 // Define the initial state
 interface NoteState {
@@ -170,7 +172,7 @@ const tagSlice = createSlice({
     tagSuggestionsList: [],
     noteTagSuggestions: [],
     tagAutoSuggestions: [],
-    selectedNoteTags: {},
+    selectedNoteTags: null,
   } as TagState,
   reducers: {
     addTag(state, action: PayloadAction<string>) {
@@ -187,16 +189,8 @@ const tagSlice = createSlice({
     updateTagSuggestions(state, action: PayloadAction<string[]>) {
       state.tagSuggestions = action.payload;
     },
-    addTagToNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      if (!state.selectedNoteTags[action.payload.noteId]) {
-        state.selectedNoteTags[action.payload.noteId] = [];
-      }
-      state.selectedNoteTags[action.payload.noteId].push(action.payload.tag);
-    },
-    removeTagFromNote(state, action: PayloadAction<{ noteId: string; tag: string }>) {
-      if (state.selectedNoteTags[action.payload.noteId]) {
-        state.selectedNoteTags[action.payload.noteId] = state.selectedNoteTags[action.payload.noteId].filter((tag) => tag !== action.payload.tag);
-      }
+    updateSelectedTags(state, action: PayloadAction<string[]>) {
+      state.selectedTags = action.payload;
     },
   },
 });
@@ -213,46 +207,34 @@ const DashboardPage = () => {
   const dispatch = useDispatch();
   const notes = useSelector((state: any) => state.notes);
   const tags = useSelector((state: any) => state.tags);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterByTags, setFilterByTags] = useState([] as string[]);
   const [tagInput, setTagInput] = useState('');
-  const [tagSuggestions, setTagSuggestions] = useState([] as string[]);
-  const [selectedNoteTags, setSelectedNoteTags] = useState({} as { [key: string]: string[] });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchNotes = async () => {
-      const response = await client.get('/notes');
-      dispatch(noteSlice.actions.addNote(response.data));
-    };
-    fetchNotes();
-  }, []);
+    const availableTags = Object.values(notes.noteTagMap).flat();
+    setTagSuggestions(availableTags);
+  }, [notes]);
 
-  const handleAddTagToNote = (noteId: string, tag: string) => {
-    dispatch(noteSlice.actions.addTagToNote({ noteId, tag }));
-    dispatch(tagSlice.actions.addTagToNote({ noteId, tag }));
-  };
-
-  const handleRemoveTagFromNote = (noteId: string, tag: string) => {
-    dispatch(noteSlice.actions.removeTagFromNote({ noteId, tag }));
-    dispatch(tagSlice.actions.removeTagFromNote({ noteId, tag }));
-  };
-
-  const handleUpdateTagInput = (tagInput: string) => {
-    setTagInput(tagInput);
-    const suggestions = tags.tags.filter((tag) => tag.includes(tagInput));
+  const handleTagInput = (event: any) => {
+    setTagInput(event.target.value);
+    const suggestions = tagSuggestions.filter((tag) => tag.includes(event.target.value));
     setTagSuggestions(suggestions);
+  };
+
+  const handleTagSelect = (event: any, value: string[]) => {
+    setSelectedTags(value);
+    dispatch(noteSlice.actions.updateSelectedTags(value));
   };
 
   const handleAddTag = (tag: string) => {
     dispatch(tagSlice.actions.addTag(tag));
+    dispatch(noteSlice.actions.addTagToNote({ noteId: 'currentNoteId', tag }));
   };
 
   const handleRemoveTag = (tag: string) => {
     dispatch(tagSlice.actions.removeTag(tag));
-  };
-
-  const handleFilterByTags = (tags: string[]) => {
-    setFilterByTags(tags);
+    dispatch(noteSlice.actions.removeTagFromNote({ noteId: 'currentNoteId', tag }));
   };
 
   return (
@@ -260,58 +242,37 @@ const DashboardPage = () => {
       <DndProvider backend={HTML5Backend}>
         <div>
           <h1>AutoNote: AI-Powered Note Taker</h1>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search notes"
-          />
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => handleUpdateTagInput(e.target.value)}
-            placeholder="Add tag"
-          />
-          <ul>
-            {tagSuggestions.map((tag) => (
-              <li key={tag}>
-                <button onClick={() => handleAddTag(tag)}>{tag}</button>
-              </li>
-            ))}
-          </ul>
-          <ul>
-            {filterByTags.map((tag) => (
-              <li key={tag}>
-                <button onClick={() => handleRemoveTag(tag)}>{tag}</button>
-              </li>
-            ))}
-          </ul>
+          <Link href="/notes">
+            <a>Notes</a>
+          </Link>
+          <Link href="/meetings">
+            <a>Meetings</a>
+          </Link>
+          <Link href="/templates">
+            <a>Templates</a>
+          </Link>
           <div>
-            {notes.sortedNotes.map((note) => (
-              <DraggableNoteCard key={note.id} note={note}>
-                <NoteCard note={note}>
-                  <ul>
-                    {selectedNoteTags[note.id] && selectedNoteTags[note.id].map((tag) => (
-                      <li key={tag}>
-                        <button onClick={() => handleRemoveTagFromNote(note.id, tag)}>{tag}</button>
-                      </li>
-                    ))}
-                  </ul>
-                  <input
-                    type="text"
-                    value={tagInput}
-                    onChange={(e) => handleUpdateTagInput(e.target.value)}
-                    placeholder="Add tag to note"
-                  />
-                  <ul>
-                    {tagSuggestions.map((tag) => (
-                      <li key={tag}>
-                        <button onClick={() => handleAddTagToNote(note.id, tag)}>{tag}</button>
-                      </li>
-                    ))}
-                  </ul>
-                </NoteCard>
-              </DraggableNoteCard>
+            <Autocomplete
+              multiple
+              id="tags"
+              options={tagSuggestions}
+              value={selectedTags}
+              onChange={handleTagSelect}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Tags"
+                  onChange={handleTagInput}
+                  value={tagInput}
+                />
+              )}
+            />
+            <button onClick={() => handleAddTag('newTag')}>Add Tag</button>
+            <button onClick={() => handleRemoveTag('existingTag')}>Remove Tag</button>
+          </div>
+          <div>
+            {Object.values(notes.notes).map((note) => (
+              <NoteCard key={note.id} note={note} />
             ))}
           </div>
         </div>
