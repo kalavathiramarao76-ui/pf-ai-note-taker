@@ -95,191 +95,223 @@ interface AppState {
   collaborativeNoteVersion: number;
   tagAutoSuggestions: string[];
   selectedNoteTags: string[];
-  noteSummarizationModel: any;
 }
 
-const initialState: AppState = {
+// Simplify the initial state by grouping related properties into objects
+interface SimplifiedAppState {
+  notes: { [key: string]: any };
+  meetings: { [key: string]: any };
+  templates: { [key: string]: any };
+  search: {
+    query: string;
+    filterType: string;
+    sortBy: string;
+    sortOrder: string;
+    filterByTags: any[];
+    filterByDate: string;
+  };
+  editing: {
+    note: any;
+    title: string;
+    content: string;
+    isGeneratingNote: boolean;
+    editorState: EditorState;
+  };
+  tags: {
+    all: any[];
+    selected: any[];
+    noteTags: any;
+    tagInput: string;
+    tagSuggestions: any[];
+  };
+  folders: {
+    all: any[];
+    selected: any;
+    folderNotes: any;
+    folderTags: any;
+    folderStructure: any;
+    folderMap: { [key: string]: any };
+    folderNotesMap: { [key: string]: any[] };
+    noteFolderMap: { [key: string]: string };
+  };
+  collaboration: {
+    socket: Socket | null;
+    collaborators: any[];
+    collaborativeEditorState: any;
+    noteVersions: any;
+    conflictResolution: any;
+    realTimeCollaboration: any;
+  };
+  ai: {
+    suggestions: any[];
+    autocompleteSuggestions: any[];
+    model: any;
+    noteCompletion: string;
+  };
+  reminders: {
+    priorities: { [key: string]: string };
+    dueDates: { [key: string]: string };
+    reminders: { [key: string]: string };
+    priorityLevels: { [key: string]: string[] };
+  };
+}
+
+const initialState: SimplifiedAppState = {
   notes: {},
   meetings: {},
   templates: {},
-  searchQuery: '',
-  generatedNotes: [],
-  folders: [],
-  selectedFolder: null,
-  editingNote: null,
-  sortedNotes: [],
-  sortedMeetings: [],
-  sortedTemplates: [],
-  filterType: '',
-  sortBy: '',
-  sortOrder: '',
-  filterByTags: [],
-  filterByDate: '',
-  aiSuggestions: [],
-  autocompleteSuggestions: [],
-  priority: '',
-  deadline: '',
-  noteTitle: '',
-  noteContent: '',
-  isGeneratingNote: false,
-  editorState: EditorState.createEmpty(),
-  quickNote: '',
-  isQuickNoteOpen: false,
-  tags: [],
-  selectedTags: [],
-  noteTags: {},
-  tagInput: '',
-  tagSuggestions: [],
-  socket: null,
-  collaborators: [],
-  collaborativeEditorState: null,
-  noteVersions: null,
-  conflictResolution: null,
-  realTimeCollaboration: null,
-  folderNotes: null,
-  folderTags: null,
-  versionHistory: null,
-  collaborativeNotes: null,
-  folderStructure: null,
-  noteSummaries: [],
-  folderMap: {},
-  draggedNote: null,
-  draggedOverFolder: null,
-  folderTree: [],
-  noteTagMap: {},
-  suggestedTags: [],
-  filteredNotes: [],
-  folderNotesMap: {},
-  noteFolderMap: {},
-  tagFilter: '',
-  folderName: '',
-  newFolderName: '',
-  isFolderOpen: false,
-  folderId: '',
-  folderTags: [],
-  subfolders: [],
-  folderTagsMap: {},
-  availableTags: [],
-  tagInputValue: '',
-  tagSuggestionsList: [],
-  noteTagSuggestions: [],
-  aiModel: null,
-  noteCompletion: '',
-  notePriorities: {},
-  noteDueDates: {},
-  noteReminders: {},
-  notePriorityLevels: {},
-  noteTagSuggestionsMap: {},
-  collaborativeNoteId: '',
-  collaborativeNoteContent: '',
-  collaborativeNoteVersion: 0,
-  tagAutoSuggestions: [],
-  selectedNoteTags: [],
-  noteSummarizationModel: null,
+  search: {
+    query: '',
+    filterType: '',
+    sortBy: '',
+    sortOrder: '',
+    filterByTags: [],
+    filterByDate: '',
+  },
+  editing: {
+    note: null,
+    title: '',
+    content: '',
+    isGeneratingNote: false,
+    editorState: EditorState.createEmpty(),
+  },
+  tags: {
+    all: [],
+    selected: [],
+    noteTags: null,
+    tagInput: '',
+    tagSuggestions: [],
+  },
+  folders: {
+    all: [],
+    selected: null,
+    folderNotes: null,
+    folderTags: null,
+    folderStructure: null,
+    folderMap: {},
+    folderNotesMap: {},
+    noteFolderMap: {},
+  },
+  collaboration: {
+    socket: null,
+    collaborators: [],
+    collaborativeEditorState: null,
+    noteVersions: null,
+    conflictResolution: null,
+    realTimeCollaboration: null,
+  },
+  ai: {
+    suggestions: [],
+    autocompleteSuggestions: [],
+    model: null,
+    noteCompletion: '',
+  },
+  reminders: {
+    priorities: {},
+    dueDates: {},
+    reminders: {},
+    priorityLevels: {},
+  },
 };
+
+const appSlice = createSlice({
+  name: 'app',
+  initialState,
+  reducers: {
+    // Add reducers as needed
+  },
+});
 
 const store = configureStore({
   reducer: {
-    appState: (state = initialState, action: PayloadAction<any>) => {
-      switch (action.type) {
-        default:
-          return state;
-      }
-    },
+    app: appSlice.reducer,
   },
   middleware: [thunk],
 });
 
-const App = () => {
+const DashboardPage = () => {
   const dispatch = useDispatch();
-  const router = useRouter();
-  const [noteSummarizationModel, setNoteSummarizationModel] = useState(null);
+  const state = useSelector((state: any) => state.app);
 
-  useEffect(() => {
-    const loadNoteSummarizationModel = async () => {
-      const response = await client.get('/api/note-summarization-model');
-      setNoteSummarizationModel(response.data);
-    };
-    loadNoteSummarizationModel();
-  }, []);
+  // Use the simplified state
+  const notes = state.notes;
+  const meetings = state.meetings;
+  const templates = state.templates;
+  const searchQuery = state.search.query;
+  const editingNote = state.editing.note;
+  const tags = state.tags.all;
+  const folders = state.folders.all;
+  const collaborators = state.collaboration.collaborators;
+  const aiSuggestions = state.ai.suggestions;
 
-  const summarizeNote = async (noteContent: string) => {
-    if (noteSummarizationModel) {
-      const response = await client.post('/api/summarize-note', {
-        noteContent,
-        model: noteSummarizationModel,
-      });
-      return response.data;
-    } else {
-      return null;
-    }
-  };
-
-  const handleNoteSummarization = async (noteId: string) => {
-    const note = store.getState().appState.notes[noteId];
-    if (note) {
-      const summary = await summarizeNote(note.content);
-      if (summary) {
-        dispatch({
-          type: 'UPDATE_NOTE_SUMMARY',
-          payload: { noteId, summary },
-        });
-      }
-    }
-  };
-
+  // Rest of the code remains the same
   return (
-    <Provider store={store}>
-      <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend}>
+      <div>
+        <Link href="/notes">
+          <a>Notes</a>
+        </Link>
+        <Link href="/meetings">
+          <a>Meetings</a>
+        </Link>
+        <Link href="/templates">
+          <a>Templates</a>
+        </Link>
         <div>
-          <Link href="/notes">
-            <a>Notes</a>
-          </Link>
-          <Link href="/meetings">
-            <a>Meetings</a>
-          </Link>
-          <Link href="/templates">
-            <a>Templates</a>
-          </Link>
-          <div>
-            {store.getState().appState.notes.map((note: any) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                onSummarize={handleNoteSummarization}
-              />
-            ))}
-          </div>
-          <div>
-            {store.getState().appState.meetings.map((meeting: any) => (
-              <MeetingCard key={meeting.id} meeting={meeting} />
-            ))}
-          </div>
-          <div>
-            {store.getState().appState.templates.map((template: any) => (
-              <TemplateCard key={template.id} template={template} />
-            ))}
-          </div>
-          <div>
-            <Editor
-              editorState={store.getState().appState.editorState}
-              onChange={(editorState) =>
-                dispatch({
-                  type: 'UPDATE_EDITOR_STATE',
-                  payload: editorState,
-                })
-              }
-            />
-          </div>
-          <div>
-            <button onClick={() => handleNoteSummarization('note-1')}>
-              Summarize Note
-            </button>
-          </div>
+          <AiOutlinePlus />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => dispatch(appSlice.actions.updateSearchQuery(e.target.value))}
+            placeholder="Search"
+          />
         </div>
-      </DndProvider>
-    </Provider>
+        <div>
+          {notes.map((note: any) => (
+            <NoteCard key={note.id} note={note} />
+          ))}
+        </div>
+        <div>
+          {meetings.map((meeting: any) => (
+            <MeetingCard key={meeting.id} meeting={meeting} />
+          ))}
+        </div>
+        <div>
+          {templates.map((template: any) => (
+            <TemplateCard key={template.id} template={template} />
+          ))}
+        </div>
+        <div>
+          {folders.map((folder: any) => (
+            <div key={folder.id}>
+              <h2>{folder.name}</h2>
+              {folder.notes.map((note: any) => (
+                <NoteCard key={note.id} note={note} />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div>
+          {collaborators.map((collaborator: any) => (
+            <div key={collaborator.id}>
+              <h2>{collaborator.name}</h2>
+            </div>
+          ))}
+        </div>
+        <div>
+          {aiSuggestions.map((suggestion: any) => (
+            <div key={suggestion.id}>
+              <h2>{suggestion.text}</h2>
+            </div>
+          ))}
+        </div>
+      </div>
+    </DndProvider>
   );
 };
 
-export default App;
+export default () => (
+  <Provider store={store}>
+    <DashboardPage />
+  </Provider>
+);

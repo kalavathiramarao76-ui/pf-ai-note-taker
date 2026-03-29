@@ -80,55 +80,55 @@ const Nav = memo(() => {
   }, [highContrastMode]);
 
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = lazy(() => import('./SearchBar'));
+  const SearchBar = () => (
+    <form role="search" aria-label="Search">
+      <input
+        type="search"
+        aria-label="Search query"
+        value={searchQuery}
+        onChange={handleSearch}
+        placeholder="Search"
+      />
+    </form>
+  );
 
   return (
-    <nav
-      aria-label="Main navigation"
-      className="nav"
-      role="navigation"
-    >
+    <nav role="navigation" aria-label="Main navigation">
       <button
-        aria-controls="nav-menu"
+        type="button"
+        aria-label="Toggle navigation menu"
         aria-expanded={navOpen}
-        aria-label="Toggle navigation"
-        className="nav-toggle"
+        aria-controls="nav-menu"
         onClick={toggleNav}
       >
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
       <ul
-        aria-hidden={!navOpen}
-        className="nav-menu"
         id="nav-menu"
         role="menu"
+        aria-label="Navigation menu"
+        aria-hidden={!navOpen}
+        className="nav-menu"
       >
         {filteredLinks.map((link) => (
-          <li key={link.href}>
-            <Link
-              aria-label={link.text}
-              href={link.href}
-              role="menuitem"
-            >
+          <li key={link.href} role="menuitem">
+            <Link href={link.href} aria-label={link.text}>
               {link.text}
             </Link>
           </li>
         ))}
       </ul>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchBar
-          aria-label="Search"
-          handleSearch={handleSearch}
-          searchQuery={searchQuery}
-        />
-      </Suspense>
+      <SearchBar />
       <button
+        type="button"
         aria-label="Toggle high contrast mode"
-        className="high-contrast-mode-toggle"
         onClick={handleHighContrastMode}
       >
         High Contrast Mode
       </button>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Menu />
+      </Suspense>
     </nav>
   );
 });
