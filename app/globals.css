@@ -84,6 +84,40 @@
     padding: var(--padding-md);
   }
 
+  head {
+    meta[name="description"] {
+      content: "AutoNote: AI-Powered Note Taker";
+    }
+    meta[name="keywords"] {
+      content: "note taking, AI, productivity";
+    }
+    meta[name="robots"] {
+      content: "index, follow";
+    }
+    meta[name="viewport"] {
+      content: "width=device-width, initial-scale=1.0";
+    }
+    title {
+      font-size: var(--font-size-h1);
+    }
+  }
+
+  header {
+    role: "banner";
+  }
+
+  main {
+    role: "main";
+  }
+
+  nav {
+    role: "navigation";
+  }
+
+  footer {
+    role: "contentinfo";
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
   }
@@ -134,17 +168,5 @@
     max-width: var(--max-width-lg);
     margin: 0 auto;
     padding: var(--padding-lg);
-  }
-
-  .rounded-sm {
-    border-radius: var(--border-radius-sm);
-  }
-
-  .rounded-md {
-    border-radius: var(--border-radius-md);
-  }
-
-  .rounded-lg {
-    border-radius: var(--border-radius-lg);
   }
 }
