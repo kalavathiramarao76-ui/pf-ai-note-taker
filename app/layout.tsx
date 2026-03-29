@@ -9,6 +9,10 @@ const Nav = memo(() => {
   const [navOpen, setNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highContrastMode, setHighContrastMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const storedDarkMode = localStorage.getItem('darkMode');
+    return storedDarkMode === 'true';
+  });
   const links = useMemo(() => [
     { href: '/', text: 'Home' },
     { href: '/about', text: 'About' },
@@ -79,56 +83,61 @@ const Nav = memo(() => {
     document.body.classList.toggle('high-contrast-mode');
   }, [highContrastMode]);
 
+  const handleDarkMode = useCallback(() => {
+    setDarkMode(!darkMode);
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', String(!darkMode));
+  }, [darkMode]);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
+
   const Menu = lazy(() => import('./Menu'));
-  const SearchBar = () => (
-    <form role="search" aria-label="Search">
-      <input
-        type="search"
-        aria-label="Search query"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Search"
-      />
-    </form>
-  );
+  const SearchBar = lazy(() => import('./SearchBar'));
 
   return (
-    <nav role="navigation" aria-label="Main navigation">
-      <button
-        type="button"
-        aria-label="Toggle navigation menu"
-        aria-expanded={navOpen}
-        aria-controls="nav-menu"
-        onClick={toggleNav}
-      >
-        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </button>
-      <ul
-        id="nav-menu"
-        role="menu"
-        aria-label="Navigation menu"
-        aria-hidden={!navOpen}
-        className="nav-menu"
-      >
+    <nav className="nav">
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+      </Head>
+      <div className="nav-header">
+        <Link href="/">
+          <a>
+            <h1>AutoNote</h1>
+          </a>
+        </Link>
+        <button className="nav-toggle" onClick={toggleNav}>
+          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </button>
+      </div>
+      <ul className="nav-menu" hidden={!navOpen}>
         {filteredLinks.map((link) => (
-          <li key={link.href} role="menuitem">
-            <Link href={link.href} aria-label={link.text}>
-              {link.text}
+          <li key={link.href}>
+            <Link href={link.href}>
+              <a>{link.text}</a>
             </Link>
           </li>
         ))}
       </ul>
-      <SearchBar />
-      <button
-        type="button"
-        aria-label="Toggle high contrast mode"
-        onClick={handleHighContrastMode}
-      >
-        High Contrast Mode
-      </button>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Menu />
-      </Suspense>
+      <div className="nav-actions">
+        <button className="nav-action" onClick={handleHighContrastMode}>
+          High Contrast Mode
+        </button>
+        <button className="nav-action" onClick={handleDarkMode}>
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchBar onSearch={handleSearch} />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Menu />
+        </Suspense>
+      </div>
     </nav>
   );
 });

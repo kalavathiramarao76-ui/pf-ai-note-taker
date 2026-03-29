@@ -84,6 +84,10 @@
     padding: var(--padding-md);
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+  }
+
   h1 {
     font-size: var(--font-size-h1);
   }
@@ -144,32 +148,3 @@
     border-radius: var(--border-radius-lg);
   }
 }
-
-/* Meta tags for search engine optimization */
-meta {
-  charset: 'UTF-8';
-  name: 'description';
-  content: 'AutoNote: AI-Powered Note Taker';
-}
-
-meta {
-  name: 'keywords';
-  content: 'note taking, AI, productivity';
-}
-
-meta {
-  name: 'author';
-  content: 'Your Name';
-}
-
-meta {
-  name: 'viewport';
-  content: 'width=device-width, initial-scale=1.0';
-}
-
-/* Optimize CSS files for faster loading */
-/* Use CSS minification and compression */
-/* Use a CDN to serve static assets */
-/* Leverage browser caching for static assets */
-/* Optimize images and use lazy loading */
-/* Use a fast and efficient font loading strategy */
