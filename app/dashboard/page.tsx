@@ -46,6 +46,7 @@ interface MeetingState {
 interface TemplateState {
   templates: { [key: string]: any };
   sortedTemplates: any[];
+  customTemplates: { [key: string]: any };
 }
 
 interface SearchState {
@@ -114,157 +115,95 @@ interface PriorityState {
   noteDueDates: { [key: string]: string };
 }
 
-const noteSlice = createSlice({
-  name: 'notes',
-  initialState: {
-    notes: {},
-    editingNote: null,
-    sortedNotes: [],
-    filteredNotes: [],
-    folderNotes: {},
-    folderNotesMap: {},
-    noteFolderMap: {},
-    noteTagMap: {},
-    noteTagSuggestionsMap: {},
-    noteTags: [],
-    noteVersions: {},
-    conflictResolution: null,
-    realTimeCollaboration: null,
-    collaborativeNotes: {},
-    noteSummaries: [],
-  } as NoteState,
-  reducers: {
-    addNote(state, action: PayloadAction<any>) {
-      state.notes[action.payload.id] = action.payload;
-    },
-    updateNote(state, action: PayloadAction<any>) {
-      state.notes[action.payload.id] = action.payload;
-    },
-    deleteNote(state, action: PayloadAction<string>) {
-      delete state.notes[action.payload];
-    },
-    addFolder(state, action: PayloadAction<string>) {
-      state.folderNotesMap[action.payload] = [];
-    },
-    addNoteToFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      state.folderNotesMap[action.payload.folderId].push(action.payload.noteId);
-      state.noteFolderMap[action.payload.noteId] = action.payload.folderId;
-    },
-    removeNoteFromFolder(state, action: PayloadAction<{ noteId: string; folderId: string }>) {
-      state.folderNotesMap[action.payload.folderId] = state.folderNotesMap[action.payload.folderId].filter((id) => id !== action.payload.noteId);
-      delete state.noteFolderMap[action.payload.noteId];
-    },
-  },
-});
+interface Template {
+  id: string;
+  name: string;
+  content: string;
+}
 
-const folderSlice = createSlice({
-  name: 'folders',
-  initialState: {
-    folders: [],
-    selectedFolder: null,
-    folderTags: {},
-    folderTagsMap: {},
-    subfolders: [],
-    folderName: '',
-    newFolderName: '',
-    isFolderOpen: false,
-    folderId: '',
-    folderTree: [],
-  } as FolderState,
+const initialTemplateState: TemplateState = {
+  templates: {},
+  sortedTemplates: [],
+  customTemplates: {},
+};
+
+const templateSlice = createSlice({
+  name: 'template',
+  initialState: initialTemplateState,
   reducers: {
-    addFolder(state, action: PayloadAction<string>) {
-      state.folders.push(action.payload);
+    addCustomTemplate(state, action: PayloadAction<Template>) {
+      state.customTemplates[action.payload.id] = action.payload;
     },
-    selectFolder(state, action: PayloadAction<string>) {
-      state.selectedFolder = action.payload;
-    },
-    addSubfolder(state, action: PayloadAction<{ folderId: string; subfolderId: string }>) {
-      state.subfolders.push(action.payload.subfolderId);
-      state.folderTree.push({ id: action.payload.subfolderId, parentId: action.payload.folderId });
-    },
-    removeSubfolder(state, action: PayloadAction<{ folderId: string; subfolderId: string }>) {
-      state.subfolders = state.subfolders.filter((id) => id !== action.payload.subfolderId);
-      state.folderTree = state.folderTree.filter((folder) => folder.id !== action.payload.subfolderId);
+    removeCustomTemplate(state, action: PayloadAction<string>) {
+      delete state.customTemplates[action.payload];
     },
   },
 });
 
 const store = configureStore({
   reducer: {
-    notes: noteSlice.reducer,
-    folders: folderSlice.reducer,
+    template: templateSlice.reducer,
   },
   middleware: [thunk],
 });
 
-const DashboardPage = () => {
+const TemplatePage = () => {
   const dispatch = useDispatch();
-  const notes = useSelector((state: any) => state.notes);
-  const folders = useSelector((state: any) => state.folders);
-  const [draggingNote, setDraggingNote] = useState(null);
-  const [draggingFolder, setDraggingFolder] = useState(null);
+  const templateState = useSelector((state: any) => state.template);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateContent, setNewTemplateContent] = useState('');
 
-  useEffect(() => {
-    // Initialize notes and folders
-  }, []);
-
-  const handleDragStart = (noteId: string) => {
-    setDraggingNote(noteId);
+  const handleAddCustomTemplate = () => {
+    const newTemplate: Template = {
+      id: Date.now().toString(),
+      name: newTemplateName,
+      content: newTemplateContent,
+    };
+    dispatch(templateSlice.actions.addCustomTemplate(newTemplate));
+    setNewTemplateName('');
+    setNewTemplateContent('');
   };
 
-  const handleDragEnd = () => {
-    setDraggingNote(null);
-  };
-
-  const handleDrop = (folderId: string) => {
-    if (draggingNote) {
-      dispatch(noteSlice.actions.addNoteToFolder({ noteId: draggingNote, folderId }));
-    }
-  };
-
-  const handleFolderDragStart = (folderId: string) => {
-    setDraggingFolder(folderId);
-  };
-
-  const handleFolderDragEnd = () => {
-    setDraggingFolder(null);
-  };
-
-  const handleFolderDrop = (folderId: string) => {
-    if (draggingFolder) {
-      dispatch(folderSlice.actions.addSubfolder({ folderId, subfolderId: draggingFolder }));
-    }
+  const handleRemoveCustomTemplate = (id: string) => {
+    dispatch(templateSlice.actions.removeCustomTemplate(id));
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div>
-        <h1>Notes</h1>
-        <ul>
-          {Object.keys(notes.notes).map((noteId) => (
-            <DraggableNoteCard key={noteId} noteId={noteId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
-          ))}
-        </ul>
-        <h1>Folders</h1>
-        <ul>
-          {folders.folders.map((folderId) => (
-            <div key={folderId} onDragStart={() => handleFolderDragStart(folderId)} onDragEnd={handleFolderDragEnd} onDrop={() => handleFolderDrop(folderId)}>
-              <span>{folderId}</span>
-              <ul>
-                {folders.subfolders.map((subfolderId) => (
-                  <li key={subfolderId}>{subfolderId}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </ul>
-      </div>
-    </DndProvider>
+    <div>
+      <h1>Custom Templates</h1>
+      <ul>
+        {Object.values(templateState.customTemplates).map((template: Template) => (
+          <li key={template.id}>
+            {template.name}
+            <button onClick={() => handleRemoveCustomTemplate(template.id)}>Remove</button>
+          </li>
+        ))}
+      </ul>
+      <input
+        type="text"
+        value={newTemplateName}
+        onChange={(e) => setNewTemplateName(e.target.value)}
+        placeholder="New template name"
+      />
+      <textarea
+        value={newTemplateContent}
+        onChange={(e) => setNewTemplateContent(e.target.value)}
+        placeholder="New template content"
+      />
+      <button onClick={handleAddCustomTemplate}>Add Custom Template</button>
+    </div>
   );
 };
 
-export default () => (
-  <Provider store={store}>
-    <DashboardPage />
-  </Provider>
-);
+const DashboardPage = () => {
+  return (
+    <Provider store={store}>
+      <DndProvider backend={HTML5Backend}>
+        <TemplatePage />
+        {/* Other components */}
+      </DndProvider>
+    </Provider>
+  );
+};
+
+export default DashboardPage;

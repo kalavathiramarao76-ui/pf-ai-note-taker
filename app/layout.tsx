@@ -82,69 +82,51 @@ const Nav = memo(() => {
     setHighContrastMode(!highContrastMode);
   }, [highContrastMode]);
 
-  const handleDarkMode = useCallback(() => {
-    setDarkMode(!darkMode);
-    localStorage.setItem('darkMode', !darkMode);
-  }, [darkMode]);
-
-  const NavMenu = memo(() => (
-    <ul className="nav-menu">
-      {filteredLinks.map((link) => (
-        <li key={link.href}>
-          <Link href={link.href}>{link.text}</Link>
-        </li>
-      ))}
-    </ul>
-  ));
-
-  const LazyNavMenu = lazy(() => import('./NavMenu'));
-
   return (
-    <nav>
-      <Head>
-        <title>AutoNote: AI-Powered Note Taker</title>
-      </Head>
-      <div className="nav-header">
-        <button
-          className="nav-toggle"
-          aria-label="Toggle navigation"
-          onClick={toggleNav}
-        >
-          {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </button>
-        <Link href="/">
-          <a>AutoNote</a>
-        </Link>
-      </div>
-      {navOpen && (
-        <Suspense fallback={<div>Loading...</div>}>
-          <LazyNavMenu />
-        </Suspense>
-      )}
-      <div className="nav-search">
+    <nav className="nav" aria-label="Main navigation">
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded={navOpen}
+        onClick={toggleNav}
+      >
+        {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+      </button>
+      <ul className="nav-menu" role="menu">
+        {filteredLinks.map((link) => (
+          <li key={link.href} role="menuitem">
+            <Link href={link.href} onClick={() => setNavOpen(false)}>
+              {link.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <form className="nav-search" onSubmit={(event) => event.preventDefault()}>
         <input
           type="search"
           value={searchQuery}
           onChange={handleSearch}
           placeholder="Search"
+          aria-label="Search"
         />
-      </div>
-      <div className="nav-settings">
-        <button
-          className="nav-setting"
-          aria-label="Toggle high contrast mode"
-          onClick={handleHighContrastMode}
-        >
-          High Contrast Mode
-        </button>
-        <button
-          className="nav-setting"
-          aria-label="Toggle dark mode"
-          onClick={handleDarkMode}
-        >
-          Dark Mode
-        </button>
-      </div>
+      </form>
+      <button
+        type="button"
+        className="nav-high-contrast-mode"
+        aria-label="Toggle high contrast mode"
+        onClick={handleHighContrastMode}
+      >
+        High Contrast Mode
+      </button>
+      <button
+        type="button"
+        className="nav-dark-mode"
+        aria-label="Toggle dark mode"
+        onClick={() => setDarkMode(!darkMode)}
+      >
+        Dark Mode
+      </button>
     </nav>
   );
 });
