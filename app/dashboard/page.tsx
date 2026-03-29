@@ -112,8 +112,6 @@ interface PriorityState {
   deadline: string;
   notePriorities: { [key: string]: string };
   noteDueDates: { [key: string]: string };
-  noteReminders: { [key: string]: string };
-  notePriorityLevels: { [key: string]: string[] };
 }
 
 const noteSlice = createSlice({
@@ -172,7 +170,7 @@ const tagSlice = createSlice({
     tagSuggestionsList: [],
     noteTagSuggestions: [],
     tagAutoSuggestions: [],
-    selectedNoteTags: null,
+    selectedNoteTags: {},
   } as TagState,
   reducers: {
     addTag(state, action: PayloadAction<string>) {
@@ -192,6 +190,9 @@ const tagSlice = createSlice({
     updateSelectedTags(state, action: PayloadAction<string[]>) {
       state.selectedTags = action.payload;
     },
+    updateNoteTagSuggestions(state, action: PayloadAction<{ noteId: string; tagSuggestions: string[] }>) {
+      state.noteTagSuggestions[action.payload.noteId] = action.payload.tagSuggestions;
+    },
   },
 });
 
@@ -207,78 +208,144 @@ const DashboardPage = () => {
   const dispatch = useDispatch();
   const notes = useSelector((state: any) => state.notes);
   const tags = useSelector((state: any) => state.tags);
-  const [tagInput, setTagInput] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState('');
+  const [filterByTags, setFilterByTags] = useState([]);
+  const [filterByDate, setFilterByDate] = useState('');
+  const [tagFilter, setTagFilter] = useState('');
 
   useEffect(() => {
-    const availableTags = Object.values(notes.noteTagMap).flat();
-    setTagSuggestions(availableTags);
-  }, [notes]);
+    const fetchNotes = async () => {
+      const response = await client.get('/notes');
+      dispatch(noteSlice.actions.addNote(response.data));
+    };
+    fetchNotes();
+  }, []);
 
-  const handleTagInput = (event: any) => {
-    setTagInput(event.target.value);
-    const suggestions = tagSuggestions.filter((tag) => tag.includes(event.target.value));
-    setTagSuggestions(suggestions);
+  const handleAddNote = async () => {
+    const response = await client.post('/notes', { title: 'New Note', content: '' });
+    dispatch(noteSlice.actions.addNote(response.data));
   };
 
-  const handleTagSelect = (event: any, value: string[]) => {
-    setSelectedTags(value);
-    dispatch(noteSlice.actions.updateSelectedTags(value));
+  const handleUpdateNote = async (noteId: string, note: any) => {
+    const response = await client.put(`/notes/${noteId}`, note);
+    dispatch(noteSlice.actions.updateNote(response.data));
   };
 
-  const handleAddTag = (tag: string) => {
-    dispatch(tagSlice.actions.addTag(tag));
-    dispatch(noteSlice.actions.addTagToNote({ noteId: 'currentNoteId', tag }));
+  const handleDeleteNote = async (noteId: string) => {
+    await client.delete(`/notes/${noteId}`);
+    dispatch(noteSlice.actions.deleteNote(noteId));
   };
 
-  const handleRemoveTag = (tag: string) => {
-    dispatch(tagSlice.actions.removeTag(tag));
-    dispatch(noteSlice.actions.removeTagFromNote({ noteId: 'currentNoteId', tag }));
+  const handleAddTagToNote = (noteId: string, tag: string) => {
+    dispatch(noteSlice.actions.addTagToNote({ noteId, tag }));
   };
+
+  const handleRemoveTagFromNote = (noteId: string, tag: string) => {
+    dispatch(noteSlice.actions.removeTagFromNote({ noteId, tag }));
+  };
+
+  const handleUpdateTagInput = (tagInput: string) => {
+    dispatch(tagSlice.actions.updateTagInput(tagInput));
+  };
+
+  const handleUpdateTagSuggestions = (tagSuggestions: string[]) => {
+    dispatch(tagSlice.actions.updateTagSuggestions(tagSuggestions));
+  };
+
+  const handleUpdateSelectedTags = (selectedTags: string[]) => {
+    dispatch(tagSlice.actions.updateSelectedTags(selectedTags));
+  };
+
+  const handleUpdateNoteTagSuggestions = (noteId: string, tagSuggestions: string[]) => {
+    dispatch(tagSlice.actions.updateNoteTagSuggestions({ noteId, tagSuggestions }));
+  };
+
+  const filteredNotes = notes.sortedNotes.filter((note) => {
+    if (filterByTags.length > 0) {
+      return filterByTags.every((tag) => note.tags.includes(tag));
+    }
+    if (filterByDate) {
+      return note.createdAt >= new Date(filterByDate);
+    }
+    if (tagFilter) {
+      return note.tags.includes(tagFilter);
+    }
+    return true;
+  });
 
   return (
-    <Provider store={store}>
-      <DndProvider backend={HTML5Backend}>
-        <div>
-          <h1>AutoNote: AI-Powered Note Taker</h1>
-          <Link href="/notes">
-            <a>Notes</a>
-          </Link>
-          <Link href="/meetings">
-            <a>Meetings</a>
-          </Link>
-          <Link href="/templates">
-            <a>Templates</a>
-          </Link>
-          <div>
-            <Autocomplete
-              multiple
-              id="tags"
-              options={tagSuggestions}
-              value={selectedTags}
-              onChange={handleTagSelect}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Tags"
-                  onChange={handleTagInput}
-                  value={tagInput}
-                />
-              )}
+    <DndProvider backend={HTML5Backend}>
+      <div className="dashboard-page">
+        <h1>AutoNote: AI-Powered Note Taker</h1>
+        <button onClick={handleAddNote}>
+          <AiOutlinePlus />
+          Add Note
+        </button>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search notes"
+        />
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <option value="">All</option>
+          <option value="tag">Tag</option>
+          <option value="date">Date</option>
+        </select>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="">Title</option>
+          <option value="createdAt">Created At</option>
+          <option value="updatedAt">Updated At</option>
+        </select>
+        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+          <option value="">Ascending</option>
+          <option value="descending">Descending</option>
+        </select>
+        <Autocomplete
+          multiple
+          id="tags"
+          options={tags.tags}
+          value={filterByTags}
+          onChange={(e, value) => setFilterByTags(value)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Filter by tags"
+              placeholder="Select tags"
             />
-            <button onClick={() => handleAddTag('newTag')}>Add Tag</button>
-            <button onClick={() => handleRemoveTag('existingTag')}>Remove Tag</button>
-          </div>
-          <div>
-            {Object.values(notes.notes).map((note) => (
-              <NoteCard key={note.id} note={note} />
-            ))}
-          </div>
+          )}
+        />
+        <input
+          type="date"
+          value={filterByDate}
+          onChange={(e) => setFilterByDate(e.target.value)}
+          placeholder="Filter by date"
+        />
+        <input
+          type="search"
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          placeholder="Filter by tag"
+        />
+        <div className="notes-list">
+          {filteredNotes.map((note) => (
+            <DraggableNoteCard key={note.id} note={note} />
+          ))}
         </div>
-      </DndProvider>
+      </div>
+    </DndProvider>
+  );
+};
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <DashboardPage />
     </Provider>
   );
 };
 
-export default DashboardPage;
+export default App;
