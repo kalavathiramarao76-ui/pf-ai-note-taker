@@ -88,62 +88,47 @@ const Nav = memo(() => {
   }, [darkMode]);
 
   return (
-    <nav
-      aria-label="Main navigation"
-      className="nav"
-      role="navigation"
-    >
-      <button
-        aria-controls="nav-menu"
-        aria-expanded={navOpen}
-        aria-label="Toggle navigation"
-        className="nav-toggle"
-        onClick={toggleNav}
-      >
+    <nav className={`nav ${navOpen ? 'nav-open' : ''} ${highContrastMode ? 'high-contrast' : ''} ${darkMode ? 'dark-mode' : ''}`}>
+      <button className="nav-toggle" onClick={toggleNav}>
         {navOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </button>
-      <ul
-        aria-hidden={!navOpen}
-        className="nav-menu"
-        id="nav-menu"
-        role="menu"
-      >
+      <ul className="nav-menu">
         {filteredLinks.map((link) => (
           <li key={link.href}>
-            <Link
-              aria-current={router.asPath === link.href ? 'page' : undefined}
-              href={link.href}
-              role="menuitem"
-            >
-              {link.text}
-            </Link>
+            <Link href={link.href}>{link.text}</Link>
           </li>
         ))}
       </ul>
-      <button
-        aria-label="Toggle high contrast mode"
-        className="nav-button"
-        onClick={handleHighContrastMode}
-      >
+      <form className="nav-search" onSubmit={(event) => event.preventDefault()}>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search"
+          aria-label="Search"
+        />
+      </form>
+      <button className="nav-high-contrast" onClick={handleHighContrastMode}>
         High Contrast Mode
       </button>
-      <button
-        aria-label="Toggle dark mode"
-        className="nav-button"
-        onClick={handleDarkMode}
-      >
-        Dark Mode
+      <button className="nav-dark-mode" onClick={handleDarkMode}>
+        {darkMode ? 'Light Mode' : 'Dark Mode'}
       </button>
-      <input
-        aria-label="Search"
-        className="nav-search"
-        onChange={handleSearch}
-        placeholder="Search"
-        type="search"
-        value={searchQuery}
-      />
     </nav>
   );
 });
 
-export default Nav;
+const Layout = ({ children }) => {
+  return (
+    <>
+      <Head>
+        <title>AutoNote: AI-Powered Note Taker</title>
+        <meta name="description" content="AutoNote: AI-Powered Note Taker" />
+      </Head>
+      <Nav />
+      <main className="main-content">{children}</main>
+    </>
+  );
+};
+
+export default Layout;
